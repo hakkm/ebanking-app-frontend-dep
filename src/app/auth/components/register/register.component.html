@@ -1,0 +1,72 @@
+<div class="min-h-screen flex items-center justify-center bg-gradient-to-r from-blue-900 to-blue-600">
+  <div class="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
+    <h2 class="text-2xl font-bold text-center text-gray-800 mb-6">Register</h2>
+    <div *ngIf="error" class="text-red-500 text-sm mb-4">{{ error }}</div>
+    <form (ngSubmit)="onSubmit()" #registerForm="ngForm">
+      <div class="mb-4">
+        <label for="username" class="block text-gray-700">Username</label>
+        <input
+          id="username"
+          type="text"
+          [(ngModel)]="user.username"
+          name="username"
+          required
+          minlength="3"
+          #username="ngModel"
+          class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          [ngClass]="{'border-red-500': username.touched && username.invalid}"
+        >
+        <div *ngIf="username.touched && username.invalid" class="text-red-500 text-sm mt-1">
+          <div *ngIf="username.errors?.['required']">Username is required</div>
+          <div *ngIf="username.errors?.['minlength']">Username must be at least 3 characters</div>
+        </div>
+      </div>
+      <div class="mb-4">
+        <label for="email" class="block text-gray-700">Email</label>
+        <input
+          id="email"
+          type="email"
+          [(ngModel)]="user.email"
+          name="email"
+          required
+          pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$"
+          #email="ngModel"
+          class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          [ngClass]="{'border-red-500': email.touched && email.invalid}"
+        >
+        <div *ngIf="email.touched && email.invalid" class="text-red-500 text-sm mt-1">
+          <div *ngIf="email.errors?.['required']">Email is required</div>
+          <div *ngIf="email.errors?.['pattern']">Please enter a valid email</div>
+        </div>
+      </div>
+      <div class="mb-6">
+        <label for="password" class="block text-gray-700">Password</label>
+        <input
+          id="password"
+          type="password"
+          [(ngModel)]="user.password"
+          name="password"
+          required
+          minlength="6"
+          #password="ngModel"
+          class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          [ngClass]="{'border-red-500': password.touched && password.invalid}"
+        >
+        <div *ngIf="password.touched && password.invalid" class="text-red-500 text-sm mt-1">
+          <div *ngIf="password.errors?.['required']">Password is required</div>
+          <div *ngIf="password.errors?.['minlength']">Password must be at least 6 characters</div>
+        </div>
+      </div>
+      <button
+        type="submit"
+        class="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition-colors disabled:bg-gray-400"
+        [disabled]="registerForm.invalid"
+      >
+        Register
+      </button>
+    </form>
+    <p class="text-center text-gray-600 mt-4">
+      Already have an account? <a routerLink="/login" class="text-blue-600 hover:underline">Login</a>
+    </p>
+  </div>
+</div>
