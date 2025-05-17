@@ -55,13 +55,15 @@ export class AuthService {
   constructor(private http: HttpClient) {}
 
   login(username: string, password: string): Observable<any> {
-    const credentials = btoa(`${username}:${password}`);
-    return this.http.get(`${this.apiUrl}/client/accounts`, {
-      headers: { Authorization: `Basic ${credentials}` }
+    return this.http.post(`${this.apiUrl}/public/login`, {
+      username,
+      password
     }).pipe(
       catchError(this.handleError)
     );
   }
+
+
 
   register(user: User): Observable<any> {
     return this.http.post(`${this.apiUrl}/agent/users`, user, {
