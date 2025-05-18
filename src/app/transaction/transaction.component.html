@@ -1,0 +1,57 @@
+<div class="min-h-screen bg-gray-50">
+  <header class="bg-white shadow-sm">
+    <div class="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8 flex justify-between items-center">
+      <h1 class="text-2xl font-bold text-gray-800">Transactions</h1>
+      <div class="flex items-center space-x-4">
+        <button class="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200" routerLink="/home">
+          ← Back to Dashboard
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+    <div *ngIf="error" class="mb-4 p-4 bg-red-50 border-l-4 border-red-500 text-red-700">
+      {{ error }}
+    </div>
+
+    <div *ngIf="isLoading" class="p-6 flex justify-center">
+      <div class="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-blue-500"></div>
+    </div>
+
+    <div *ngIf="!isLoading && transactions.length === 0" class="text-center text-gray-500">
+      No transactions found.
+    </div>
+
+    <div *ngIf="!isLoading && transactions.length > 0" class="bg-white shadow rounded-lg overflow-hidden">
+      <div class="p-6 border-b border-gray-200">
+        <h2 class="text-xl font-semibold text-gray-800">Transaction History</h2>
+      </div>
+      <div class="divide-y divide-gray-200">
+        <div *ngFor="let tx of transactions" class="p-4 hover:bg-gray-50 transition-colors">
+          <div class="flex justify-between items-center">
+            <div>
+              <p class="text-gray-900 font-medium">
+                {{ tx.type }} - {{ tx.description }}
+              </p>
+              <p class="text-sm text-gray-500">Status: {{ tx.status }} • {{ tx.createdAt | date:'medium' }}</p>
+              <p class="text-sm text-gray-500">
+                From Account: {{ tx.fromAccountId }} → To Account: {{ tx.toAccountId }}
+              </p>
+            </div>
+            <div class="text-right">
+              <p
+                class="text-lg font-bold"
+                [ngClass]="{
+                  'text-green-600': +tx.amount > 0,
+                  'text-red-600': +tx.amount < 0
+                }">
+                {{ tx.amount }} {{ tx.currency }}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>

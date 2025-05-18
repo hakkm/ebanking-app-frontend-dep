@@ -1,77 +1,77 @@
-// import { Injectable } from '@angular/core';
-// import { HttpClient, HttpHeaders } from '@angular/common/http';
-// import { Observable, throwError } from 'rxjs';
-// import { catchError, tap } from 'rxjs/operators';
-// import { environment } from '../../../environments/environment';
-// import { User } from '../models/user.model';
-// import { TokenService } from '../../core/services/token.service';
-//
-// @Injectable({
-//   providedIn: 'root'
-// })
-// export class AuthService {
-//   private apiUrl = `${environment.apiUrl}/agent/users`;
-//
-//   constructor(private http: HttpClient, private tokenService: TokenService) {}
-//
-//   login(username: string, password: string): Observable<any> {
-//     const headers = new HttpHeaders({
-//       'Authorization': 'Basic ' + btoa(`${username}:${password}`)
-//     });
-//     return this.http.get(`${environment.apiUrl}/client/accounts`, { headers }).pipe(
-//       tap(() => this.tokenService.setCredentials(username, password)),
-//       catchError(error => {
-//         console.error('Login failed:', error);
-//         return throwError(() => new Error('Invalid credentials'));
-//       })
-//     );
-//   }
-//
-//   register(user: User): Observable<User> {
-//     return this.http.post<User>(this.apiUrl, user).pipe(
-//       catchError(error => {
-//         console.error('Registration failed:', error);
-//         return throwError(() => new Error('Registration failed'));
-//       })
-//     );
-//   }
-// }
-
-
-
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { Observable, throwError } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import { BehaviorSubject, Observable, throwError } from 'rxjs';
+import { catchError, tap } from 'rxjs/operators';
 import { User } from '../models/user.model';
 import { environment } from '../../../environments/environment';
+import {TokenService} from '../../core/services/token.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
   private apiUrl = environment.apiUrl;
+  private currentUserSubject = new BehaviorSubject<User | null>(null);
+  public currentUser$ = this.currentUserSubject.asObservable();
 
-  constructor(private http: HttpClient) {}
+  constructor(
+    private http: HttpClient,
+    private tokenService: TokenService
+  ) {
+    // Try to load current user from JWT on init
+    const token = this.tokenService.getToken();
+    if (token) {
+      this.getCurrentUser().subscribe({
+        error: () => {
+          console.log('Failed to load user from token');
+          this.logout(); // invalid token? force logout
+        }
+      });
+    }
+  }
 
-  login(username: string, password: string): Observable<any> {
-    return this.http.post(`${this.apiUrl}/public/login`, {
-      username,
-      password
+  login(email: string, password: string): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/public/login`, { email, password }).pipe(
+      tap(response => {
+        if (response.token) {
+          this.tokenService.setToken(response.token);
+        }
+        if (response.user) {
+          this.currentUserSubject.next(response.user);
+        }
+      }),
+      catchError(this.handleError)
+    );
+  }
+
+  register(user: User): Observable<any> {
+    return this.http.post(`${this.apiUrl}/public/register`, user, {
+      headers: { 'Content-Type': 'application/json' }
     }).pipe(
       catchError(this.handleError)
     );
   }
 
-
-
-  register(user: User): Observable<any> {
-    return this.http.post(`${this.apiUrl}/agent/users`, user, {
-      headers: { 'Content-Type': 'application/json' },
-      withCredentials: true
-    }).pipe(
-      catchError(this.handleError)
+  getCurrentUser(): Observable<User> {
+    return this.http.get<User>(`${this.apiUrl}/public/me`).pipe(
+      tap(user => {
+        this.currentUserSubject.next(user);
+      }),
+      catchError(error => {
+        this.currentUserSubject.next(null);
+        return throwError(() => error);
+      })
     );
+  }
+
+  logout(): void {
+    this.tokenService.clearToken();
+    this.currentUserSubject.next(null);
+    // Optionally, redirect to login page here
+  }
+
+  get currentUserValue(): User | null {
+    return this.currentUserSubject.value;
   }
 
   private handleError(error: HttpErrorResponse): Observable<never> {
