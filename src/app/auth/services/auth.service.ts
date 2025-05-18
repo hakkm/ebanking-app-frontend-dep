@@ -41,7 +41,7 @@
 
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { Observable, throwError } from 'rxjs';
+import {Observable, tap, throwError} from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { User } from '../models/user.model';
 import { environment } from '../../../environments/environment';
@@ -55,13 +55,17 @@ export class AuthService {
   constructor(private http: HttpClient) {}
 
   login(username: string, password: string): Observable<any> {
-    return this.http.post(`${this.apiUrl}/public/login`, {
+    return this.http.post<{ token: string }>(`${this.apiUrl}/public/login`, {
       username,
       password
     }).pipe(
+      tap(response => {
+        localStorage.setItem('jwt_token', response.token);
+      }),
       catchError(this.handleError)
     );
   }
+
 
 
 

@@ -28,8 +28,8 @@ export class LoginComponent {
   onSubmit(): void {
     this.error = null; // Clear previous errors
     this.authService.login(this.username, this.password).subscribe({
-      next: () => {
-        this.tokenService.setCredentials(this.username, this.password);
+      next: (response) => {
+        this.tokenService.setToken(response.token);
         this.toastr.success('Login successful!');
         this.router.navigate(['/dashboard']);
       },
@@ -38,5 +38,6 @@ export class LoginComponent {
         this.toastr.error(err.message);
       }
     });
+
   }
 }

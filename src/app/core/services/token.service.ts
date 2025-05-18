@@ -1,21 +1,20 @@
-import { Injectable } from '@angular/core';
+import {Injectable} from '@angular/core';
 
 @Injectable({
   providedIn: 'root'
 })
 export class TokenService {
-  private credentialsKey = 'auth_credentials';
+  private readonly TOKEN_KEY = 'jwt_token';
 
-  setCredentials(username: string, password: string): void {
-    const credentials = btoa(`${username}:${password}`);
-    localStorage.setItem(this.credentialsKey, credentials);
+  setToken(token: string): void {
+    localStorage.setItem(this.TOKEN_KEY, token);
   }
 
-  getCredentials(): string | null {
-    return localStorage.getItem(this.credentialsKey);
+  getToken(): string | null {
+    return localStorage.getItem(this.TOKEN_KEY);
   }
 
-  clearCredentials(): void {
-    localStorage.removeItem(this.credentialsKey);
+  clearToken(): void {
+    localStorage.removeItem(this.TOKEN_KEY);
   }
 }
