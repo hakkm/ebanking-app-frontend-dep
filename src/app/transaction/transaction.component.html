@@ -1,57 +1,67 @@
-<div class="min-h-screen bg-gray-50">
-  <header class="bg-white shadow-sm">
-    <div class="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8 flex justify-between items-center">
-      <h1 class="text-2xl font-bold text-gray-800">Transactions</h1>
-      <div class="flex items-center space-x-4">
-        <button class="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200" routerLink="/home">
-          ← Back to Dashboard
-        </button>
-      </div>
-    </div>
-  </header>
-
-  <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+<div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+    <!-- Error Message -->
     <div *ngIf="error" class="mb-4 p-4 bg-red-50 border-l-4 border-red-500 text-red-700">
-      {{ error }}
+        {{ error }}
     </div>
 
-    <div *ngIf="isLoading" class="p-6 flex justify-center">
-      <div class="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-blue-500"></div>
+    <!-- Loading Spinner -->
+    <div *ngIf="isLoading" class="flex justify-center p-6">
+        <div class="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-blue-500"></div>
     </div>
 
-    <div *ngIf="!isLoading && transactions.length === 0" class="text-center text-gray-500">
-      No transactions found.
-    </div>
-
-    <div *ngIf="!isLoading && transactions.length > 0" class="bg-white shadow rounded-lg overflow-hidden">
-      <div class="p-6 border-b border-gray-200">
-        <h2 class="text-xl font-semibold text-gray-800">Transaction History</h2>
-      </div>
-      <div class="divide-y divide-gray-200">
-        <div *ngFor="let tx of transactions" class="p-4 hover:bg-gray-50 transition-colors">
-          <div class="flex justify-between items-center">
-            <div>
-              <p class="text-gray-900 font-medium">
-                {{ tx.type }} - {{ tx.description }}
-              </p>
-              <p class="text-sm text-gray-500">Status: {{ tx.status }} • {{ tx.createdAt | date:'medium' }}</p>
-              <p class="text-sm text-gray-500">
-                From Account: {{ tx.fromAccountId }} → To Account: {{ tx.toAccountId }}
-              </p>
+    <!-- Accounts List -->
+    <div *ngIf="!isLoading && accounts.length > 0" class="mb-6">
+        <h2 class="text-xl font-semibold text-gray-800 mb-4">Your Accounts</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div *ngFor="let account of accounts"
+                 (click)="selectAccount(account)"
+                 [ngClass]="{'bg-blue-50 border-blue-500': selectedAccount?.id === account.id, 'bg-white border-gray-200': selectedAccount?.id !== account.id}"
+                 class="p-4 border rounded-lg shadow-sm cursor-pointer hover:bg-gray-50 transition-colors">
+                <h3 class="text-lg font-medium text-gray-900">{{ account.alias || 'Account' }}</h3>
+                <p class="text-sm text-gray-500">Number: {{ account.maskedAccountNumber }}</p>
+                <p class="text-sm text-gray-500">Type: {{ account.accountType }}</p>
+                <p class="text-sm text-gray-500">Status: {{ account.status }}</p>
+                <p class="text-sm font-semibold text-gray-700">{{ account.balance | currency:account.currency }}</p>
             </div>
-            <div class="text-right">
-              <p
-                class="text-lg font-bold"
-                [ngClass]="{
-                  'text-green-600': +tx.amount > 0,
-                  'text-red-600': +tx.amount < 0
-                }">
-                {{ tx.amount }} {{ tx.currency }}
-              </p>
-            </div>
-          </div>
         </div>
-      </div>
     </div>
-  </main>
+
+    <!-- No Accounts -->
+    <div *ngIf="!isLoading && accounts.length === 0" class="p-6 text-center text-gray-500">
+        No accounts found.
+    </div>
+
+    <!-- Transactions Table -->
+    <div *ngIf="!isLoading && selectedAccount && transactions.length > 0" class="bg-white rounded-lg shadow overflow-hidden">
+        <div class="p-6 border-b border-gray-200">
+            <h2 class="text-xl font-semibold text-gray-800">Transactions for {{ selectedAccount.alias || 'Account' }} ({{ selectedAccount.maskedAccountNumber }})</h2>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">From Account</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">To Account</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
+                </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                <tr *ngFor="let tx of transactions" class="hover:bg-gray-50">
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ tx.createdAt | date:'medium' }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ tx.fromAccountId }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ tx.toAccountId }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ tx.amount | currency }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ tx.description || '-' }}</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- No Transactions -->
+    <div *ngIf="!isLoading && selectedAccount && transactions.length === 0" class="p-6 text-center text-gray-500">
+        No transactions found for this account.
+    </div>
 </div>

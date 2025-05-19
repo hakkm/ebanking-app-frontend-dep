@@ -2,8 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterModule, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import {RecipientService} from '../app/auth/services/recipient.service';
-import {Recipient} from '../app/auth/models/recipient.model';
+import {RecipientService} from '../auth/services/recipient.service';
+import {Recipient} from '../auth/models/recipient.model';
 
 @Component({
   selector: 'app-add-recipient',
