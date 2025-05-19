@@ -1,0 +1,52 @@
+<div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+  <div class="bg-white rounded-lg shadow p-6">
+    <h2 class="text-xl font-semibold text-gray-800 mb-4">Add New Recipient</h2>
+    <div *ngIf="error" class="mb-4 p-4 bg-red-50 border-l-4 border-red-500 text-red-700">
+      {{ error }}
+    </div>
+    <form [formGroup]="recipientForm" (ngSubmit)="onSubmitRecipient()">
+      <!-- Bank Type Radio Buttons -->
+      <div class="mb-6 border border-gray-200 rounded-md p-4">
+        <label class="block text-sm font-medium text-gray-700 mb-2">Bank Type</label>
+        <div class="flex space-x-4">
+          <label class="flex-1">
+            <input type="radio" formControlName="isSameBank" [value]="true" class="sr-only" />
+            <span class="block text-center px-4 py-2 border rounded-md cursor-pointer transition-colors text-gray-700 {{ recipientForm.get('isSameBank')?.value === true ? 'bg-blue-100 border-blue-500 text-blue-700' : 'border-gray-200 hover:bg-gray-50' }}">
+              Same Bank
+            </span>
+          </label>
+          <label class="flex-1">
+            <input type="radio" formControlName="isSameBank" [value]="false" class="sr-only" />
+            <span class="block text-center px-4 py-2 border rounded-md cursor-pointer transition-colors text-gray-700 {{ recipientForm.get('isSameBank')?.value === false ? 'bg-blue-100 border-blue-500 text-blue-700' : 'border-gray-200 hover:bg-gray-50' }}">
+              Different Bank
+            </span>
+          </label>
+        </div>
+      </div>
+
+      <div class="mb-4">
+        <label for="alias" class="block text-sm font-medium text-gray-700 mb-1">Recipient Alias (Optional)</label>
+        <input type="text" id="alias" formControlName="alias" class="w-full border border-gray-200 rounded-md px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+      </div>
+
+      <div *ngIf="recipientForm.get('isSameBank')?.value" class="mb-4">
+        <label for="accountNumber" class="block text-sm font-medium text-gray-700 mb-1">Account Number</label>
+        <input type="text" id="accountNumber" formControlName="accountNumber" class="w-full border border-gray-200 rounded-md px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+      </div>
+
+      <div *ngIf="!recipientForm.get('isSameBank')?.value" class="mb-4">
+        <label for="rib" class="block text-sm font-medium text-gray-700 mb-1">RIB</label>
+        <input type="text" id="rib" formControlName="rib" class="w-full border border-gray-200 rounded-md px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+      </div>
+
+      <div class="flex justify-end space-x-3">
+        <button type="button" routerLink="/transfer" class="px-4 py-2 bg-gray-50 text-gray-600 rounded-md hover:bg-gray-100 transition-colors">
+          Cancel
+        </button>
+        <button type="submit" [disabled]="!recipientForm.valid || isSubmitting" class="px-4 py-2 bg-green-50 text-green-600 rounded-md hover:bg-green-100 transition-colors disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed">
+          {{ isSubmitting ? 'Adding...' : 'Add Recipient' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
