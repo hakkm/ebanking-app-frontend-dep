@@ -67,7 +67,6 @@ export class AuthService {
   logout(): void {
     this.tokenService.clearToken();
     this.currentUserSubject.next(null);
-    // Optionally, redirect to login page here
   }
 
   get currentUserValue(): User | null {
