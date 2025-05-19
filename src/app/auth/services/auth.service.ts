@@ -52,7 +52,7 @@ export class AuthService {
     );
   }
 
-  getCurrentUser(): Observable<User> {
+  public getCurrentUser(): Observable<User> {
     return this.http.get<User>(`${this.apiUrl}/public/me`).pipe(
       tap(user => {
         this.currentUserSubject.next(user);

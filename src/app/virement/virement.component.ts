@@ -95,7 +95,7 @@ export class VirementComponent implements OnInit {
     }
   }
 
-  deleteRecipient(id: number): void {
+  deleteRecipient(id: number | undefined): void {
     if (confirm('Are you sure you want to delete this recipient?')) {
       this.recipientService.deleteRecipient(id).subscribe({
         next: () => {

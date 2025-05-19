@@ -3,4 +3,5 @@ export interface Transaction {
   toAccountId: number;
   amount: number;
   description?: string;
+  createdAt?: string;
 }
