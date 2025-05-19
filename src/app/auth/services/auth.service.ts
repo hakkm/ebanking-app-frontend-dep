@@ -64,10 +64,14 @@ export class AuthService {
     );
   }
 
-  logout(): void {
-    this.tokenService.clearToken();
-    this.currentUserSubject.next(null);
-    // Optionally, redirect to login page here
+  logout(): Observable<void> {
+    return this.http.post<void>(`${this.apiUrl}/public/logout`, {}).pipe(
+      tap(() => {
+        this.tokenService.clearToken();
+        this.currentUserSubject.next(null);
+      }),
+      catchError(this.handleError)
+    );
   }
 
   get currentUserValue(): User | null {
