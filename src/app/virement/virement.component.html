@@ -1,0 +1,81 @@
+<div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+  <!-- Error Message -->
+  <div *ngIf="error" class="mb-4 p-4 bg-red-50 border-l-4 border-red-500 text-red-700">
+    {{ error }}
+  </div>
+
+  <!-- Recipients Section -->
+  <div class="bg-white rounded-lg shadow overflow-hidden mb-6">
+    <div class="p-6 border-b border-gray-200">
+      <h2 class="text-xl font-semibold text-gray-800">Saved Recipients</h2>
+    </div>
+
+    <div *ngIf="isLoading" class="p-6 flex justify-center">
+      <div class="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-blue-500"></div>
+    </div>
+
+    <div *ngIf="!isLoading && recipients.length === 0" class="p-6 text-center text-gray-500">
+      No recipients found. Add a new recipient to start a transfer.
+      <div class="mt-4">
+        <button routerLink="/add-recipient" class="px-4 py-2 bg-blue-50 text-blue-600 rounded-md hover:bg-blue-100 transition-colors">
+          Add Recipient
+        </button>
+      </div>
+    </div>
+
+    <div *ngIf="!isLoading && recipients.length > 0" class="divide-y divide-gray-200">
+      <div *ngFor="let recipient of recipients" class="p-6 hover:bg-gray-50 transition-colors">
+        <div class="flex justify-between items-center">
+          <div>
+            <h3 class="text-lg font-medium text-gray-900">{{ recipient.alias || 'Recipient ' + recipient.accountNumber }}</h3>
+            <p class="mt-1 text-sm text-gray-500">Account #: {{ recipient.accountNumber }}</p>
+          </div>
+          <button (click)="deleteRecipient(recipient.id)" class="px-3 py-1 bg-red-50 text-red-600 text-sm rounded hover:bg-red-100 transition-colors">
+            Remove
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Transfer Form -->
+  <div class="bg-white rounded-lg shadow p-6">
+    <h2 class="text-xl font-semibold text-gray-800 mb-4">New Transfer</h2>
+    <form [formGroup]="transferForm" (ngSubmit)="onSubmitTransfer()">
+      <div class="mb-4">
+        <label for="recipient" class="block text-sm font-medium text-gray-700 mb-1">Recipient</label>
+        <select formControlName="recipient" id="recipient" class="w-full border border-gray-200 rounded-md px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+          <option value="">-- Select a recipient --</option>
+          <option *ngFor="let recipient of recipients" [value]="recipient.recipientAccountId">{{ recipient.alias || recipient.accountNumber }}</option>
+        </select>
+      </div>
+
+      <div class="mb-4">
+        <label for="fromAccount" class="block text-sm font-medium text-gray-700 mb-1">From Account</label>
+        <select formControlName="fromAccount" id="fromAccount" class="w-full border border-gray-200 rounded-md px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+          <option value="">-- Select your account --</option>
+          <option *ngFor="let account of accounts" [value]="account.id">{{ account.maskedAccountNumber }} ({{ account.accountType }})</option>
+        </select>
+      </div>
+
+      <div class="mb-4">
+        <label for="amount" class="block text-sm font-medium text-gray-700 mb-1">Amount</label>
+        <input type="number" id="amount" formControlName="amount" class="w-full border border-gray-200 rounded-md px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+      </div>
+
+      <div class="mb-4">
+        <label for="motif" class="block text-sm font-medium text-gray-700 mb-1">Motif</label>
+        <textarea id="motif" formControlName="motif" rows="3" class="w-full border border-gray-200 rounded-md px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+      </div>
+
+      <div class="flex justify-end">
+        <button type="submit" [disabled]="!transferForm.valid || isSubmitting" class="px-4 py-2 bg-green-50 text-green-600 rounded-md hover:bg-green-100 transition-colors disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed">
+          {{ isSubmitting ? 'Submitting...' : 'Submit Transfer' }}
+        </button>
+      </div>
+    </form>
+    <button routerLink="/add-recipient" class="mt-4 px-4 py-2 bg-blue-50 text-blue-600 rounded-md hover:bg-blue-100 transition-colors">
+      Add Recipient
+    </button>
+  </div>
+</div>
