@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
-import { catchError, delay } from 'rxjs/operators';
+import { catchError, delay, tap } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 
 export interface MarketPrice {
@@ -97,7 +97,9 @@ export class CryptoService {
       total: 286.2,
     },
   ];
-
+  // Cache for performance optimization
+  private cachedPortfolio: PortfolioItem[] | null = null;
+  private cachedTransactions: Transaction[] | null = null;
   constructor(private http: HttpClient) {}
 //  getMarketPrices(): Observable<MarketPrice[]> {
 //     // Simulate network delay
@@ -117,8 +119,22 @@ export class CryptoService {
     );
   }
 
+  // getPortfolio(): Observable<PortfolioItem[]> {
+  //   return of(this.portfolio).pipe(delay(700));
+  // }
   getPortfolio(): Observable<PortfolioItem[]> {
-    return of(this.portfolio).pipe(delay(700));
+    return this.http.get<PortfolioItem[]>(`${this.apiUrl}/portfolio`)
+      .pipe(
+        tap(portfolio => this.cachedPortfolio = portfolio),
+        catchError(error => {
+          console.error('Error fetching portfolio:', error);
+          if (this.cachedPortfolio) {
+            return of(this.cachedPortfolio);
+          }
+          // Fallback to empty portfolio if no cache available
+          return of([]);
+        })
+      );
   }
 
   getTransactionHistory(): Observable<Transaction[]> {

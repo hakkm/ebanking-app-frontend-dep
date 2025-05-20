@@ -31,6 +31,7 @@ export class PortfolioOverviewComponent implements OnInit {
         this.calculateTotalValue();
         this.calculateTradingBalance();
         this.isLoading = false;
+        console.log('portfolioItems', this.portfolioItems);
       },
       error: (err) => {
         console.error('Error loading portfolio', err);
@@ -47,10 +48,10 @@ export class PortfolioOverviewComponent implements OnInit {
   }
 
   private calculateTradingBalance(): void {
-    const cashItem = this.portfolioItems.find(item => item.type === 'cash');
+    const cashItem = this.portfolioItems.find((item) => item.type === 'cash');
     if (cashItem) {
       const cryptoValue = this.portfolioItems
-        .filter(item => item.type === 'crypto')
+        .filter((item) => item.type === 'crypto')
         .reduce((sum, item) => sum + item.value, 0);
       this.tradingBalance = cashItem.amount - cryptoValue;
     }
