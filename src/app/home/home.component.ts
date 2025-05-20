@@ -3,8 +3,9 @@ import { User } from '../auth/models/user.model';
 import { Account } from '../auth/models/account.model';
 import { AuthService } from '../auth/services/auth.service';
 import { AccountService } from '../auth/services/account.service';
-import {RouterLink} from '@angular/router';
+import {RouterLink, RouterOutlet} from '@angular/router';
 import {NgForOf, NgIf} from '@angular/common';
+import {RechargeComponent} from '../Rechargetel/rechargetel/rechargetel.component';
 
 @Component({
   selector: 'app-home',
@@ -12,15 +13,34 @@ import {NgForOf, NgIf} from '@angular/common';
   imports: [
     RouterLink,
     NgIf,
-    NgForOf
+    NgForOf,
+    RechargeComponent,
+    RouterOutlet
+
+
   ],
+  standalone: true,
   styleUrls: ['./home.component.css']
 })
 export class HomeComponent implements OnInit {
+
   currentUser: User | null = null;
   accounts: Account[] = [];
   isLoading = true;
   error: string | null = null;
+  showRechargeForm = false;
+  providers: any[] = [];
+
+  loadProviders(): void {
+    this.accountService.getAccounts().subscribe(data => {
+      this.accounts = data;
+      this.isLoading = false;
+    });
+
+    this.accountService.getProviders().subscribe(data => {
+      this.providers = data;
+    });
+  }
 
   constructor(
     protected authService: AuthService,
@@ -30,6 +50,8 @@ export class HomeComponent implements OnInit {
   ngOnInit(): void {
     this.loadUserData();
     this.loadAccounts();
+    this.loadProviders();
+
   }
 
   loadUserData(): void {

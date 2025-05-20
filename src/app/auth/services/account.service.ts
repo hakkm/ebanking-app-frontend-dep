@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Account } from '../models/account.model';
+import {Provider} from '../models/Provider.model';
 import { Transaction } from '../models/transaction.model';
 import { environment } from '../../../environments/environment';
 
@@ -16,7 +17,9 @@ export class AccountService {
   getAccounts(): Observable<Account[]> {
     return this.http.get<Account[]>(`${this.apiUrl}/client/accounts`);
   }
-
+  getProviders():Observable<Provider[]>{
+    return this.http.get<Provider[]>(`${this.apiUrl}/providers/allproviders`)
+  }
   getAccount(id: number): Observable<Account> {
     return this.http.get<Account>(`${this.apiUrl}/client/accounts/${id}`);
   }

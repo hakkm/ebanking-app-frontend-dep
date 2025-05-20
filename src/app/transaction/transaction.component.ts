@@ -1,38 +1,53 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
-import {Transaction} from '../auth/models/transaction.model';
-import {AccountService} from '../auth/services/account.service';
-import {DatePipe, NgClass, NgForOf, NgIf} from '@angular/common';
+import {NgClass, NgForOf, NgIf, DatePipe, CurrencyPipe} from '@angular/common';
+import { AccountService } from '../auth/services/account.service';
+import { Account } from '../auth/models/account.model';
+import { Transaction } from '../auth/models/transaction.model';
 
 @Component({
-  selector: 'app-transaction',
-  templateUrl: './transaction.component.html',
-  imports: [
-    NgClass,
-    NgForOf,
-    NgIf,
-    DatePipe
-  ]
+  selector: 'app-transactions',
+  standalone: true,
+  imports: [NgClass, NgForOf, NgIf, DatePipe, CurrencyPipe],
+  templateUrl: './transaction.component.html'
 })
-export class TransactionComponent implements OnInit {
+export class TransactionsComponent implements OnInit {
+  accounts: Account[] = [];
+  selectedAccount: Account | null = null;
   transactions: Transaction[] = [];
   isLoading = false;
   error: string | null = null;
 
-  constructor(
-    private route: ActivatedRoute,
-    private accountService: AccountService
-  ) {}
+  constructor(private accountService: AccountService) {}
 
   ngOnInit(): void {
-    const accountId = Number(this.route.snapshot.paramMap.get('id'));
-    if (!accountId) {
-      this.error = 'No account ID provided';
-      return;
-    }
+    this.loadAccounts();
+  }
 
+  loadAccounts(): void {
     this.isLoading = true;
-    this.accountService.getTransactions(accountId).subscribe({
+    this.error = null;
+    this.accountService.getAccounts().subscribe({
+      next: (accounts) => {
+        this.accounts = accounts;
+        this.isLoading = false;
+        if (accounts.length > 0) {
+          this.selectAccount(accounts[0]);
+        }
+      },
+      error: (err) => {
+        this.error = 'Failed to load accounts';
+        this.isLoading = false;
+        console.error(err);
+      }
+    });
+  }
+
+  selectAccount(account: Account): void {
+    this.selectedAccount = account;
+    this.transactions = [];
+    this.isLoading = true;
+    this.error = null;
+    this.accountService.getTransactions(account.id).subscribe({
       next: (txs) => {
         this.transactions = txs;
         this.isLoading = false;
@@ -41,7 +56,7 @@ export class TransactionComponent implements OnInit {
         this.error = 'Failed to load transactions';
         this.isLoading = false;
         console.error(err);
-      },
+      }
     });
   }
 }
