@@ -1,0 +1,40 @@
+<router-outlet></router-outlet>
+<div class="bg-white p-6 rounded shadow-md">
+  <h3 class="text-lg font-semibold mb-4">Recharge Telephonique</h3>
+
+  <div *ngIf="message" class="mb-4 p-2 bg-green-100 text-green-700 rounded">{{ message }}</div>
+
+  <form (ngSubmit)="submitRecharge()" class="space-y-4">
+    <div>
+      <label class="block text-sm font-medium text-gray-700">Compte</label>
+      <select [(ngModel)]="selectedAccountId" name="account" class="mt-1 block w-full border border-gray-300 rounded">
+        <option value="" disabled selected>Choisir un compte</option>
+        <option *ngFor="let account of accounts" [value]="account.id">
+          {{ account.maskedAccountNumber }} - {{ account.accountType }}
+        </option>
+      </select>
+    </div>
+
+    <div>
+      <label class="block text-sm font-medium text-gray-700">Fournisseur</label>
+      <select [(ngModel)]="selectedProvider" name="provider" class="mt-1 block w-full border border-gray-300 rounded">
+        <option value="" disabled selected>Choisir un fournisseur</option>
+        <option *ngFor="let provider of providers" [value]="provider.name">{{ provider.name }}</option>
+      </select>
+    </div>
+
+    <div>
+      <label class="block text-sm font-medium text-gray-700">Numéro de téléphone</label>
+      <input type="text" [(ngModel)]="phoneNumber" name="phoneNumber" class="mt-1 block w-full border border-gray-300 rounded">
+    </div>
+
+    <div>
+      <label class="block text-sm font-medium text-gray-700">Montant</label>
+      <input type="number" [(ngModel)]="amount" name="amount" class="mt-1 block w-full border border-gray-300 rounded">
+    </div>
+
+    <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+      Recharge
+    </button>
+  </form>
+</div>
