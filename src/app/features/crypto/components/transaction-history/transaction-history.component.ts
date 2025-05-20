@@ -25,6 +25,7 @@ export class TransactionHistoryComponent implements OnInit {
       next: (transactions) => {
         this.transactions = transactions;
         this.isLoading = false;
+        console.log('transactions', this.transactions);
       },
       error: (err) => {
         console.error('Error loading transactions', err);

@@ -22,23 +22,11 @@ import { TradeComponent } from '../trade/trade.component';
 
 })
 export class DashboardComponent implements OnInit, OnDestroy {
-  private priceUpdateSubscription?: Subscription;
-
   constructor(private cryptoService: CryptoService) { }
 
   ngOnInit(): void {
-    // Update prices every 10 seconds
-    this.priceUpdateSubscription = interval(10000)
-      .pipe(
-        startWith(0),
-        switchMap(() => this.cryptoService.updatePrices())
-      )
-      .subscribe();
   }
 
   ngOnDestroy(): void {
-    if (this.priceUpdateSubscription) {
-      this.priceUpdateSubscription.unsubscribe();
-    }
   }
 }

@@ -38,9 +38,9 @@ export interface TradeRequest {
 export class CryptoService {
   private apiUrl = environment.apiUrl;
 
-  private marketPrices: MarketPrice[] = [
-    { symbol: 'BTC/USD', price: 67500.0 },
-    { symbol: 'ETH/USD', price: 3550.0 },
+  private defaultMarketPrices: MarketPrice[] = [
+    { symbol: 'BTC/USD', price: -0.0 },
+    { symbol: 'ETH/USD', price: -0.0 },
   ];
 
   private portfolio: PortfolioItem[] = [
@@ -55,73 +55,27 @@ export class CryptoService {
     { type: 'crypto', symbol: 'ETH', amount: 0.9715, value: 3448.83 },
   ];
 
-  private transactionHistory: Transaction[] = [
-    {
-      type: 'Bought',
-      amount: 0.034,
-      symbol: 'ETH',
-      date: new Date('2025-05-19T19:34:43'),
-      price: 3550.0,
-      total: 120.7,
-    },
-    {
-      type: 'Bought',
-      amount: 0.00537,
-      symbol: 'BTC',
-      date: new Date('2025-05-19T19:36:37'),
-      price: 67500.0,
-      total: 362.47,
-    },
-    {
-      type: 'Bought',
-      amount: 0.00239,
-      symbol: 'BTC',
-      date: new Date('2025-05-19T19:38:28'),
-      price: 67500.0,
-      total: 161.33,
-    },
-    {
-      type: 'Bought',
-      amount: 0.00318,
-      symbol: 'BTC',
-      date: new Date('2025-05-19T19:34:23'),
-      price: 67500.0,
-      total: 214.65,
-    },
-    {
-      type: 'Bought',
-      amount: 0.00424,
-      symbol: 'BTC',
-      date: new Date('2025-05-19T19:34:18'),
-      price: 67500.0,
-      total: 286.2,
-    },
-  ];
   // Cache for performance optimization
   private cachedPortfolio: PortfolioItem[] | null = null;
   private cachedTransactions: Transaction[] | null = null;
+  private cachedMarketPrices: MarketPrice[] | null = null;
+
   constructor(private http: HttpClient) {}
-//  getMarketPrices(): Observable<MarketPrice[]> {
-//     // Simulate network delay
-//     return of(this.marketPrices).pipe(delay(500));
-//   }
+
   getMarketPrices(): Observable<MarketPrice[]> {
     return this.http.get<MarketPrice[]>(`${this.apiUrl}/prices`).pipe(
+      tap(prices => this.cachedMarketPrices = prices),
       catchError((error) => {
         console.error('Error fetching market prices:', error);
-        // todo: notify the user
-        // Fallback to some default data in case of API failure
-        return of([
-          { symbol: 'BTC/USD', price: -1.0 },
-          { symbol: 'ETH/USD', price: -1.0 },
-        ]);
+        if (this.cachedMarketPrices) {
+          return of(this.cachedMarketPrices);
+        }
+        // Fallback to default data if no cache available
+        return of(this.defaultMarketPrices);
       })
     );
   }
 
-  // getPortfolio(): Observable<PortfolioItem[]> {
-  //   return of(this.portfolio).pipe(delay(700));
-  // }
   getPortfolio(): Observable<PortfolioItem[]> {
     return this.http.get<PortfolioItem[]>(`${this.apiUrl}/portfolio`)
       .pipe(
@@ -138,32 +92,25 @@ export class CryptoService {
   }
 
   getTransactionHistory(): Observable<Transaction[]> {
-    return of(this.transactionHistory).pipe(delay(600));
+    return this.http.get<Transaction[]>(`${this.apiUrl}/transactions`).pipe(
+      tap(transactions => this.cachedTransactions = transactions),
+      catchError(error => {
+        console.error('Error fetching transaction history:', error);
+        if (this.cachedTransactions) {
+          return of(this.cachedTransactions);
+        }
+        // Return empty array if no cache available
+        return of([]);
+      })
+    );
   }
 
   executeTrade(tradeRequest: TradeRequest): Observable<boolean> {
-    // Simulate successful trade
-    console.log('Trade executed:', tradeRequest);
-
-    // This would normally be sent to the backend
-    // const endpoint = '/api/trade';
-    // return this.http.post<boolean>(endpoint, tradeRequest);
-
-    // For the mock implementation, we'll just return success after a delay
-    return of(true).pipe(delay(1000));
-  }
-
-  updatePrices(): Observable<MarketPrice[]> {
-    // Simulate small price fluctuations
-    this.marketPrices.forEach((price) => {
-      const fluctuation = (Math.random() - 0.5) * 0.005; // ±0.25% change
-      price.price = +(price.price * (1 + fluctuation)).toFixed(2);
-    });
-
-    // This would normally fetch from the backend
-    // const endpoint = '/api/prices';
-    // return this.http.get<MarketPrice[]>(endpoint);
-
-    return of(this.marketPrices);
+    return this.http.post<boolean>(`${this.apiUrl}/trade`, tradeRequest).pipe(
+      catchError(error => {
+        console.error('Error executing trade:', error);
+        return of(false);
+      })
+    );
   }
 }
