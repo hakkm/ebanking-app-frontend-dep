@@ -1,0 +1,114 @@
+<div class="bg-gray-800 rounded-lg p-4 shadow-lg">
+  <h2 class="text-lg font-semibold mb-4">Trade</h2>
+
+  <div *ngIf="isLoading" class="flex justify-center items-center py-8">
+    <div class="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+  </div>
+
+  <div *ngIf="!isLoading" class="trade-form">
+    <form [formGroup]="tradeForm" (ngSubmit)="executeTrade()">
+      <!-- Asset Selection -->
+      <div class="mb-4">
+        <label class="block text-sm text-gray-400 mb-1">Buy Asset</label>
+        <div class="grid grid-cols-2 gap-2">
+          <button
+            type="button"
+            class="py-2 px-4 rounded-md text-center transition-colors duration-200"
+            [class.bg-orange-500]="selectedAsset === 'BTC'"
+            [class.bg-gray-700]="selectedAsset !== 'BTC'"
+            [class.text-white]="selectedAsset === 'BTC'"
+            [class.text-gray-300]="selectedAsset !== 'BTC'"
+            (click)="tradeForm.patchValue({asset: 'BTC'})">
+            Bitcoin (BTC)
+          </button>
+          <button
+            type="button"
+            class="py-2 px-4 rounded-md text-center transition-colors duration-200"
+            [class.bg-blue-500]="selectedAsset === 'ETH'"
+            [class.bg-gray-700]="selectedAsset !== 'ETH'"
+            [class.text-white]="selectedAsset === 'ETH'"
+            [class.text-gray-300]="selectedAsset !== 'ETH'"
+            (click)="tradeForm.patchValue({asset: 'ETH'})">
+            Ethereum (ETH)
+          </button>
+        </div>
+        <input type="hidden" formControlName="asset">
+      </div>
+
+      <!-- Amount Input -->
+      <div class="mb-4">
+        <label class="block text-sm text-gray-400 mb-1">Amount</label>
+        <div class="relative">
+          <input
+            type="number"
+            formControlName="amount"
+            class="w-full bg-gray-900 border border-gray-700 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            placeholder="Enter BTC amount"
+            [placeholder]="'Enter ' + selectedAsset + ' amount'">
+          <div class="text-xs text-gray-400 mt-1">Available: 0.00000 BTC</div>
+        </div>
+      </div>
+
+      <!-- Percentage Buttons -->
+      <div class="grid grid-cols-4 gap-2 mb-4">
+        <button
+          type="button"
+          class="bg-gray-700 hover:bg-gray-600 text-gray-300 text-sm py-1 px-2 rounded-md transition-colors"
+          (click)="setPercentage(25)">
+          25%
+        </button>
+        <button
+          type="button"
+          class="bg-gray-700 hover:bg-gray-600 text-gray-300 text-sm py-1 px-2 rounded-md transition-colors"
+          (click)="setPercentage(50)">
+          50%
+        </button>
+        <button
+          type="button"
+          class="bg-gray-700 hover:bg-gray-600 text-gray-300 text-sm py-1 px-2 rounded-md transition-colors"
+          (click)="setPercentage(75)">
+          75%
+        </button>
+        <button
+          type="button"
+          class="bg-gray-700 hover:bg-gray-600 text-gray-300 text-sm py-1 px-2 rounded-md transition-colors"
+          (click)="setPercentage(100)">
+          100%
+        </button>
+      </div>
+
+      <!-- Price Summary -->
+      <div class="bg-gray-900 rounded-md p-3 mb-4">
+        <div class="flex justify-between text-sm">
+          <span class="text-gray-400">Price:</span>
+          <span class="font-mono">${{ getSelectedPrice().toFixed(2) }} / {{ selectedAsset }}</span>
+        </div>
+        <div class="flex justify-between mt-1 text-sm">
+          <span class="text-gray-400">Total:</span>
+          <span class="font-mono">${{ getTotal().toFixed(2) }}</span>
+        </div>
+      </div>
+
+      <!-- Error/Success Messages -->
+      <div *ngIf="errorMessage" class="bg-red-900/30 border border-red-500 text-red-300 px-3 py-2 rounded-md mb-4 text-sm">
+        {{ errorMessage }}
+      </div>
+
+      <div *ngIf="successMessage" class="bg-green-900/30 border border-green-500 text-green-300 px-3 py-2 rounded-md mb-4 text-sm">
+        {{ successMessage }}
+      </div>
+
+      <!-- Submit Button -->
+      <button
+        type="submit"
+        class="w-full bg-blue-600 hover:bg-blue-500 text-white py-2 px-4 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-800"
+        [disabled]="tradeForm.invalid || isSubmitting">
+        <span *ngIf="!isSubmitting">Buy {{ selectedAsset }}</span>
+        <span *ngIf="isSubmitting" class="flex items-center justify-center">
+          <div class="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white mr-2"></div>
+          Processing...
+        </span>
+      </button>
+    </form>
+  </div>
+</div>

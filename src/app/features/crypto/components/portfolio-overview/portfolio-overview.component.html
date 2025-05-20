@@ -1,0 +1,48 @@
+<div class="bg-gray-800 rounded-lg p-4 shadow-lg">
+  <h2 class="text-lg font-semibold mb-4">Portfolio Overview</h2>
+
+  <div *ngIf="isLoading" class="flex justify-center items-center py-8">
+    <div class="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+  </div>
+
+  <div *ngIf="!isLoading" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <!-- Cash Balance -->
+    <div *ngFor="let item of portfolioItems" class="portfolio-card relative bg-gray-900 rounded-lg p-4 border border-gray-700">
+      <div class="flex items-center mb-3">
+        <div [class]="'flex items-center justify-center w-8 h-8 rounded-full text-white font-bold mr-3 ' + getIconColor(item.symbol)">
+          {{ getIcon(item.symbol) }}
+        </div>
+        <div class="flex flex-col">
+          <div class="text-sm font-medium">
+            {{ item.type === 'cash' ? 'Cash Balance' : item.symbol }}
+          </div>
+          <div class="text-xs text-gray-400" *ngIf="item.type === 'crypto'">
+            {{ item.symbol }}
+          </div>
+        </div>
+      </div>
+
+      <div class="mb-2">
+        <div class="text-xs text-gray-400">
+          {{ item.type === 'cash' ? 'Total Balance' : 'Amount' }}
+        </div>
+        <div class="text-lg font-mono">
+          {{ item.type === 'cash' ? ('$' + item.amount.toFixed(2)) : item.amount.toFixed(5) }}
+        </div>
+      </div>
+
+      <div *ngIf="item.type === 'cash'">
+        <div class="text-xs text-gray-400">Trading Balance</div>
+        <div class="text-sm font-mono">
+          ${{ (item.amount - item.value).toFixed(2) }}
+        </div>
+      </div>
+
+      <div *ngIf="item.type === 'crypto'" class="mt-2">
+        <div class="text-sm font-mono text-right">${{ item.value.toFixed(2) }}</div>
+      </div>
+
+      <div class="absolute top-2 right-2 text-xs text-gray-400">{{ item.type === 'cash' ? 'USD' : 'USD' }}</div>
+    </div>
+  </div>
+</div>
