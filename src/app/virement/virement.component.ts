@@ -11,6 +11,7 @@ import {Transaction} from '../auth/models/transaction.model';
 @Component({
   selector: 'app-transfer',
   templateUrl: './virement.component.html',
+  standalone: true,
   imports: [ReactiveFormsModule, RouterModule, CommonModule]
 })
 export class VirementComponent implements OnInit {

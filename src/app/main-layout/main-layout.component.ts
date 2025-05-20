@@ -13,6 +13,7 @@ import {SidebarComponent} from '../sidebar/sidebar.component';
       </div>
     </div>
   `,
+  standalone: true,
   styles: []
 })
 export class MainLayoutComponent {}

@@ -2,40 +2,105 @@ import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { NgIf, NgForOf } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
-import {RouterOutlet} from '@angular/router';
-import {environment} from '../../../environments/environment';
+import { RouterLink, RouterOutlet } from '@angular/router';
+import { environment } from '../../../environments/environment';
+import { AuthService } from '../../auth/services/auth.service';
+import { AccountService } from '../../auth/services/account.service';
+import { Account } from '../../auth/models/account.model';
+import { User } from '../../auth/models/user.model';
 
 @Component({
   selector: 'app-recharge',
   standalone: true,
-  imports: [NgIf, NgForOf, FormsModule, RouterOutlet],
+  imports: [NgIf, NgForOf, FormsModule, RouterOutlet, RouterLink],
   templateUrl: './rechargetel.component.html',
   styleUrls: ['./rechargetel.component.css']
 })
 export class RechargeComponent {
-  private apiUrl = environment.apiUrl;
-
-  @Input() accounts: any[] = [];
+  @Input() accounts: Account[] = [];
   @Input() providers: any[] = [];
   @Output() rechargeSubmitted = new EventEmitter<void>();
 
-  selectedAccountId: string = '';
-  selectedProvider: string = '';
-  amount: number | null = null;
-  phoneNumber: string = '';
-  loading = false;
+  currentUser: User | null = null;
+  isLoading = true;
+  error: string | null = null;
   message: string | null = null;
 
-  constructor(private http: HttpClient) {}
+  selectedAccountId: string = '';
+  selectedProvider: string = '';
+  phoneNumber: string = '';
+  amount: number | null = null;
+
+  isSubmitting = false;
+
+  private apiUrl = environment.apiUrl;
+
+  constructor(
+    private http: HttpClient,
+    private authService: AuthService,
+    private accountService: AccountService
+  ) {}
+
+  ngOnInit(): void {
+    this.loadUserData();
+    this.loadAccounts();
+    this.loadProviders();
+  }
+
+  private loadUserData(): void {
+    this.authService.currentUser$.subscribe({
+      next: (user) => {
+        this.currentUser = user;
+        if (!user) {
+          this.authService.getCurrentUser().subscribe();
+        }
+      },
+      error: (err) => {
+        console.error('Erreur lors du chargement des données utilisateur :', err);
+        this.error = 'Impossible de charger les informations utilisateur.';
+      }
+    });
+  }
+
+  private loadAccounts(): void {
+    this.accountService.getAccounts().subscribe({
+      next: (accounts) => {
+        this.accounts = accounts;
+        this.isLoading = false;
+      },
+      error: (err) => {
+        console.error('Erreur lors du chargement des comptes :', err);
+        this.error = 'Échec du chargement des comptes.';
+        this.isLoading = false;
+      }
+    });
+  }
+
+  private loadProviders(): void {
+    this.accountService.getProviders().subscribe({
+      next: (data) => {
+        this.providers = data;
+      },
+      error: (err) => {
+        console.error('Erreur lors du chargement des fournisseurs :', err);
+      }
+    });
+  }
 
   submitRecharge(): void {
     if (!this.selectedAccountId || !this.selectedProvider || !this.amount || !this.phoneNumber) {
-      this.message = 'All fields are required.';
+      this.message = 'Tous les champs sont requis.';
       return;
     }
-    console.log(this.selectedAccountId)
 
-    console.log(this.selectedProvider)
+    const confirmation = window.confirm(
+      `Êtes-vous sûr de vouloir recharger ${this.amount} MAD à ${this.phoneNumber} via ${this.selectedProvider} ?`
+    );
+
+    if (!confirmation) {
+      return;
+    }
+
     const payload = {
       accountId: this.selectedAccountId,
       provider: this.selectedProvider,
@@ -43,18 +108,48 @@ export class RechargeComponent {
       phoneNumber: this.phoneNumber
     };
 
-    this.loading = true;
+    this.isLoading = true;
+    this.message = '';
+    this.error = null;
+
     this.http.post(`${this.apiUrl}/recharge`, payload).subscribe({
       next: () => {
-        console.log(payload)
-        this.message = 'Recharge successful!';
+        this.message = 'Recharge effectuée avec succès ✅';
         this.rechargeSubmitted.emit();
-        this.loading = false;
+        this.isLoading = false;
+        // Reset form
+        this.selectedAccountId = '';
+        this.selectedProvider = '';
+        this.amount = null;
+        this.phoneNumber = '';
       },
       error: () => {
-        this.message = 'Recharge failed. Try again later.';
-        this.loading = false;
+        this.message = 'Échec de la recharge. Veuillez réessayer ❌';
+        this.isLoading = false;
       }
     });
+  }
+
+  private resetForm(): void {
+    this.selectedAccountId = '';
+    this.selectedProvider = '';
+    this.phoneNumber = '';
+    this.amount = null;
+  }
+
+  formatCurrency(amount: string | number, currency: string): string {
+    const numericAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
+    if (isNaN(numericAmount)) {
+      return 'N/A';
+    }
+
+    try {
+      return new Intl.NumberFormat('fr-FR', {
+        style: 'currency',
+        currency: currency || 'MAD'
+      }).format(numericAmount);
+    } catch (e) {
+      return numericAmount.toFixed(2);
+    }
   }
 }

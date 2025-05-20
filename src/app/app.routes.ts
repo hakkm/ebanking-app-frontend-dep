@@ -8,6 +8,7 @@ import {VirementComponent} from './virement/virement.component';
 import {TransactionsComponent} from './transaction/transaction.component';
 import {LoginComponent} from './auth/components/login/login.component';
 import {RegisterComponent} from './auth/components/register/register.component';
+import {RechargeComponent} from './Rechargetel/rechargetel/rechargetel.component';
 
 export const routes: Routes = [
   {
@@ -19,6 +20,8 @@ export const routes: Routes = [
       { path: 'transactions', component:TransactionsComponent},
       { path: 'virement', component: VirementComponent },
       { path: 'add-recipient', component: AddRecipientComponent },
+      { path: 'recharge', component: RechargeComponent },
+
       { path: '', redirectTo: 'home', pathMatch: 'full' }
     ]
   },
