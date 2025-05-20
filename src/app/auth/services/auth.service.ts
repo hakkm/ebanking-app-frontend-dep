@@ -85,6 +85,15 @@ export class AuthService {
       errorMessage = 'Network error: Please check your connection or CORS configuration';
     } else if (error.status === 401) {
       errorMessage = 'Invalid credentials';
+    }
+    else if (error.status === 403) {
+      errorMessage = 'Access denied: You do not have permission to access this resource';
+    } else if (error.status === 404) {
+      errorMessage = 'Resource not found';
+    } else if (error.status === 400) {
+      errorMessage = 'Bad request: Please check your input';
+    } else if (error.status === 409) {
+      errorMessage = "Email or username already exists";
     } else if (error.status === 500) {
       errorMessage = 'Server error: Please try again later';
     } else if (error.error instanceof ErrorEvent) {

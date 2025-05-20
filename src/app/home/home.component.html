@@ -1,79 +1,272 @@
-<div class="min-h-screen bg-gray-50">
-  <header class="bg-white shadow-sm">
-    <div class="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8 flex justify-between items-center">
-      <h1 class="text-2xl font-bold text-gray-800">Banking Dashboard</h1>
-      <div class="flex items-center space-x-4">
-        <span *ngIf="currentUser" class="text-gray-600">
-          Welcome, {{ currentUser.username }}
-        </span>
-        <button class="px-4 py-2 bg-red-50 text-red-600 rounded-md hover:bg-red-100 transition-colors">
-
-          Logout
-        </button>
+<div class="min-h-screen bg-gray-950 text-gray-200">
+  <!-- Main content area -->
+  <main class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+    <!-- Error message -->
+    <div *ngIf="error" class="mb-6 p-4 bg-red-900/30 border-l-4 border-red-600 text-red-400 rounded-lg backdrop-blur-sm">
+      <div class="flex items-center">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+        </svg>
+        {{ error }}
       </div>
     </div>
-  </header>
 
-  <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-    <div *ngIf="error" class="mb-4 p-4 bg-red-50 border-l-4 border-red-500 text-red-700">
-      {{ error }}
-    </div>
-
-    <div class="px-4 sm:px-0">
-      <!-- Welcome Section -->
-      <div class="bg-white rounded-lg shadow p-6 mb-6">
-        <h2 class="text-xl font-semibold text-gray-800 mb-2">Welcome back, {{ currentUser?.username || 'User' }}!</h2>
-        <p class="text-gray-600">Here's an overview of your banking accounts.</p>
-      </div>
-
-      <!-- Accounts Section -->
-      <div class="bg-white rounded-lg shadow overflow-hidden">
-        <div class="p-6 border-b border-gray-200">
-          <h2 class="text-xl font-semibold text-gray-800">Your Accounts</h2>
-        </div>
-
-        <div *ngIf="isLoading" class="p-6 flex justify-center">
-          <div class="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-blue-500"></div>
-        </div>
-
-        <div *ngIf="!isLoading && accounts.length === 0" class="p-6 text-center text-gray-500">
-          No accounts found. Please contact customer support.
-        </div>
-
-        <div *ngIf="!isLoading && accounts.length > 0" class="divide-y divide-gray-200">
-          <div *ngFor="let account of accounts" class="p-6 hover:bg-gray-50 transition-colors cursor-pointer"
-               [routerLink]="['/accounts', account.id]">
-            <div class="flex justify-between items-center">
-              <div>
-                <h3 class="text-lg font-medium text-gray-900">{{ account.accountType }}</h3>
-                <p class="mt-1 text-sm text-gray-500">Account #: {{ account.maskedAccountNumber }}</p>
-              </div>
-              <div class="text-right">
-                <p class="text-xl font-semibold text-gray-900">{{ formatCurrency(account.balance, account.currency) }}</p>
-                <p class="mt-1 text-sm text-gray-500">Available Balance</p>
-              </div>
+    <!-- Dashboard header with stats -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+      <!-- Welcome card -->
+      <div class="bg-gradient-to-br from-gray-900 to-gray-800 rounded-xl shadow-xl overflow-hidden border border-gray-800 lg:col-span-2">
+        <div class="p-6">
+          <div class="flex flex-col md:flex-row md:items-center md:justify-between">
+            <div>
+              <h2 class="text-2xl font-semibold text-white mb-2">Welcome back, <span class="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">{{ currentUser?.username || 'User' }}</span></h2>
+              <p class="text-gray-400">{{ today | date:'EEEE, MMMM d, y' }}</p>
             </div>
-            <div class="mt-3 flex justify-end space-x-3">
-              <button class="px-3 py-1 bg-blue-50 text-blue-600 text-sm rounded hover:bg-blue-100 transition-colors"
-                      [routerLink]="['/transactions', account.id]">
-                View Transactions
-              </button>
-              <button class="px-3 py-1 bg-green-50 text-green-600 text-sm rounded hover:bg-green-100 transition-colors"
-                      [routerLink]="['/transfer']" [queryParams]="{from: account.id}">
+            <div class="mt-4 md:mt-0">
+              <button class="px-4 py-2 bg-indigo-600/20 text-indigo-400 rounded-lg hover:bg-indigo-600/30 transition-colors border border-indigo-800 flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                </svg>
                 New Transfer
               </button>
             </div>
           </div>
+
+          <!-- Account summary cards -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+            <div class="bg-gray-800/50 rounded-lg p-4 border border-gray-700">
+              <p class="text-gray-400 text-sm">Total Balance</p>
+              <p class="text-xl font-semibold text-white mt-1">{{ getTotalBalance() }}</p>
+              <div class="flex items-center mt-2 text-green-400 text-sm">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18" />
+                </svg>
+                <span>2.4% this month</span>
+              </div>
+            </div>
+            <div class="bg-gray-800/50 rounded-lg p-4 border border-gray-700">
+              <p class="text-gray-400 text-sm">Active Accounts</p>
+              <p class="text-xl font-semibold text-white mt-1">{{ accounts.length }}</p>
+              <div class="mt-2 flex justify-between items-center">
+                <div class="w-full bg-gray-700 rounded-full h-1.5">
+                  <div class="bg-indigo-500 h-1.5 rounded-full" [style.width]="'85%'"></div>
+                </div>
+                <span class="text-gray-400 text-xs ml-2">85%</span>
+              </div>
+            </div>
+            <div class="bg-gray-800/50 rounded-lg p-4 border border-gray-700">
+              <p class="text-gray-400 text-sm">Next Scheduled Payment</p>
+              <p class="text-xl font-semibold text-white mt-1">$240.00</p>
+              <p class="text-gray-400 text-sm mt-2">Due in 5 days</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick actions card -->
+      <div class="bg-gradient-to-br from-gray-900 to-gray-800 rounded-xl shadow-xl overflow-hidden border border-gray-800">
+        <div class="p-6">
+          <h3 class="text-lg font-semibold text-white mb-4">Quick Actions</h3>
+          <div class="grid grid-cols-2 gap-3">
+            <a routerLink="/virement" class="bg-gray-800/50 hover:bg-gray-700/50 p-3 rounded-lg border border-gray-700 transition-colors flex flex-col items-center">
+              <div class="w-10 h-10 rounded-full bg-green-600/20 flex items-center justify-center mb-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                </svg>
+              </div>
+              <span class="text-sm">Transfer</span>
+            </a>
+            <a routerLink="/bills" class="bg-gray-800/50 hover:bg-gray-700/50 p-3 rounded-lg border border-gray-700 transition-colors flex flex-col items-center">
+              <div class="w-10 h-10 rounded-full bg-purple-600/20 flex items-center justify-center mb-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                </svg>
+              </div>
+              <span class="text-sm">Pay Bills</span>
+            </a>
+            <a routerLink="/statements" class="bg-gray-800/50 hover:bg-gray-700/50 p-3 rounded-lg border border-gray-700 transition-colors flex flex-col items-center">
+              <div class="w-10 h-10 rounded-full bg-blue-600/20 flex items-center justify-center mb-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 8h10M9 12h10M9 16h10M5 8a1 1 0 110-2 1 1 0 010 2zm0 4a1 1 0 110-2 1 1 0 010 2zm0 4a1 1 0 110-2 1 1 0 010 2z" />
+                </svg>
+              </div>
+              <span class="text-sm">Statements</span>
+            </a>
+            <a routerLink="/recharge" class="bg-gray-800/50 hover:bg-gray-700/50 p-3 rounded-lg border border-gray-700 transition-colors flex flex-col items-center">
+              <div class="w-10 h-10 rounded-full bg-orange-600/20 flex items-center justify-center mb-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                </svg>
+              </div>
+              <span class="text-sm">Recharge</span>
+            </a>
+          </div>
         </div>
       </div>
     </div>
-  </main>
 
-  <footer class="bg-white mt-12 py-6 border-t border-gray-200">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <p class="text-center text-sm text-gray-500">
-        © 2025 Banking App. All rights reserved.
-      </p>
+    <!-- Accounts section -->
+    <div class="bg-gradient-to-br from-gray-900 to-gray-800 rounded-xl shadow-xl overflow-hidden border border-gray-800 mb-6">
+      <div class="px-6 py-5 border-b border-gray-700 flex justify-between items-center">
+        <h2 class="text-xl font-semibold text-white">Your Accounts</h2>
+        <button class="text-sm text-indigo-400 hover:text-indigo-300 transition flex items-center">
+          <span>View All</span>
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+          </svg>
+        </button>
+      </div>
+
+      <!-- Loading state -->
+      <div *ngIf="isLoading" class="p-6 flex justify-center">
+        <div class="flex flex-col items-center">
+          <div class="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-indigo-500"></div>
+          <p class="mt-3 text-gray-400">Loading your accounts...</p>
+        </div>
+      </div>
+
+      <!-- Empty state -->
+      <div *ngIf="!isLoading && accounts.length === 0" class="p-8 text-center">
+        <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-800 mb-4">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+          </svg>
+        </div>
+        <h3 class="text-lg font-medium text-white mb-2">No accounts found</h3>
+        <p class="text-gray-400 mb-4">Your banking accounts will appear here once they're set up.</p>
+        <button class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors inline-flex items-center">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+          </svg>
+          Contact Support
+        </button>
+      </div>
+
+      <!-- Accounts list -->
+      <div *ngIf="!isLoading && accounts.length > 0" class="divide-y divide-gray-700">
+        <div *ngFor="let account of accounts" class="p-6 hover:bg-gray-800/50 transition-colors cursor-pointer group"
+             [routerLink]="['/accounts', account.id]">
+          <div class="flex flex-col md:flex-row md:justify-between md:items-center">
+            <div class="flex items-center mb-3 md:mb-0">
+              <!-- Account type icon -->
+              <div [ngClass]="{
+                'bg-blue-600/20 text-blue-500': account.accountType === 'CHECKING',
+                'bg-purple-600/20 text-purple-500': account.accountType === 'SAVINGS',
+                'bg-green-600/20 text-green-500': account.accountType === 'INVESTMENT',
+                'bg-orange-600/20 text-orange-500': account.accountType === 'CREDIT'
+              }" class="w-10 h-10 rounded-full flex items-center justify-center mr-4">
+                <svg *ngIf="account.accountType === 'CHECKING'" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+                <svg *ngIf="account.accountType === 'SAVINGS'" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <svg *ngIf="account.accountType === 'INVESTMENT'" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                </svg>
+                <svg *ngIf="account.accountType === 'CREDIT'" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                </svg>
+              </div>
+
+              <div>
+                <h3 class="text-lg font-medium text-white">{{ account.accountType }} Account</h3>
+                <p class="text-sm text-gray-400">Account #: {{ account.maskedAccountNumber }}</p>
+              </div>
+            </div>
+
+            <div class="md:text-right">
+              <p class="text-xl font-semibold text-white">{{ formatCurrency(account.balance, account.currency) }}</p>
+              <p class="text-sm text-gray-400">Available Balance</p>
+            </div>
+          </div>
+
+          <!-- Account actions -->
+          <div class="mt-4 flex flex-wrap gap-2 justify-end">
+            <button class="px-3 py-1.5 bg-gray-800 text-gray-300 text-sm rounded-lg hover:bg-gray-700 border border-gray-700 transition-colors"
+                    [routerLink]="['/transactions', account.id]">
+              <span class="flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                </svg>
+                Transactions
+              </span>
+            </button>
+            <button class="px-3 py-1.5 bg-indigo-600/20 text-indigo-400 text-sm rounded-lg hover:bg-indigo-600/30 border border-indigo-800 transition-colors"
+                    [routerLink]="['/transfer']" [queryParams]="{from: account.id}">
+              <span class="flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                </svg>
+                Transfer
+              </span>
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
-  </footer>
+
+    <!-- Recent transactions preview -->
+    <div *ngIf="!isLoading && accounts.length > 0" class="bg-gradient-to-br from-gray-900 to-gray-800 rounded-xl shadow-xl overflow-hidden border border-gray-800">
+      <div class="px-6 py-5 border-b border-gray-700 flex justify-between items-center">
+        <h2 class="text-xl font-semibold text-white">Transactions Récentes</h2>
+        <a routerLink="/transactions" class="text-sm text-indigo-400 hover:text-indigo-300 transition flex items-center">
+          <span>Voir Toutes</span>
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+          </svg>
+        </a>
+      </div>
+
+      <!-- Loading state -->
+      <div *ngIf="isLoadingTransactions" class="p-6 flex justify-center">
+        <div class="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-indigo-500"></div>
+      </div>
+
+      <!-- Empty state -->
+      <div *ngIf="!isLoadingTransactions && transactions.length === 0" class="p-6 text-center text-gray-400">
+        Aucune transaction récente à afficher.
+      </div>
+
+      <!-- Transactions list -->
+      <div *ngIf="!isLoadingTransactions && transactions.length > 0" class="divide-y divide-gray-700">
+        <div *ngFor="let transaction of transactions" class="p-4 hover:bg-gray-800/50 transition-colors">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center">
+              <!-- Icon for incoming transaction (money received) -->
+              <div *ngIf="isIncomingTransaction(transaction)" class="w-10 h-10 rounded-full bg-green-600/20 flex items-center justify-center mr-3">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18" />
+                </svg>
+              </div>
+
+              <!-- Icon for outgoing transaction (money sent) -->
+              <div *ngIf="!isIncomingTransaction(transaction)" class="w-10 h-10 rounded-full bg-red-600/20 flex items-center justify-center mr-3">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                </svg>
+              </div>
+
+              <div>
+                <p class="font-medium text-white">{{ transaction.description || getTransactionDescription(transaction) }}</p>
+                <p class="text-sm text-gray-400">{{ transaction.createdAt ? (transaction.createdAt | date:'medium') : 'Date non disponible' }}</p>
+              </div>
+            </div>
+
+            <!-- Show amount with proper color based on transaction type -->
+            <p class="font-medium" [ngClass]="isIncomingTransaction(transaction) ? 'text-green-400' : 'text-red-400'">
+              {{ isIncomingTransaction(transaction) ? '+' : '-' }}{{ formatCurrency(transaction.amount, 'MAD') }}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer with link to transactions page -->
+      <div class="p-4 text-center border-t border-gray-700">
+        <a routerLink="/transactions" class="px-4 py-2 text-sm text-gray-300 hover:text-white transition-colors">
+          Charger Plus de Transactions
+        </a>
+      </div>
+    </div>
+
+  </main>
 </div>
