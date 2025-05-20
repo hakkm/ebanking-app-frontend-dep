@@ -1,5 +1,12 @@
-<div class="bg-gray-800 rounded-lg p-4 shadow-lg">
-  <h2 class="text-lg font-semibold mb-4">Trade</h2>
+<div class="bg-gray-800 rounded-lg p-4 shadow-lg relative">
+  <button
+    type="button"
+    class="absolute top-4 right-4 bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-md transition-colors flex items-center gap-1"
+    (click)="toggleBuySell()">
+    <span *ngIf="isBuyMode">⇅ Sell</span>
+    <span *ngIf="!isBuyMode">⇅ Buy</span>
+  </button>
+  <h2 class="text-lg font-semibold mb-4">{{ isBuyMode ? 'Trade' : 'Trade' }}</h2>
 
   <div *ngIf="isLoading" class="flex justify-center items-center py-8">
     <div class="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
@@ -9,7 +16,7 @@
     <form [formGroup]="tradeForm" (ngSubmit)="executeTrade()">
       <!-- Asset Selection -->
       <div class="mb-4">
-        <label class="block text-sm text-gray-400 mb-1">Buy Asset</label>
+        <label class="block text-sm text-gray-400 mb-1">{{ isBuyMode ? 'Buy Asset' : 'Sell Asset' }}</label>
         <div class="grid grid-cols-2 gap-2">
           <button
             type="button"
@@ -45,7 +52,7 @@
             class="w-full bg-gray-900 border border-gray-700 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             placeholder="Enter BTC amount"
             [placeholder]="'Enter ' + selectedAsset + ' amount'">
-          <div class="text-xs text-gray-400 mt-1">Available: 0.00000 BTC</div>
+          <div class="text-xs text-gray-400 mt-1">Available: 0.00000 {{ selectedAsset }}</div>
         </div>
       </div>
 
@@ -103,7 +110,7 @@
         type="submit"
         class="w-full bg-blue-600 hover:bg-blue-500 text-white py-2 px-4 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-800"
         [disabled]="tradeForm.invalid || isSubmitting">
-        <span *ngIf="!isSubmitting">Buy {{ selectedAsset }}</span>
+        <span *ngIf="!isSubmitting">{{ isBuyMode ? 'Buy' : 'Sell' }} {{ selectedAsset }}</span>
         <span *ngIf="isSubmitting" class="flex items-center justify-center">
           <div class="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white mr-2"></div>
           Processing...

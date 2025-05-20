@@ -22,6 +22,9 @@ export class TradeComponent implements OnInit {
   // For percentage buttons
   availableBtc = 0;
 
+  // Add buy/sell mode
+  isBuyMode = true;
+
   constructor(
     private fb: FormBuilder,
     private cryptoService: CryptoService
@@ -77,6 +80,10 @@ export class TradeComponent implements OnInit {
     this.tradeForm.patchValue({ amount });
   }
 
+  toggleBuySell() {
+    this.isBuyMode = !this.isBuyMode;
+  }
+
   executeTrade(): void {
     if (this.tradeForm.invalid) {
       this.errorMessage = 'Please enter a valid amount';
@@ -90,7 +97,7 @@ export class TradeComponent implements OnInit {
     const tradeRequest = {
       symbol: this.tradeForm.get('asset')?.value,
       amount: parseFloat(this.tradeForm.get('amount')?.value),
-      action: 'buy'
+      action: this.isBuyMode ? 'buy' : 'sell'
     };
 
     // Comment out the actual API call in our mock implementation
