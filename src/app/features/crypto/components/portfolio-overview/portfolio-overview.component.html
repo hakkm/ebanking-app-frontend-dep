@@ -34,7 +34,7 @@
       <div *ngIf="item.type === 'cash'">
         <div class="text-xs text-gray-400">Trading Balance</div>
         <div class="text-sm font-mono">
-          ${{ (item.amount - item.value).toFixed(2) }}
+          ${{ item.tradingBalance?.toFixed(2) }}
         </div>
       </div>
 

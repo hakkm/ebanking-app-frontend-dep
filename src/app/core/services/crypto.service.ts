@@ -12,6 +12,7 @@ export interface PortfolioItem {
   symbol: string;
   amount: number;
   value: number;
+  tradingBalance?: number;  // Optional field for cash items
 }
 
 export interface Transaction {
@@ -39,7 +40,7 @@ export class CryptoService {
   ];
 
   private portfolio: PortfolioItem[] = [
-    { type: 'cash', symbol: 'USD', amount: 5000.08, value: 5000.08 },
+    { type: 'cash', symbol: 'USD', amount: 5000.08, value: 5000.08, tradingBalance: 3000.00 },
     { type: 'crypto', symbol: 'BTC', amount: 0.23872, value: 16113.60 },
     { type: 'crypto', symbol: 'ETH', amount: 0.97150, value: 3448.83 }
   ];

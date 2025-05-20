@@ -14,9 +14,8 @@ import { CommonModule } from '@angular/common';
 export class PortfolioOverviewComponent implements OnInit {
   portfolioItems: PortfolioItem[] = [];
   isLoading = true;
-
-  // For the progress bars
   totalPortfolioValue = 0;
+  tradingBalance = 0;
 
   constructor(private cryptoService: CryptoService) {}
 
@@ -30,6 +29,7 @@ export class PortfolioOverviewComponent implements OnInit {
       next: (portfolio) => {
         this.portfolioItems = portfolio;
         this.calculateTotalValue();
+        this.calculateTradingBalance();
         this.isLoading = false;
       },
       error: (err) => {
@@ -44,6 +44,16 @@ export class PortfolioOverviewComponent implements OnInit {
       (sum, item) => sum + item.value,
       0
     );
+  }
+
+  private calculateTradingBalance(): void {
+    const cashItem = this.portfolioItems.find(item => item.type === 'cash');
+    if (cashItem) {
+      const cryptoValue = this.portfolioItems
+        .filter(item => item.type === 'crypto')
+        .reduce((sum, item) => sum + item.value, 0);
+      this.tradingBalance = cashItem.amount - cryptoValue;
+    }
   }
 
   getIcon(symbol: string): string {
