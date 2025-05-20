@@ -3,9 +3,10 @@ import { User } from '../auth/models/user.model';
 import { Account } from '../auth/models/account.model';
 import { AuthService } from '../auth/services/auth.service';
 import { AccountService } from '../auth/services/account.service';
-import {RouterLink, RouterOutlet} from '@angular/router';
-import {NgForOf, NgIf} from '@angular/common';
-import {RechargeComponent} from '../Rechargetel/rechargetel/rechargetel.component';
+import { RouterLink, RouterOutlet } from '@angular/router';
+import { NgForOf, NgIf, DatePipe, NgClass } from '@angular/common';
+import { RechargeComponent } from '../Rechargetel/rechargetel/rechargetel.component';
+import { Transaction } from '../auth/models/transaction.model';
 
 @Component({
   selector: 'app-home',
@@ -14,33 +15,23 @@ import {RechargeComponent} from '../Rechargetel/rechargetel/rechargetel.componen
     RouterLink,
     NgIf,
     NgForOf,
+    DatePipe,
     RechargeComponent,
-    RouterOutlet
-
-
+    RouterOutlet,
+    NgClass
   ],
   standalone: true,
   styleUrls: ['./home.component.css']
 })
 export class HomeComponent implements OnInit {
-
   currentUser: User | null = null;
   accounts: Account[] = [];
+  transactions: Transaction[] = [];
   isLoading = true;
+  isLoadingTransactions = true;
   error: string | null = null;
-  showRechargeForm = false;
   providers: any[] = [];
-
-  loadProviders(): void {
-    this.accountService.getAccounts().subscribe(data => {
-      this.accounts = data;
-      this.isLoading = false;
-    });
-
-    this.accountService.getProviders().subscribe(data => {
-      this.providers = data;
-    });
-  }
+  today: Date = new Date();
 
   constructor(
     protected authService: AuthService,
@@ -51,7 +42,6 @@ export class HomeComponent implements OnInit {
     this.loadUserData();
     this.loadAccounts();
     this.loadProviders();
-
   }
 
   loadUserData(): void {
@@ -75,11 +65,44 @@ export class HomeComponent implements OnInit {
       next: (accounts) => {
         this.accounts = accounts;
         this.isLoading = false;
+
+        // Once accounts are loaded, load transactions for the first account
+        if (accounts.length > 0) {
+          this.loadTransactions(accounts[0].id);
+        } else {
+          this.isLoadingTransactions = false;
+        }
       },
       error: (err) => {
         this.error = 'Failed to load account information. Please try again later.';
         console.error('Error loading accounts:', err);
         this.isLoading = false;
+        this.isLoadingTransactions = false;
+      }
+    });
+  }
+
+  loadTransactions(accountId: number): void {
+    this.isLoadingTransactions = true;
+    this.accountService.getTransactions(accountId).subscribe({
+      next: (transactions) => {
+        this.transactions = transactions;
+        this.isLoadingTransactions = false;
+      },
+      error: (err) => {
+        console.error('Error loading transactions:', err);
+        this.isLoadingTransactions = false;
+      }
+    });
+  }
+
+  loadProviders(): void {
+    this.accountService.getProviders().subscribe({
+      next: (data) => {
+        this.providers = data;
+      },
+      error: (err) => {
+        console.error('Error loading providers:', err);
       }
     });
   }
@@ -91,13 +114,71 @@ export class HomeComponent implements OnInit {
       return 'N/A';
     }
     try {
-      return new Intl.NumberFormat('en-US', {
+      return new Intl.NumberFormat('fr-MA', {
         style: 'currency',
-        currency: currency || 'USD' // Fallback to USD
+        currency: currency || 'MAD' // Default to MAD for Morocco
       }).format(numericAmount);
     } catch (e) {
       console.warn(`Invalid currency: ${currency}`);
       return numericAmount.toFixed(2); // Fallback to plain number
     }
+  }
+
+  getTotalBalance(): string {
+    // Calculate total balance across all accounts
+    let total = 0;
+    let currency = 'MAD'; // Default currency for Morocco
+
+    if (this.accounts && this.accounts.length > 0) {
+      this.accounts.forEach(account => {
+        const amount = typeof account.balance === 'string' ?
+          parseFloat(account.balance) : account.balance;
+
+        if (!isNaN(amount)) {
+          total += amount;
+        }
+
+        // Use the currency from the first valid account
+        if (account.currency && currency === 'MAD') {
+          currency = account.currency;
+        }
+      });
+    }
+
+    return this.formatCurrency(total, currency);
+  }
+
+  /**
+   * Determines if a transaction is incoming (deposit) for any of the user's accounts
+   */
+  isIncomingTransaction(transaction: Transaction): boolean {
+    // If the transaction's toAccountId matches any of the user's account IDs,
+    // then it's an incoming transaction (money coming into one of the user's accounts)
+    return this.accounts.some(account => account.id === transaction.toAccountId);
+  }
+
+  /**
+   * Generates a description for a transaction if none is provided
+   */
+  getTransactionDescription(transaction: Transaction): string {
+    if (this.isIncomingTransaction(transaction)) {
+      // Find source account if it's one of the user's accounts (internal transfer)
+      const sourceAccount = this.accounts.find(a => a.id === transaction.fromAccountId);
+      if (sourceAccount) {
+        return `Virement de ${sourceAccount.alias || sourceAccount.accountType}`;
+      }
+      return 'Dépôt reçu';
+    } else {
+      // Find destination account if it's one of the user's accounts (internal transfer)
+      const destAccount = this.accounts.find(a => a.id === transaction.toAccountId);
+      if (destAccount) {
+        return `Virement vers ${destAccount.alias || destAccount.accountType}`;
+      }
+      return 'Paiement envoyé';
+    }
+  }
+
+  logout(): void {
+    this.authService.logout();
   }
 }
