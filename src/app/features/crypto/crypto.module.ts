@@ -1,10 +1,8 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Routes } from '@angular/router';
-import { CryptoDashboardComponent } from './components/crypto-dashboard/crypto-dashboard.component';
 
 const routes: Routes = [
-  { path: '', component: CryptoDashboardComponent }
 ];
 
 @NgModule({
@@ -13,4 +11,9 @@ const routes: Routes = [
     RouterModule.forChild(routes)
   ]
 })
-export class CryptoModule { }
+export class CryptoModule {
+  constructor(
+  ) {
+    console.log('CryptoModule');
+  }
+ }
