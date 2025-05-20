@@ -1,6 +1,8 @@
+import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
-import { delay } from 'rxjs/operators';
+import { catchError, delay } from 'rxjs/operators';
+import { environment } from '../../../environments/environment';
 
 export interface MarketPrice {
   symbol: string;
@@ -12,7 +14,7 @@ export interface PortfolioItem {
   symbol: string;
   amount: number;
   value: number;
-  tradingBalance?: number;  // Optional field for cash items
+  tradingBalance?: number; // Optional field for cash items
 }
 
 export interface Transaction {
@@ -31,18 +33,26 @@ export interface TradeRequest {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class CryptoService {
+  private apiUrl = environment.apiUrl;
+
   private marketPrices: MarketPrice[] = [
-    { symbol: 'BTC/USD', price: 67500.00 },
-    { symbol: 'ETH/USD', price: 3550.00 }
+    { symbol: 'BTC/USD', price: 67500.0 },
+    { symbol: 'ETH/USD', price: 3550.0 },
   ];
 
   private portfolio: PortfolioItem[] = [
-    { type: 'cash', symbol: 'USD', amount: 5000.08, value: 5000.08, tradingBalance: 3000.00 },
-    { type: 'crypto', symbol: 'BTC', amount: 0.23872, value: 16113.60 },
-    { type: 'crypto', symbol: 'ETH', amount: 0.97150, value: 3448.83 }
+    {
+      type: 'cash',
+      symbol: 'USD',
+      amount: 5000.08,
+      value: 5000.08,
+      tradingBalance: 3000.0,
+    },
+    { type: 'crypto', symbol: 'BTC', amount: 0.23872, value: 16113.6 },
+    { type: 'crypto', symbol: 'ETH', amount: 0.9715, value: 3448.83 },
   ];
 
   private transactionHistory: Transaction[] = [
@@ -51,48 +61,60 @@ export class CryptoService {
       amount: 0.034,
       symbol: 'ETH',
       date: new Date('2025-05-19T19:34:43'),
-      price: 3550.00,
-      total: 120.70
+      price: 3550.0,
+      total: 120.7,
     },
     {
       type: 'Bought',
       amount: 0.00537,
       symbol: 'BTC',
       date: new Date('2025-05-19T19:36:37'),
-      price: 67500.00,
-      total: 362.47
+      price: 67500.0,
+      total: 362.47,
     },
     {
       type: 'Bought',
       amount: 0.00239,
       symbol: 'BTC',
       date: new Date('2025-05-19T19:38:28'),
-      price: 67500.00,
-      total: 161.33
+      price: 67500.0,
+      total: 161.33,
     },
     {
       type: 'Bought',
       amount: 0.00318,
       symbol: 'BTC',
       date: new Date('2025-05-19T19:34:23'),
-      price: 67500.00,
-      total: 214.65
+      price: 67500.0,
+      total: 214.65,
     },
     {
       type: 'Bought',
       amount: 0.00424,
       symbol: 'BTC',
       date: new Date('2025-05-19T19:34:18'),
-      price: 67500.00,
-      total: 286.20
-    }
+      price: 67500.0,
+      total: 286.2,
+    },
   ];
 
-  constructor() { }
-
+  constructor(private http: HttpClient) {}
+//  getMarketPrices(): Observable<MarketPrice[]> {
+//     // Simulate network delay
+//     return of(this.marketPrices).pipe(delay(500));
+//   }
   getMarketPrices(): Observable<MarketPrice[]> {
-    // Simulate network delay
-    return of(this.marketPrices).pipe(delay(500));
+    return this.http.get<MarketPrice[]>(`${this.apiUrl}/prices`).pipe(
+      catchError((error) => {
+        console.error('Error fetching market prices:', error);
+        // todo: notify the user
+        // Fallback to some default data in case of API failure
+        return of([
+          { symbol: 'BTC/USD', price: -1.0 },
+          { symbol: 'ETH/USD', price: -1.0 },
+        ]);
+      })
+    );
   }
 
   getPortfolio(): Observable<PortfolioItem[]> {
@@ -117,7 +139,7 @@ export class CryptoService {
 
   updatePrices(): Observable<MarketPrice[]> {
     // Simulate small price fluctuations
-    this.marketPrices.forEach(price => {
+    this.marketPrices.forEach((price) => {
       const fluctuation = (Math.random() - 0.5) * 0.005; // ±0.25% change
       price.price = +(price.price * (1 + fluctuation)).toFixed(2);
     });
