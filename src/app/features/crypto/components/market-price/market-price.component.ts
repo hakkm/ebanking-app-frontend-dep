@@ -1,9 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import {
   CryptoService,
   MarketPrice,
 } from '../../../../core/services/crypto.service';
 import { CommonModule } from '@angular/common';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-market-prices',
@@ -11,20 +12,16 @@ import { CommonModule } from '@angular/common';
   styleUrls: ['./market-price.component.css'],
   imports: [CommonModule],
 })
-export class MarketPricesComponent implements OnInit {
+export class MarketPricesComponent implements OnInit, OnDestroy {
   marketPrices: MarketPrice[] = [];
   isLoading = true;
   lastUpdateTime = new Date();
+  private subscription: Subscription | null = null;
 
   constructor(private cryptoService: CryptoService) {}
 
   ngOnInit(): void {
-    this.loadMarketPrices();
-  }
-
-  loadMarketPrices(): void {
-    this.isLoading = true;
-    this.cryptoService.getMarketPrices().subscribe({
+    this.subscription = this.cryptoService.getMarketPrices().subscribe({
       next: (prices) => {
         this.marketPrices = prices;
         this.lastUpdateTime = new Date();
@@ -37,7 +34,15 @@ export class MarketPricesComponent implements OnInit {
     });
   }
 
+  ngOnDestroy(): void {
+    if (this.subscription) {
+      this.subscription.unsubscribe();
+    }
+  }
+
   refreshPrices(): void {
-    this.loadMarketPrices();
+    this.isLoading = true;
+    // The service will handle the refresh and emit new values
+    this.cryptoService.getMarketPrices().subscribe();
   }
 }

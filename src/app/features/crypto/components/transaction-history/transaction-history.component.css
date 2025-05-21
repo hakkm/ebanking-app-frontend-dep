@@ -18,3 +18,49 @@
 .transaction-item:nth-child(3) { animation-delay: 0.2s; }
 .transaction-item:nth-child(4) { animation-delay: 0.25s; }
 .transaction-item:nth-child(5) { animation-delay: 0.3s; }
+
+/* Custom Scrollbar Styling */
+.transaction-list::-webkit-scrollbar {
+  width: 6px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.transaction-list:hover::-webkit-scrollbar {
+  opacity: 1;
+}
+
+.transaction-list::-webkit-scrollbar-track {
+  background: rgba(31, 41, 55, 0.3);
+  border-radius: 4px;
+  transition: background 0.3s ease;
+}
+
+.transaction-list:hover::-webkit-scrollbar-track {
+  background: rgba(31, 41, 55, 0.5);
+}
+
+.transaction-list::-webkit-scrollbar-thumb {
+  background: rgba(59, 130, 246, 0.3);
+  border-radius: 4px;
+  transition: all 0.3s ease;
+}
+
+.transaction-list:hover::-webkit-scrollbar-thumb {
+  background: rgba(59, 130, 246, 0.5);
+}
+
+.transaction-list::-webkit-scrollbar-thumb:hover {
+  background: rgba(59, 130, 246, 0.8);
+}
+
+/* For Firefox */
+.transaction-list {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(59, 130, 246, 0.3) rgba(31, 41, 55, 0.3);
+  transition: scrollbar-color 0.3s ease;
+}
+
+.transaction-list:hover {
+  scrollbar-color: rgba(59, 130, 246, 0.5) rgba(31, 41, 55, 0.5);
+}

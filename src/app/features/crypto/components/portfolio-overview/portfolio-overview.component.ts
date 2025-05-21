@@ -1,9 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import {
   CryptoService,
   PortfolioItem,
 } from '../../../../core/services/crypto.service';
 import { CommonModule } from '@angular/common';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-portfolio-overview',
@@ -11,11 +12,12 @@ import { CommonModule } from '@angular/common';
   styleUrls: ['./portfolio-overview.component.css'],
   imports: [CommonModule],
 })
-export class PortfolioOverviewComponent implements OnInit {
+export class PortfolioOverviewComponent implements OnInit, OnDestroy {
   portfolioItems: PortfolioItem[] = [];
   isLoading = true;
   totalPortfolioValue = 0;
   tradingBalance = 0;
+  private portfolioSubscription: Subscription | null = null;
 
   constructor(private cryptoService: CryptoService) {}
 
@@ -23,9 +25,15 @@ export class PortfolioOverviewComponent implements OnInit {
     this.loadPortfolio();
   }
 
+  ngOnDestroy(): void {
+    if (this.portfolioSubscription) {
+      this.portfolioSubscription.unsubscribe();
+    }
+  }
+
   loadPortfolio(): void {
     this.isLoading = true;
-    this.cryptoService.getPortfolio().subscribe({
+    this.portfolioSubscription = this.cryptoService.getPortfolio().subscribe({
       next: (portfolio) => {
         this.portfolioItems = portfolio;
         this.calculateTotalValue();
