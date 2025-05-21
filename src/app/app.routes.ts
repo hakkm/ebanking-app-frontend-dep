@@ -1,6 +1,6 @@
-import { Routes } from '@angular/router';
-import { MainLayoutComponent } from './main-layout/main-layout.component';
-import { PublicLayoutComponent } from './public-layout/public-layout.component';
+import {Routes} from '@angular/router';
+import {MainLayoutComponent} from './main-layout/main-layout.component';
+import {PublicLayoutComponent} from './public-layout/public-layout.component';
 import {authGuard} from './auth.guard';
 import {HomeComponent} from './home/home.component';
 import {AddRecipientComponent} from './add-recipient/add-recipient.component';
@@ -33,5 +33,6 @@ export const routes: Routes = [
       { path: 'register', component: RegisterComponent }
     ]
   },
+  {path: 'crypto', loadChildren: () => import('./features/crypto/crypto.module').then(m => m.CryptoModule)},
   { path: '**', redirectTo: 'home' }
 ];

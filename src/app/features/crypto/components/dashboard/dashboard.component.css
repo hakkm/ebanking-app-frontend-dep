@@ -1,0 +1,18 @@
+/* Dashboard component styles */
+:host {
+  display: block;
+}
+
+/* Animation for component transitions */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+app-market-prices,
+app-portfolio-overview,
+app-transaction-history,
+app-trade {
+  display: block;
+  animation: fadeIn 0.5s ease-out;
+}
