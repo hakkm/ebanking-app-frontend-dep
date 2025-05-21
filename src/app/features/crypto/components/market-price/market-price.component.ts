@@ -11,6 +11,7 @@ import { Subscription } from 'rxjs';
   templateUrl: './market-price.component.html',
   styleUrls: ['./market-price.component.css'],
   imports: [CommonModule],
+  standalone: true
 })
 export class MarketPricesComponent implements OnInit, OnDestroy {
   marketPrices: MarketPrice[] = [];

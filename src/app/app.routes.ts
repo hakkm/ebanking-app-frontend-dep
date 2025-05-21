@@ -9,6 +9,7 @@ import {TransactionsComponent} from './transaction/transaction.component';
 import {LoginComponent} from './auth/components/login/login.component';
 import {RegisterComponent} from './auth/components/register/register.component';
 import {RechargeComponent} from './Rechargetel/rechargetel/rechargetel.component';
+import { DashboardComponent } from './features/crypto/components/dashboard/dashboard.component';
 
 export const routes: Routes = [
   {
@@ -21,6 +22,7 @@ export const routes: Routes = [
       { path: 'virement', component: VirementComponent },
       { path: 'add-recipient', component: AddRecipientComponent },
       { path: 'recharge', component: RechargeComponent },
+      { path: 'crypto',  component: DashboardComponent},
 
       { path: '', redirectTo: 'home', pathMatch: 'full' }
     ]
