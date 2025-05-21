@@ -1,39 +1,46 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { Recipient } from '../auth/models/recipient.model';
-import {Account} from '../auth/models/account.model';
-import {AccountService} from '../auth/services/account.service';
-import {RecipientService} from '../auth/services/recipient.service';
-import {Transaction} from '../auth/models/transaction.model';
+import { recipientExternal } from '../auth/models/recipientExternal.model';
+import { Account } from '../auth/models/account.model';
+import { AccountService } from '../auth/services/account.service';
+import { RecipientService } from '../auth/services/recipient.service';
+import { Transaction } from '../auth/models/transaction.model';
+import {ExternalTransaction} from '../auth/models/ExternalTransaction.model';
 
 @Component({
   selector: 'app-transfer',
   templateUrl: './virement.component.html',
-  standalone: true,
-  imports: [ReactiveFormsModule, RouterModule, CommonModule]
+  imports: [FormsModule, RouterModule, CommonModule]
 })
 export class VirementComponent implements OnInit {
-  transferForm: FormGroup;
+  transferModel: {
+    recipientType: string;
+    recipient: string;
+    fromAccount: string;
+    amount: number | null;
+    reason: string;
+  } = {
+    recipientType: 'internal',
+    recipient: '',
+    fromAccount: '',
+    amount: null,
+    reason: ''
+  };
   recipients: Recipient[] = [];
+  externalRecipients: recipientExternal[] = [];
   accounts: Account[] = [];
   isLoading = false;
   isSubmitting = false;
   error: string | null = null;
+  successMessage: string | null = null;
 
   constructor(
-    private fb: FormBuilder,
     private accountService: AccountService,
     private recipientService: RecipientService
-  ) {
-    this.transferForm = this.fb.group({
-      recipient: ['', Validators.required],
-      fromAccount: ['', Validators.required],
-      amount: ['', [Validators.required, Validators.min(1)]],
-      motif: [''],
-    });
-  }
+  ) {}
 
   ngOnInit(): void {
     this.loadData();
@@ -49,9 +56,9 @@ export class VirementComponent implements OnInit {
         this.isLoading = false;
       },
       error: (err) => {
-        this.error = 'Failed to load accounts. Please try again.';
+        this.error = 'Failed to load accounts.';
         this.isLoading = false;
-      },
+      }
     });
 
     this.recipientService.getRecipients().subscribe({
@@ -60,51 +67,117 @@ export class VirementComponent implements OnInit {
         this.isLoading = false;
       },
       error: (err) => {
-        this.error = 'Failed to load recipients. Please try again.';
+        this.error = 'Failed to load internal recipients.';
+        this.isLoading = false;
+      }
+    });
+
+    this.recipientService.getExternalRecipients().subscribe({
+      next: (externalRecipients) => {
+        this.externalRecipients = externalRecipients;
         this.isLoading = false;
       },
+      error: (err) => {
+        this.error = 'Failed to load external recipients.';
+        this.isLoading = false;
+      }
     });
   }
 
   onSubmitTransfer(): void {
-    if (this.transferForm.valid && !this.isSubmitting) {
+    if (this.isFormValid() && !this.isSubmitting) {
       this.isSubmitting = true;
       this.error = null;
+      this.successMessage = null;
 
-      const transaction: Transaction = {
-        fromAccountId: this.transferForm.value.fromAccount,
-        toAccountId: this.transferForm.value.recipient,
-        amount: this.transferForm.value.amount,
-        description: this.transferForm.value.motif,
-      };
+      if (this.transferModel.recipientType === 'internal') {
+        const transaction: Transaction = {
+          fromAccountId: Number(this.transferModel.fromAccount),
+          toAccountId: Number(this.transferModel.recipient),
+          amount: this.transferModel.amount!,
+          description: this.transferModel.reason
+        };
 
-      console.log('Sending transaction:', JSON.stringify(transaction, null, 2));
+        this.accountService.createTransfer(transaction).subscribe({
+          next: (result) => {
+            this.isSubmitting = false;
+            this.successMessage = `Internal transfer of $${result.amount} completed!`;
+            this.resetForm();
+          },
+          error: (err) => {
+            this.error = err.error?.message || 'Failed to create internal transfer. Please check your input or balance.';
+            this.isSubmitting = false;
+          }
+        });
+      } else {
+        const externalTransaction: ExternalTransaction = {
+          sourceAccountId: Number(this.transferModel.fromAccount),
+          recipientId: Number(this.transferModel.recipient),
+          amount: this.transferModel.amount!,
+          reason: this.transferModel.reason
+        };
 
-      this.accountService.createTransfer(transaction).subscribe({
-        next: (result) => {
-          console.log('Transfer successful:', JSON.stringify(result, null, 2));
-          this.isSubmitting = false;
-          this.transferForm.reset();
-          alert('Transfer successful!');
-        },
-        error: (err) => {
-          console.error('Error:', JSON.stringify(err, null, 2));
-          this.error = err.error?.message || 'Failed to create transfer. Please try again.';
-          this.isSubmitting = false;
-        },
-      });
+        this.accountService.createExternalTransfer(externalTransaction).subscribe({
+          next: (result) => {
+            this.isSubmitting = false;
+            this.successMessage = `External transfer of $${result.amount} completed at ${result.executedAt}!`;
+            this.resetForm();
+          },
+          error: (err) => {
+            this.error = err.error?.message || 'Failed to create external transfer. Please check your input or balance.';
+            this.isSubmitting = false;
+          }
+        });
+      }
+    } else {
+      this.error = 'Please fill all required fields correctly.';
     }
   }
 
-  deleteRecipient(id: number | undefined): void {
+  isFormValid(): boolean {
+    const amount = this.transferModel.amount;
+    const amountRegex = /^\d+(\.\d{1,2})?$/;
+    return (
+      !!this.transferModel.recipientType &&
+      !!this.transferModel.recipient &&
+      !!this.transferModel.fromAccount &&
+      amount !== null &&
+      amount >= 1 &&
+      amountRegex.test(amount.toString())
+    );
+  }
+
+  resetForm(): void {
+    this.transferModel = {
+      recipientType: 'internal',
+      recipient: '',
+      fromAccount: '',
+      amount: null,
+      reason: ''
+    };
+  }
+
+  onRecipientTypeChange(): void {
+    this.transferModel.recipient = '';
+  }
+
+  deleteRecipient(id: number | undefined, isExternal: boolean): void {
     if (confirm('Are you sure you want to delete this recipient?')) {
-      this.recipientService.deleteRecipient(id).subscribe({
+      const deleteObservable = isExternal
+        ? this.recipientService.deleteExternalRecipient(id)
+        : this.recipientService.deleteRecipient(id);
+
+      deleteObservable.subscribe({
         next: () => {
-          this.recipients = this.recipients.filter((r) => r.id !== id);
+          if (isExternal) {
+            this.externalRecipients = this.externalRecipients.filter((r) => r.id !== id);
+          } else {
+            this.recipients = this.recipients.filter((r) => r.id !== id);
+          }
         },
         error: (err) => {
-          this.error = 'Failed to delete recipient. Please try again.';
-        },
+          this.error = err.error?.message || 'Failed to delete recipient.';
+        }
       });
     }
   }

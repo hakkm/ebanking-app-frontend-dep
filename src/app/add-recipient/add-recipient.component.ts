@@ -4,6 +4,7 @@ import { RouterModule, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import {RecipientService} from '../auth/services/recipient.service';
 import {Recipient} from '../auth/models/recipient.model';
+import {recipientExternal} from "../auth/models/recipientExternal.model";
 
 @Component({
   selector: 'app-add-recipient',
@@ -48,27 +49,49 @@ export class AddRecipientComponent implements OnInit {
       this.isSubmitting = true;
       this.error = null;
 
-      const recipient: Recipient = {
-        accountNumber: this.recipientForm.value.isSameBank
-          ? this.recipientForm.value.accountNumber
-          : this.recipientForm.value.rib,
-        alias: this.recipientForm.value.alias,
-      };
+      const isSameBank = this.recipientForm.value.isSameBank;
 
-      console.log('Sending recipient:', JSON.stringify(recipient, null, 2));
+      if (isSameBank) {
+        const recipient: Recipient = {
+          accountNumber: this.recipientForm.value.accountNumber,
+          alias: this.recipientForm.value.alias,
+        };
 
-      this.recipientService.createRecipient(recipient).subscribe({
-        next: (response) => {
-          console.log('Recipient created:', JSON.stringify(response, null, 2));
-          this.isSubmitting = false;
-          this.router.navigate(['/transfer']);
-        },
-        error: (err) => {
-          console.error('Error:', JSON.stringify(err, null, 2));
-          this.error = err.error?.message || 'Failed to add recipient. Please try again.';
-          this.isSubmitting = false;
-        },
-      });
+        this.recipientService.createRecipient(recipient).subscribe({
+          next: (response) => {
+            console.log('Recipient created:', response);
+            this.isSubmitting = false;
+            this.router.navigate(['/transfer']);
+          },
+          error: (err) => {
+            console.error('Error:', err);
+            this.error = err.error?.message || 'Failed to add recipient.';
+            this.isSubmitting = false;
+          },
+        });
+
+      } else {
+        const externalRecipient: recipientExternal = {
+          accountNumber: this.recipientForm.value.accountNumber,
+          rib: this.recipientForm.value.rib,
+          bankCode: '230', // example static value, or make it a form field
+          alias: this.recipientForm.value.alias,
+        };
+
+        this.recipientService.createExternalRecipient(externalRecipient).subscribe({
+          next: (response) => {
+            console.log('External recipient created:', response);
+            this.isSubmitting = false;
+            this.router.navigate(['/transfer']);
+          },
+          error: (err) => {
+            console.error('Error:', err);
+            this.error = err.error?.message || 'Failed to add external recipient.';
+            this.isSubmitting = false;
+          },
+        });
+      }
     }
   }
+
 }
