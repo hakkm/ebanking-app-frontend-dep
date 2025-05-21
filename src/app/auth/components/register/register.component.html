@@ -1,0 +1,179 @@
+<!-- register.component.html -->
+<div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 via-indigo-950 to-black overflow-hidden relative">
+  <!-- Ambient lighting effects -->
+  <div class="absolute top-0 right-0 w-96 h-96 bg-indigo-600/20 rounded-full blur-3xl animate-pulse opacity-30"></div>
+  <div class="absolute bottom-0 left-0 w-96 h-96 bg-purple-600/20 rounded-full blur-3xl animate-pulse opacity-30 animation-delay-2000"></div>
+
+  <!-- Glass card container -->
+  <div class="flex flex-col md:flex-row bg-gray-900/60 backdrop-blur-sm rounded-2xl shadow-2xl w-full max-w-5xl border border-gray-800 z-10 relative m-4 overflow-hidden">
+    <!-- Image Section for Registration -->
+    <div class="w-full md:w-1/2 relative hidden md:block">
+      <img
+          src="/banking-secure.jpg"
+          alt="Atlas Banking"
+          class="object-cover h-full w-full"
+      >
+    </div>
+
+    <!-- Form Container -->
+    <div class="w-full md:w-1/2 p-8">
+      <!-- Header section with logo -->
+      <div class="flex flex-col items-center mb-6">
+        <div class="w-12 h-12 rounded-full bg-gradient-to-r from-indigo-600 to-purple-600 flex items-center justify-center mb-3 shadow-lg">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+          </svg>
+        </div>
+        <h2 class="text-2xl font-bold text-white mb-1">Create Account</h2>
+        <p class="text-gray-400 text-sm">Join Atlas Banking for secure digital finance</p>
+      </div>
+
+      <!-- Error message -->
+      <div *ngIf="error" class="mb-6 p-3 bg-red-900/30 border border-red-800 rounded-lg">
+        <p class="text-red-400 text-sm">{{ error }}</p>
+      </div>
+
+      <!-- Registration form -->
+      <form (ngSubmit)="onSubmit()" #registerForm="ngForm">
+        <!-- Username field -->
+        <div class="mb-5">
+          <label for="username" class="block text-gray-300 text-sm mb-2">Username</label>
+          <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              </svg>
+            </div>
+            <input
+              id="username"
+              type="text"
+              [(ngModel)]="user.username"
+              name="username"
+              required
+              minlength="3"
+              #username="ngModel"
+              class="w-full bg-gray-800/50 border border-gray-700 pl-10 pr-4 py-2.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-200 transition duration-200"
+              [ngClass]="{'border-red-600 focus:ring-red-500': username.touched && username.invalid}"
+              placeholder="johndoe"
+            >
+          </div>
+          <div *ngIf="username.touched && username.invalid" class="text-red-500 text-xs mt-1">
+            <div *ngIf="username.errors?.['required']">Username is required</div>
+            <div *ngIf="username.errors?.['minlength']">Username must be at least 3 characters</div>
+          </div>
+        </div>
+
+        <!-- Email field -->
+        <div class="mb-5">
+          <label for="email" class="block text-gray-300 text-sm mb-2">Email Address</label>
+          <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+              </svg>
+            </div>
+            <input
+              id="email"
+              type="email"
+              [(ngModel)]="user.email"
+              name="email"
+              required
+              pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$"
+              #email="ngModel"
+              class="w-full bg-gray-800/50 border border-gray-700 pl-10 pr-4 py-2.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-200 transition duration-200"
+              [ngClass]="{'border-red-600 focus:ring-red-500': email.touched && email.invalid}"
+              placeholder="your@email.com"
+            >
+          </div>
+          <div *ngIf="email.touched && email.invalid" class="text-red-500 text-xs mt-1">
+            <div *ngIf="email.errors?.['required']">Email is required</div>
+            <div *ngIf="email.errors?.['pattern']">Please enter a valid email</div>
+          </div>
+        </div>
+
+        <!-- Password field -->
+        <div class="mb-6">
+          <label for="password" class="block text-gray-300 text-sm mb-2">Password</label>
+          <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+              </svg>
+            </div>
+            <input
+              id="password"
+              type="password"
+              [(ngModel)]="user.password"
+              name="password"
+              required
+              minlength="6"
+              #password="ngModel"
+              class="w-full bg-gray-800/50 border border-gray-700 pl-10 pr-4 py-2.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-200 transition duration-200"
+              [ngClass]="{'border-red-600 focus:ring-red-500': password.touched && password.invalid}"
+              placeholder="••••••••"
+            >
+          </div>
+          <div *ngIf="password.touched && password.invalid" class="text-red-500 text-xs mt-1">
+            <div *ngIf="password.errors?.['required']">Password is required</div>
+            <div *ngIf="password.errors?.['minlength']">Password must be at least 6 characters</div>
+          </div>
+        </div>
+
+        <!-- Password requirements hint -->
+        <div class="mb-6 p-3 bg-gray-800/80 rounded-lg border border-gray-700">
+          <h3 class="text-gray-300 text-xs font-medium mb-2">Password Requirements:</h3>
+          <ul class="text-xs text-gray-400 space-y-1 pl-5 list-disc">
+            <li>At least 6 characters long</li>
+            <li>Include at least one uppercase letter</li>
+            <li>Include at least one number</li>
+            <li>Include at least one special character</li>
+          </ul>
+        </div>
+
+        <!-- Terms and conditions checkbox -->
+        <div class="flex items-start mb-6">
+          <div class="flex items-center h-5">
+            <input
+              id="terms"
+              type="checkbox"
+              name="terms"
+              [(ngModel)]="agreeToTerms"
+              required
+              #terms="ngModel"
+              class="h-4 w-4 bg-gray-800 border-gray-700 rounded text-indigo-600 focus:ring-indigo-500 focus:ring-offset-gray-900"
+            >
+          </div>
+          <div class="ml-3 text-sm">
+            <label for="terms" class="text-gray-400">
+              I agree to the <a href="#" class="text-indigo-400 hover:text-indigo-300">Terms of Service</a> and <a href="#" class="text-indigo-400 hover:text-indigo-300">Privacy Policy</a>
+            </label>
+            <div *ngIf="terms.invalid && registerForm.submitted" class="text-red-500 text-xs mt-1">
+              You must accept the terms and conditions
+            </div>
+          </div>
+        </div>
+
+        <!-- Register button -->
+        <button
+          type="submit"
+          class="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-2.5 rounded-lg hover:from-indigo-700 hover:to-purple-700 transition-all duration-300 shadow-lg disabled:opacity-70 disabled:cursor-not-allowed relative overflow-hidden group"
+          [disabled]="registerForm.invalid"
+        >
+          <div class="flex items-center justify-center">
+            <span>Create Account</span>
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-2 group-hover:translate-x-1 transition-transform duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+            </svg>
+          </div>
+          <!-- Shine effect with Tailwind only -->
+          <div class="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white to-transparent opacity-0 group-hover:opacity-20 group-hover:translate-x-full -skew-x-12 transition-all duration-1000 ease-out"></div>
+        </button>
+
+        <!-- Login link -->
+        <p class="text-center text-gray-400 mt-6">
+          Already have an account? <a routerLink="/login" class="text-indigo-400 hover:text-indigo-300 font-medium transition duration-200">Sign In</a>
+        </p>
+      </form>
+    </div>
+  </div>
+</div>
