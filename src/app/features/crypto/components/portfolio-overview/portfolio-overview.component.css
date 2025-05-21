@@ -21,18 +21,18 @@
   }
 }
 
-.portfolio-card {
+.animate-on-load {
   animation: slideIn 0.4s ease-out forwards;
 }
 
-.portfolio-card:nth-child(1) {
+.animate-on-load:nth-child(1) {
   animation-delay: 0.1s;
 }
 
-.portfolio-card:nth-child(2) {
+.animate-on-load:nth-child(2) {
   animation-delay: 0.2s;
 }
 
-.portfolio-card:nth-child(3) {
+.animate-on-load:nth-child(3) {
   animation-delay: 0.3s;
 }

@@ -15,6 +15,7 @@ import { Subscription } from 'rxjs';
 export class PortfolioOverviewComponent implements OnInit, OnDestroy {
   portfolioItems: PortfolioItem[] = [];
   isLoading = true;
+  isFirstLoad = true;
   totalPortfolioValue = 0;
   tradingBalance = 0;
   private portfolioSubscription: Subscription | null = null;
@@ -22,6 +23,7 @@ export class PortfolioOverviewComponent implements OnInit, OnDestroy {
   constructor(private cryptoService: CryptoService) {}
 
   ngOnInit(): void {
+    console.log("inited");
     this.loadPortfolio();
   }
 
@@ -32,18 +34,21 @@ export class PortfolioOverviewComponent implements OnInit, OnDestroy {
   }
 
   loadPortfolio(): void {
+    console.log("Loaded");
     this.isLoading = true;
     this.portfolioSubscription = this.cryptoService.getPortfolio().subscribe({
       next: (portfolio) => {
+        console.log("refreshed, isLoading: ", this.isLoading);
         this.portfolioItems = portfolio;
         this.calculateTotalValue();
         this.calculateTradingBalance();
         this.isLoading = false;
-        console.log('portfolioItems', this.portfolioItems);
+        this.isFirstLoad = false;
       },
       error: (err) => {
         console.error('Error loading portfolio', err);
         this.isLoading = false;
+        this.isFirstLoad = false;
       },
     });
   }

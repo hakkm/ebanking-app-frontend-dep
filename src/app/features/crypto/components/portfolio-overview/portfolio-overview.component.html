@@ -7,7 +7,9 @@
 
   <div *ngIf="!isLoading" class="grid grid-cols-1 md:grid-cols-3 gap-4">
     <!-- Cash Balance -->
-    <div *ngFor="let item of portfolioItems" class="portfolio-card relative bg-gray-900 rounded-lg p-4 border border-gray-700">
+    <div *ngFor="let item of portfolioItems"
+         [class.animate-on-load]="isFirstLoad"
+         class="portfolio-card relative bg-gray-900 rounded-lg p-4 border border-gray-700">
       <div class="flex items-center mb-3">
         <div [class]="'flex items-center justify-center w-8 h-8 rounded-full text-white font-bold mr-3 ' + getIconColor(item.symbol)">
           {{ getIcon(item.symbol) }}

@@ -130,6 +130,22 @@ export class CryptoService implements OnDestroy {
         this.cachedMarketPrices = prices;
         this.marketPricesSubject.next(prices);
         this.isLoadingSubject.next(false);
+
+        // Update portfolio values based on current prices
+        const currentPortfolio = this.portfolioSubject.getValue();
+        const updatedPortfolio = currentPortfolio.map(item => {
+          if (item.type === 'crypto') {
+            const priceInfo = prices.find(p => p.symbol === `${item.symbol}/USD`);
+            if (priceInfo) {
+              return {
+                ...item,
+                value: item.amount * priceInfo.price
+              };
+            }
+          }
+          return item;
+        });
+        this.portfolioSubject.next(updatedPortfolio);
       }),
       catchError((error) => {
         console.error('Error fetching market prices:', error);
