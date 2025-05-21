@@ -118,28 +118,28 @@ export class CryptoService implements OnDestroy {
 
     // Start polling
     this.pricePollingSubscription = interval(this.POLLING_INTERVAL)
-      .pipe(
-        switchMap(() => this.fetchMarketPrices())
-      )
+      .pipe(switchMap(() => this.fetchMarketPrices()))
       .subscribe();
   }
 
   private fetchMarketPrices(): Observable<MarketPrice[]> {
     return this.http.get<MarketPrice[]>(`${this.apiUrl}/prices`).pipe(
-      tap(prices => {
+      tap((prices) => {
         this.cachedMarketPrices = prices;
         this.marketPricesSubject.next(prices);
         this.isLoadingSubject.next(false);
 
         // Update portfolio values based on current prices
         const currentPortfolio = this.portfolioSubject.getValue();
-        const updatedPortfolio = currentPortfolio.map(item => {
+        const updatedPortfolio = currentPortfolio.map((item) => {
           if (item.type === 'crypto') {
-            const priceInfo = prices.find(p => p.symbol === `${item.symbol}/USD`);
+            const priceInfo = prices.find(
+              (p) => p.symbol === `${item.symbol}/USD`
+            );
             if (priceInfo) {
               return {
                 ...item,
-                value: item.amount * priceInfo.price
+                value: item.amount * priceInfo.price,
               };
             }
           }
@@ -176,16 +176,19 @@ export class CryptoService implements OnDestroy {
 
   // Private method to load initial portfolio
   private loadInitialPortfolio(): void {
-    this.http.get<PortfolioItem[]>(`${this.apiUrl}/portfolio`).subscribe(
-      portfolio => this.portfolioSubject.next(portfolio)
-    );
+    this.http
+      .get<PortfolioItem[]>(`${this.apiUrl}/portfolio`)
+      .subscribe((portfolio) => {
+        console.log({portfolio});
+        this.portfolioSubject.next(portfolio);
+      });
   }
 
   // Private method to load initial transactions
   private loadInitialTransactions(): void {
-    this.http.get<Transaction[]>(`${this.apiUrl}/transactions`).subscribe(
-      transactions => this.transactionsSubject.next(transactions)
-    );
+    this.http
+      .get<Transaction[]>(`${this.apiUrl}/transactions`)
+      .subscribe((transactions) => this.transactionsSubject.next(transactions));
   }
 
   /**
@@ -210,26 +213,30 @@ export class CryptoService implements OnDestroy {
    * @returns Observable of trade response
    */
   executeTrade(tradeRequest: TradeRequest): Observable<TradeResponse> {
-    return this.http.post<TradeResponse>(`${this.apiUrl}/trade`, tradeRequest).pipe(
-      tap(response => {
-        if (response.success) {
-          // After successful trade, fetch and update both transactions and portfolio
-          this.http.get<Transaction[]>(`${this.apiUrl}/transactions`).subscribe(
-            transactions => this.transactionsSubject.next(transactions)
-          );
-          this.http.get<PortfolioItem[]>(`${this.apiUrl}/portfolio`).subscribe(
-            portfolio => this.portfolioSubject.next(portfolio)
-          );
-        }
-      }),
-      catchError(error => {
-        console.error('Error executing trade:', error);
-        return of({
-          success: false,
-          message: 'Failed to execute trade. Please try again.'
-        });
-      })
-    );
+    return this.http
+      .post<TradeResponse>(`${this.apiUrl}/trade`, tradeRequest)
+      .pipe(
+        tap((response) => {
+          if (response.success) {
+            // After successful trade, fetch and update both transactions and portfolio
+            this.http
+              .get<Transaction[]>(`${this.apiUrl}/transactions`)
+              .subscribe((transactions) =>
+                this.transactionsSubject.next(transactions)
+              );
+            this.http
+              .get<PortfolioItem[]>(`${this.apiUrl}/portfolio`)
+              .subscribe((portfolio) => this.portfolioSubject.next(portfolio));
+          }
+        }),
+        catchError((error) => {
+          console.error('Error executing trade:', error);
+          return of({
+            success: false,
+            message: 'Failed to execute trade. Please try again.',
+          });
+        })
+      );
   }
 
   /**
@@ -239,7 +246,7 @@ export class CryptoService implements OnDestroy {
    */
   getAvailableBalance(symbol: string): Observable<number> {
     return this.http.get<number>(`${this.apiUrl}/balance/${symbol}`).pipe(
-      catchError(error => {
+      catchError((error) => {
         console.error(`Error fetching ${symbol} balance:`, error);
         return of(0);
       })
