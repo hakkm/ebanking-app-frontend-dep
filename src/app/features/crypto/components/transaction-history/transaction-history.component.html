@@ -1,0 +1,37 @@
+<div class="bg-gray-800 rounded-lg p-4 shadow-lg">
+  <h2 class="text-lg font-semibold mb-4">Transaction History</h2>
+
+  <div *ngIf="isLoading" class="flex justify-center items-center py-8">
+    <div class="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+  </div>
+
+  <div *ngIf="!isLoading" class="transaction-list max-h-[400px] overflow-y-auto">
+    <div *ngFor="let transaction of transactions" class="transaction-item bg-gray-900 rounded-lg p-3 mb-2 flex items-center">
+      <div class="transaction-icon flex-shrink-0 w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center mr-3">
+        <svg *ngIf="transaction.type === 'Bought'" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+        </svg>
+        <svg *ngIf="transaction.type === 'Sold'" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4" />
+        </svg>
+      </div>
+
+      <div class="flex-grow">
+        <div class="flex justify-between">
+          <div>
+            <span class="text-sm font-medium">{{ transaction.type }} {{ transaction.amount }} {{ transaction.symbol }}</span>
+            <div class="text-xs text-gray-400">{{ formatDate(transaction.date) }}</div>
+          </div>
+          <div class="flex flex-col items-end">
+            <span class="font-medium" [ngClass]="transaction.type !== 'Bought' ? 'text-green-500' : 'text-red-500'">
+              {{ transaction.type === 'Bought' ? '-' : '+' }}${{ transaction.total.toFixed(2) }}
+            </span>
+            <span class="text-xs" class="text-xs text-gray-400">
+              ${{ transaction.price.toFixed(2) }} / {{ transaction.symbol }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
