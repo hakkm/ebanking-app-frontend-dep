@@ -13,11 +13,7 @@ import {RechargeComponent} from '../Rechargetel/rechargetel/rechargetel.componen
   imports: [
     RouterLink,
     NgIf,
-    NgForOf,
-    RechargeComponent,
-    RouterOutlet
-
-
+    NgForOf
   ],
   standalone: true,
   styleUrls: ['./home.component.css']
@@ -28,7 +24,6 @@ export class HomeComponent implements OnInit {
   accounts: Account[] = [];
   isLoading = true;
   error: string | null = null;
-  showRechargeForm = false;
   providers: any[] = [];
 
   loadProviders(): void {

@@ -1,4 +1,9 @@
 <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+  <!-- Success Message -->
+  <div *ngIf="successMessage" class="mb-4 p-4 bg-green-50 border-l-4 border-green-500 text-green-700">
+    {{ successMessage }}
+  </div>
+
   <!-- Error Message -->
   <div *ngIf="error" class="mb-4 p-4 bg-red-50 border-l-4 border-red-500 text-red-700">
     {{ error }}
@@ -14,7 +19,7 @@
       <div class="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-blue-500"></div>
     </div>
 
-    <div *ngIf="!isLoading && recipients.length === 0" class="p-6 text-center text-gray-500">
+    <div *ngIf="!isLoading && recipients.length === 0 && externalRecipients.length === 0" class="p-6 text-center text-gray-500">
       No recipients found. Add a new recipient to start a transfer.
       <div class="mt-4">
         <button routerLink="/add-recipient" class="px-4 py-2 bg-blue-50 text-blue-600 rounded-md hover:bg-blue-100 transition-colors">
@@ -23,14 +28,25 @@
       </div>
     </div>
 
-    <div *ngIf="!isLoading && recipients.length > 0" class="divide-y divide-gray-200">
+    <div *ngIf="!isLoading && (recipients.length > 0 || externalRecipients.length > 0)" class="divide-y divide-gray-200">
       <div *ngFor="let recipient of recipients" class="p-6 hover:bg-gray-50 transition-colors">
         <div class="flex justify-between items-center">
           <div>
-            <h3 class="text-lg font-medium text-gray-900">{{ recipient.alias || 'Recipient ' + recipient.accountNumber }}</h3>
+            <h3 class="text-lg font-medium text-gray-900">{{ recipient.alias || 'Recipient ' + recipient.accountNumber }} (Internal)</h3>
             <p class="mt-1 text-sm text-gray-500">Account #: {{ recipient.accountNumber }}</p>
           </div>
-          <button (click)="deleteRecipient(recipient.id)" class="px-3 py-1 bg-red-50 text-red-600 text-sm rounded hover:bg-red-100 transition-colors">
+          <button (click)="deleteRecipient(recipient.id, false)" class="px-3 py-1 bg-red-50 text-red-600 text-sm rounded hover:bg-red-100 transition-colors">
+            Remove
+          </button>
+        </div>
+      </div>
+      <div *ngFor="let recipient of externalRecipients" class="p-6 hover:bg-gray-50 transition-colors">
+        <div class="flex justify-between items-center">
+          <div>
+            <h3 class="text-lg font-medium text-gray-900">{{ recipient.alias || 'Recipient ' + recipient.accountNumber }} (External)</h3>
+            <p class="mt-1 text-sm text-gray-500">Account #: {{ recipient.accountNumber }} | RIB: {{ recipient.rib }} | Bank Code: {{ recipient.bankCode }}</p>
+          </div>
+          <button (click)="deleteRecipient(recipient.id, true)" class="px-3 py-1 bg-red-50 text-red-600 text-sm rounded hover:bg-red-100 transition-colors">
             Remove
           </button>
         </div>
@@ -41,35 +57,72 @@
   <!-- Transfer Form -->
   <div class="bg-white rounded-lg shadow p-6">
     <h2 class="text-xl font-semibold text-gray-800 mb-4">New Transfer</h2>
-    <form [formGroup]="transferForm" (ngSubmit)="onSubmitTransfer()">
+    <form #transferForm="ngForm" (ngSubmit)="onSubmitTransfer()">
+      <div class="mb-4">
+        <label class="block text-sm font-medium text-gray-700 mb-1">Recipient Type</label>
+        <div class="flex space-x-4">
+          <label class="flex items-center">
+            <input type="radio" [(ngModel)]="transferModel.recipientType" name="recipientType" value="internal" (change)="onRecipientTypeChange()" required class="mr-2">
+            Internal
+          </label>
+          <label class="flex items-center">
+            <input type="radio" [(ngModel)]="transferModel.recipientType" name="recipientType" value="external" (change)="onRecipientTypeChange()" required class="mr-2">
+            External
+          </label>
+        </div>
+        <div *ngIf="transferForm.submitted && !transferModel.recipientType" class="text-red-500 text-sm mt-1">
+          Recipient type is required.
+        </div>
+      </div>
+
       <div class="mb-4">
         <label for="recipient" class="block text-sm font-medium text-gray-700 mb-1">Recipient</label>
-        <select formControlName="recipient" id="recipient" class="w-full border border-gray-200 rounded-md px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+        <select [(ngModel)]="transferModel.recipient" name="recipient" id="recipient" required class="w-full border border-gray-200 rounded-md px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
           <option value="">-- Select a recipient --</option>
-          <option *ngFor="let recipient of recipients" [value]="recipient.recipientAccountId">{{ recipient.alias || recipient.accountNumber }}</option>
+          <ng-container *ngIf="transferModel.recipientType === 'internal'">
+            <option *ngFor="let recipient of recipients" [value]="recipient.recipientAccountId">
+              {{ recipient.alias || recipient.accountNumber }} (Internal)
+            </option>
+          </ng-container>
+          <ng-container *ngIf="transferModel.recipientType === 'external'">
+            <option *ngFor="let recipient of externalRecipients" [value]="recipient.id">
+              {{ recipient.alias || recipient.accountNumber }} (External)
+            </option>
+          </ng-container>
         </select>
+        <div *ngIf="transferForm.submitted && !transferModel.recipient" class="text-red-500 text-sm mt-1">
+          Recipient is required.
+        </div>
       </div>
 
       <div class="mb-4">
         <label for="fromAccount" class="block text-sm font-medium text-gray-700 mb-1">From Account</label>
-        <select formControlName="fromAccount" id="fromAccount" class="w-full border border-gray-200 rounded-md px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+        <select [(ngModel)]="transferModel.fromAccount" name="fromAccount" id="fromAccount" required class="w-full border border-gray-200 rounded-md px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
           <option value="">-- Select your account --</option>
           <option *ngFor="let account of accounts" [value]="account.id">{{ account.maskedAccountNumber }} ({{ account.accountType }})</option>
         </select>
+        <div *ngIf="transferForm.submitted && !transferModel.fromAccount" class="text-red-500 text-sm mt-1">
+          From account is required.
+        </div>
       </div>
 
       <div class="mb-4">
         <label for="amount" class="block text-sm font-medium text-gray-700 mb-1">Amount</label>
-        <input type="number" id="amount" formControlName="amount" class="w-full border border-gray-200 rounded-md px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+        <input type="number" [(ngModel)]="transferModel.amount" name="amount" id="amount" step="0.01" min="1" pattern="^\d+(\.\d{1,2})?$" required class="w-full border border-gray-200 rounded-md px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+        <div *ngIf="transferForm.submitted && transferForm.control.get('amount')?.invalid" class="text-red-500 text-sm mt-1">
+          <div *ngIf="transferForm.control.get('amount')?.errors?.['required']">Amount is required.</div>
+          <div *ngIf="transferForm.control.get('amount')?.errors?.['min']">Amount must be at least 1.</div>
+          <div *ngIf="transferForm.control.get('amount')?.errors && transferForm.control.get('amount')?.errors?.['pattern']">Amount must have up to 2 decimal places.</div>
+        </div>
       </div>
 
       <div class="mb-4">
-        <label for="motif" class="block text-sm font-medium text-gray-700 mb-1">Motif</label>
-        <textarea id="motif" formControlName="motif" rows="3" class="w-full border border-gray-200 rounded-md px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+        <label for="reason" class="block text-sm font-medium text-gray-700 mb-1">Reason</label>
+        <textarea [(ngModel)]="transferModel.reason" name="reason" id="reason" rows="3" class="w-full border border-gray-200 rounded-md px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
       </div>
 
       <div class="flex justify-end">
-        <button type="submit" [disabled]="!transferForm.valid || isSubmitting" class="px-4 py-2 bg-green-50 text-green-600 rounded-md hover:bg-green-100 transition-colors disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed">
+        <button type="submit" [disabled]="isSubmitting" class="px-4 py-2 bg-green-50 text-green-600 rounded-md hover:bg-green-100 transition-colors disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed">
           {{ isSubmitting ? 'Submitting...' : 'Submit Transfer' }}
         </button>
       </div>

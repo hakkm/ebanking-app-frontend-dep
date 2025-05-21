@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Recipient } from '../models/recipient.model';
+import { recipientExternal } from '../models/recipientExternal.model';
 import { environment } from '../../../environments/environment';
 
 @Injectable({
@@ -20,8 +21,16 @@ export class RecipientService {
     return this.http.get<Recipient>(`${this.apiUrl}/client/recipients/${id}`);
   }
 
+  getExternalRecipients(): Observable<recipientExternal[]> {
+    return this.http.get<recipientExternal[]>(`${this.apiUrl}/external-recipients`);
+  }
+
   createRecipient(recipient: Recipient): Observable<Recipient> {
     return this.http.post<Recipient>(`${this.apiUrl}/client/recipients`, recipient);
+  }
+
+  createExternalRecipient(recipient: recipientExternal): Observable<recipientExternal> {
+    return this.http.post<recipientExternal>(`${this.apiUrl}/external-recipients`, recipient);
   }
 
   updateRecipient(id: number, recipient: Recipient): Observable<Recipient> {
@@ -30,5 +39,9 @@ export class RecipientService {
 
   deleteRecipient(id: number | undefined): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/client/recipients/${id}`);
+  }
+
+  deleteExternalRecipient(id: number | undefined): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/external-recipients/${id}`);
   }
 }

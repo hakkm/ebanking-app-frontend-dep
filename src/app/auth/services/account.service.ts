@@ -5,6 +5,7 @@ import { Account } from '../models/account.model';
 import {Provider} from '../models/Provider.model';
 import { Transaction } from '../models/transaction.model';
 import { environment } from '../../../environments/environment';
+import {ExternalTransaction} from '../models/ExternalTransaction.model';
 
 @Injectable({
   providedIn: 'root'
@@ -30,6 +31,14 @@ export class AccountService {
 
   getTransactions(accountId: number): Observable<Transaction[]> {
     return this.http.get<Transaction[]>(`${this.apiUrl}/client/transactions/${accountId}`);
+  }
+
+  getExternalTransactions(): Observable<ExternalTransaction[]> {
+    return this.http.get<ExternalTransaction[]>(`${this.apiUrl}/external-transactions`);
+  }
+
+  createExternalTransfer(transaction: ExternalTransaction): Observable<ExternalTransaction> {
+    return this.http.post<ExternalTransaction>(`${this.apiUrl}/external-transactions`, transaction);
   }
 
   createTransfer(transaction: Transaction): Observable<Transaction> {

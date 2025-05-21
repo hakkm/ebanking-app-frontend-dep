@@ -12,7 +12,7 @@ import { User } from '../../auth/models/user.model';
 @Component({
   selector: 'app-recharge',
   standalone: true,
-  imports: [NgIf, NgForOf, FormsModule, RouterOutlet, RouterLink],
+  imports: [NgIf, NgForOf, FormsModule, RouterLink],
   templateUrl: './rechargetel.component.html',
   styleUrls: ['./rechargetel.component.css']
 })
