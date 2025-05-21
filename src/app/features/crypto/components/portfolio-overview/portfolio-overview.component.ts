@@ -11,6 +11,7 @@ import { Subscription } from 'rxjs';
   templateUrl: './portfolio-overview.component.html',
   styleUrls: ['./portfolio-overview.component.css'],
   imports: [CommonModule],
+  standalone: true
 })
 export class PortfolioOverviewComponent implements OnInit, OnDestroy {
   portfolioItems: PortfolioItem[] = [];
