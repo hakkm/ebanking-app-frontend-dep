@@ -39,10 +39,13 @@ export class TradeComponent implements OnInit, OnDestroy {
   successMessage = '';
 
   /** User's available balance for the selected asset */
-  availableBalance = 0;
+  availableCryptoAmount = 0;
 
   /** Flag indicating if the component is in buy mode (true) or sell mode (false) */
   isBuyMode = true;
+
+  /** User's available USD balance */
+  availableUsdBalance = 0;
 
   /** Subject used for managing component lifecycle and unsubscribing from observables */
   private destroy$ = new Subject<void>();
@@ -63,13 +66,7 @@ export class TradeComponent implements OnInit, OnDestroy {
       amount: ['', [
         Validators.required,
         Validators.min(0.00001),
-        (control: AbstractControl) => {
-          const amount = control.value;
-          if (amount > this.availableBalance) {
-            return { max: true };
-          }
-          return null;
-        }
+        this.validateAmount.bind(this)
       ]],
       asset: ['BTC', Validators.required]
     });
@@ -82,6 +79,7 @@ export class TradeComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.loadMarketPrices();
     this.loadAvailableBalance();
+    this.loadUsdBalance();
 
     // React to asset selection changes
     this.tradeForm.get('asset')?.valueChanges
@@ -89,6 +87,7 @@ export class TradeComponent implements OnInit, OnDestroy {
       .subscribe(value => {
         this.selectedAsset = value;
         this.loadAvailableBalance();
+        this.tradeForm.get('amount')?.updateValueAndValidity();
       });
 
     // Update max validation when available balance changes
@@ -121,11 +120,12 @@ export class TradeComponent implements OnInit, OnDestroy {
         next: (prices) => {
           this.marketPrices = prices;
           this.isLoading = false;
+          this.tradeForm.get('amount')?.updateValueAndValidity();
         },
         error: (err) => {
           console.error('Error loading market prices', err);
           this.isLoading = false;
-          this.errorMessage = 'Failed to load market prices. Please try again.';
+          this.setErrorMessage('Failed to load market prices. Please try again.');
         }
       });
   }
@@ -139,11 +139,30 @@ export class TradeComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (balance) => {
-          this.availableBalance = balance;
+          this.availableCryptoAmount = balance;
+          this.tradeForm.get('amount')?.updateValueAndValidity();
         },
         error: (err) => {
           console.error('Error loading available balance', err);
-          this.availableBalance = 0;
+          this.availableCryptoAmount = 0;
+        }
+      });
+  }
+
+  /**
+   * Loads the user's available USD balance
+   */
+  loadUsdBalance(): void {
+    this.cryptoService.getAvailableBalance('USD')
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (balance) => {
+          this.availableUsdBalance = balance;
+          this.tradeForm.get('amount')?.updateValueAndValidity();
+        },
+        error: (err) => {
+          console.error('Error loading USD balance', err);
+          this.availableUsdBalance = 0;
         }
       });
   }
@@ -173,11 +192,31 @@ export class TradeComponent implements OnInit, OnDestroy {
    * @param percentage - The percentage of the maximum amount to set (0-100)
    */
   setPercentage(percentage: number): void {
-    const maxAmount = this.isBuyMode ?
-      this.availableBalance / this.getSelectedPrice() :
-      this.availableBalance;
-    const amount = (maxAmount * percentage / 100).toFixed(5);
-    this.tradeForm.patchValue({ amount });
+    let maxAmount: number;
+    const price = this.getSelectedPrice();
+
+    if (this.isBuyMode) {
+      // In buy mode, calculate max amount based on USD balance
+      // We need to calculate how much crypto we can buy with our USD
+      maxAmount = this.availableUsdBalance / price;
+    } else {
+      // In sell mode, use available crypto amount directly
+      maxAmount = this.availableCryptoAmount;
+    }
+
+    // Calculate the amount based on percentage
+    const amount = maxAmount * (percentage / 100);
+
+    // Round to 5 decimal places to avoid floating point issues
+    const roundedAmount = Math.floor(amount * 100000) / 100000;
+
+    // Ensure we don't set 0 if we have a balance
+    if (roundedAmount === 0 && maxAmount > 0) {
+      // If rounding resulted in 0 but we have a balance, use a small amount
+      this.tradeForm.patchValue({ amount: 0.00001 });
+    } else {
+      this.tradeForm.patchValue({ amount: roundedAmount });
+    }
   }
 
   /**
@@ -186,7 +225,9 @@ export class TradeComponent implements OnInit, OnDestroy {
    */
   toggleBuySell() {
     this.isBuyMode = !this.isBuyMode;
+    this.tradeForm.patchValue({ amount: '' });
     this.loadAvailableBalance();
+    this.loadUsdBalance();
   }
 
   /**
@@ -219,7 +260,14 @@ export class TradeComponent implements OnInit, OnDestroy {
    */
   executeTrade(): void {
     if (this.tradeForm.invalid) {
-      this.setErrorMessage('Please enter a valid amount');
+      const amountControl = this.tradeForm.get('amount');
+      if (amountControl?.errors?.['insufficientFunds']) {
+        this.setErrorMessage(this.isBuyMode ?
+          'Insufficient USD balance for this trade' :
+          'Insufficient crypto balance for this trade');
+      } else {
+        this.setErrorMessage('Please enter a valid amount');
+      }
       return;
     }
 
@@ -242,6 +290,7 @@ export class TradeComponent implements OnInit, OnDestroy {
             this.setSuccessMessage(response.message || 'Trade executed successfully!');
             this.tradeForm.patchValue({ amount: '' });
             this.loadAvailableBalance();
+            this.loadUsdBalance();
           } else {
             this.setErrorMessage(response.message || 'Trade failed. Please try again.');
           }
@@ -252,5 +301,25 @@ export class TradeComponent implements OnInit, OnDestroy {
           this.setErrorMessage('Failed to execute trade. Please try again.');
         }
       });
+  }
+
+  private validateAmount(control: AbstractControl) {
+    const amount = control.value;
+    if (!amount) return null;
+
+    const price = this.getSelectedPrice();
+    const totalValue = amount * price;
+
+    if (this.isBuyMode) {
+      if (totalValue > this.availableUsdBalance) {
+        return { insufficientFunds: true };
+      }
+    } else {
+      if (amount > this.availableCryptoAmount) {
+        return { insufficientFunds: true };
+      }
+    }
+
+    return null;
   }
 }

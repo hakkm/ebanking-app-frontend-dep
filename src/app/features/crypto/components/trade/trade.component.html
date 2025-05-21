@@ -50,18 +50,23 @@
             type="number"
             formControlName="amount"
             class="w-full bg-gray-900 border rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            [class.border-red-500]="tradeForm.get('amount')?.errors?.['min'] || tradeForm.get('amount')?.errors?.['max']"
-            [class.border-gray-700]="!(tradeForm.get('amount')?.errors?.['min'] || tradeForm.get('amount')?.errors?.['max'])"
+            [class.border-red-500]="tradeForm.get('amount')?.errors?.['insufficientFunds'] || tradeForm.get('amount')?.errors?.['min']"
+            [class.border-gray-700]="!(tradeForm.get('amount')?.errors?.['insufficientFunds'] || tradeForm.get('amount')?.errors?.['min'])"
             placeholder="Enter BTC amount"
             [placeholder]="'Enter ' + selectedAsset + ' amount'"
-            min="0"
-            [max]="availableBalance">
+            min="0.00001"
+            step="0.00001">
           <div class="text-xs text-gray-400 mt-1">
-            Available: {{ availableBalance.toFixed(5) }} {{ selectedAsset }}
+            Available: {{ isBuyMode ? '$' + availableUsdBalance.toFixed(2) : availableCryptoAmount.toFixed(8) + ' ' + selectedAsset }}
+            <span *ngIf="isBuyMode" class="ml-2">
+              (≈ {{ (availableUsdBalance / getSelectedPrice()).toFixed(8) }} {{ selectedAsset }})
+            </span>
           </div>
-          <div class="text-xs text-red-400 mt-1" *ngIf="tradeForm.get('amount')?.errors?.['min'] || tradeForm.get('amount')?.errors?.['max']">
-            <span *ngIf="tradeForm.get('amount')?.errors?.['min']">Amount cannot be negative</span>
-            <span *ngIf="tradeForm.get('amount')?.errors?.['max']">Amount exceeds available balance</span>
+          <div class="text-xs text-red-400 mt-1" *ngIf="tradeForm.get('amount')?.errors?.['insufficientFunds'] || tradeForm.get('amount')?.errors?.['min']">
+            <span *ngIf="tradeForm.get('amount')?.errors?.['min']">Minimum amount is 0.00001</span>
+            <span *ngIf="tradeForm.get('amount')?.errors?.['insufficientFunds']">
+              {{ isBuyMode ? 'Insufficient USD balance' : 'Insufficient ' + selectedAsset + ' balance' }}
+            </span>
           </div>
         </div>
       </div>
@@ -86,10 +91,11 @@
           (click)="setPercentage(75)">
           75%
         </button>
+        <!-- Using 99.99999 instead of 100 to avoid potential floating point precision issues with max value -->
         <button
           type="button"
           class="bg-gray-700 hover:bg-gray-600 text-gray-300 text-sm py-1 px-2 rounded-md transition-colors"
-          (click)="setPercentage(100)">
+          (click)="setPercentage(99.99999)">
           100%
         </button>
       </div>

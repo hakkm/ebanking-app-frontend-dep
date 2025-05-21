@@ -1,8 +1,8 @@
 import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
-import {NgIf, NgForOf, NgClass} from '@angular/common';
+import { NgIf, NgForOf, NgClass } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
-import { RouterLink, RouterOutlet } from '@angular/router';
+import { RouterLink } from '@angular/router';
 import { environment } from '../../../environments/environment';
 import { AuthService } from '../../auth/services/auth.service';
 import { AccountService } from '../../auth/services/account.service';
@@ -12,9 +12,9 @@ import { User } from '../../auth/models/user.model';
 @Component({
   selector: 'app-recharge',
   standalone: true,
-  imports: [NgIf, NgForOf, FormsModule, RouterOutlet, RouterLink, NgClass],
+  imports: [NgIf, NgForOf, FormsModule, RouterLink, NgClass],
   templateUrl: './rechargetel.component.html',
-  styleUrls: ['./rechargetel.component.css']
+  styleUrls: ['./rechargetel.component.css'],
 })
 export class RechargeComponent implements OnInit {
   @Input() accounts: Account[] = [];
@@ -69,9 +69,12 @@ export class RechargeComponent implements OnInit {
         }
       },
       error: (err) => {
-        console.error('Erreur lors du chargement des données utilisateur :', err);
+        console.error(
+          'Erreur lors du chargement des données utilisateur :',
+          err
+        );
         this.error = 'Impossible de charger les informations utilisateur.';
-      }
+      },
     });
   }
 
@@ -85,7 +88,7 @@ export class RechargeComponent implements OnInit {
         console.error('Erreur lors du chargement des comptes :', err);
         this.error = 'Échec du chargement des comptes.';
         this.isLoading = false;
-      }
+      },
     });
   }
 
@@ -96,12 +99,17 @@ export class RechargeComponent implements OnInit {
       },
       error: (err) => {
         console.error('Erreur lors du chargement des fournisseurs :', err);
-      }
+      },
     });
   }
 
   submitRecharge(): void {
-    if (!this.selectedAccountId || !this.selectedProvider || !this.amount || !this.phoneNumber) {
+    if (
+      !this.selectedAccountId ||
+      !this.selectedProvider ||
+      !this.amount ||
+      !this.phoneNumber
+    ) {
       this.error = 'Tous les champs sont requis.';
       this.message = null;
       return;
@@ -109,7 +117,8 @@ export class RechargeComponent implements OnInit {
 
     // Custom phone number validation
     if (!this.validatePhoneNumber(this.phoneNumber)) {
-      this.error = 'Numéro de téléphone invalide. Format attendu: 06XXXXXXXX ou 07XXXXXXXX';
+      this.error =
+        'Numéro de téléphone invalide. Format attendu: 06XXXXXXXX ou 07XXXXXXXX';
       this.message = null;
       return;
     }
@@ -119,19 +128,21 @@ export class RechargeComponent implements OnInit {
     this.message = null;
 
     // Get selected account details for confirmation message
-    const selectedAccount = this.accounts.find(acc => acc.id === Number(this.selectedAccountId));
-    const accountInfo = selectedAccount ?
-      `${selectedAccount.maskedAccountNumber} (${selectedAccount.accountType})` :
-      this.selectedAccountId;
+    const selectedAccount = this.accounts.find(
+      (acc) => acc.id === Number(this.selectedAccountId)
+    );
+    const accountInfo = selectedAccount
+      ? `${selectedAccount.maskedAccountNumber} (${selectedAccount.accountType})`
+      : this.selectedAccountId;
 
     // Show confirmation dialog with detailed info
     const confirmation = window.confirm(
       `Confirmation de Recharge\n\n` +
-      `Fournisseur: ${this.selectedProvider}\n` +
-      `Numéro: ${this.phoneNumber}\n` +
-      `Montant: ${this.amount} MAD\n` +
-      `Compte: ${accountInfo}\n\n` +
-      `Voulez-vous confirmer cette opération?`
+        `Fournisseur: ${this.selectedProvider}\n` +
+        `Numéro: ${this.phoneNumber}\n` +
+        `Montant: ${this.amount} MAD\n` +
+        `Compte: ${accountInfo}\n\n` +
+        `Voulez-vous confirmer cette opération?`
     );
 
     if (!confirmation) {
@@ -142,7 +153,7 @@ export class RechargeComponent implements OnInit {
       accountId: this.selectedAccountId,
       provider: this.selectedProvider,
       amount: this.amount,
-      phoneNumber: this.phoneNumber
+      phoneNumber: this.phoneNumber,
     };
 
     this.isSubmitting = true;
@@ -158,10 +169,11 @@ export class RechargeComponent implements OnInit {
         this.isLoading = false;
       },
       error: (err) => {
-        this.error = err.error?.message || 'Échec de la recharge. Veuillez réessayer ❌';
+        this.error =
+          err.error?.message || 'Échec de la recharge. Veuillez réessayer ❌';
         this.isSubmitting = false;
         this.isLoading = false;
-      }
+      },
     });
   }
 
@@ -183,7 +195,8 @@ export class RechargeComponent implements OnInit {
   }
 
   formatCurrency(amount: string | number, currency: string): string {
-    const numericAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
+    const numericAmount =
+      typeof amount === 'string' ? parseFloat(amount) : amount;
     if (isNaN(numericAmount)) {
       return 'N/A';
     }
@@ -191,7 +204,7 @@ export class RechargeComponent implements OnInit {
     try {
       return new Intl.NumberFormat('fr-FR', {
         style: 'currency',
-        currency: currency || 'MAD'
+        currency: currency || 'MAD',
       }).format(numericAmount);
     } catch (e) {
       return numericAmount.toFixed(2);
