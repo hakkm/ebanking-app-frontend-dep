@@ -3,9 +3,8 @@ import { User } from '../auth/models/user.model';
 import { Account } from '../auth/models/account.model';
 import { AuthService } from '../auth/services/auth.service';
 import { AccountService } from '../auth/services/account.service';
-import { RouterLink, RouterOutlet } from '@angular/router';
+import { RouterLink} from '@angular/router';
 import { NgForOf, NgIf, DatePipe, NgClass } from '@angular/common';
-import { RechargeComponent } from '../Rechargetel/rechargetel/rechargetel.component';
 import { Transaction } from '../auth/models/transaction.model';
 
 @Component({
@@ -16,8 +15,6 @@ import { Transaction } from '../auth/models/transaction.model';
     NgIf,
     NgForOf,
     DatePipe,
-    RechargeComponent,
-    RouterOutlet,
     NgClass
   ],
   standalone: true,
