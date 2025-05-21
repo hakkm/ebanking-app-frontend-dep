@@ -83,7 +83,7 @@ export interface TradeResponse {
   providedIn: 'root',
 })
 export class CryptoService implements OnDestroy {
-  private apiUrl = environment.apiUrl;
+  private apiUrl = `${environment.apiUrl}/crypto`;
   private pricePollingSubscription: Subscription | null = null;
   private readonly POLLING_INTERVAL = 5000; // 5 seconds
 
