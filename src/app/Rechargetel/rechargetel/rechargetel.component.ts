@@ -1,5 +1,5 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
-import { NgIf, NgForOf } from '@angular/common';
+import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
+import {NgIf, NgForOf, NgClass} from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { RouterLink, RouterOutlet } from '@angular/router';
@@ -12,11 +12,11 @@ import { User } from '../../auth/models/user.model';
 @Component({
   selector: 'app-recharge',
   standalone: true,
-  imports: [NgIf, NgForOf, FormsModule, RouterLink],
+  imports: [NgIf, NgForOf, FormsModule, RouterOutlet, RouterLink, NgClass],
   templateUrl: './rechargetel.component.html',
   styleUrls: ['./rechargetel.component.css']
 })
-export class RechargeComponent {
+export class RechargeComponent implements OnInit {
   @Input() accounts: Account[] = [];
   @Input() providers: any[] = [];
   @Output() rechargeSubmitted = new EventEmitter<void>();
@@ -32,6 +32,10 @@ export class RechargeComponent {
   amount: number | null = null;
 
   isSubmitting = false;
+  confirmingRecharge = false;
+
+  // Quick recharge amounts
+  quickAmounts = [10, 20, 50, 100];
 
   private apiUrl = environment.apiUrl;
 
@@ -43,8 +47,17 @@ export class RechargeComponent {
 
   ngOnInit(): void {
     this.loadUserData();
-    this.loadAccounts();
-    this.loadProviders();
+
+    // Only load accounts and providers if they weren't provided as inputs
+    if (this.accounts.length === 0) {
+      this.loadAccounts();
+    } else {
+      this.isLoading = false;
+    }
+
+    if (this.providers.length === 0) {
+      this.loadProviders();
+    }
   }
 
   private loadUserData(): void {
@@ -89,12 +102,36 @@ export class RechargeComponent {
 
   submitRecharge(): void {
     if (!this.selectedAccountId || !this.selectedProvider || !this.amount || !this.phoneNumber) {
-      this.message = 'Tous les champs sont requis.';
+      this.error = 'Tous les champs sont requis.';
+      this.message = null;
       return;
     }
 
+    // Custom phone number validation
+    if (!this.validatePhoneNumber(this.phoneNumber)) {
+      this.error = 'Numéro de téléphone invalide. Format attendu: 06XXXXXXXX ou 07XXXXXXXX';
+      this.message = null;
+      return;
+    }
+
+    // Clear any previous messages
+    this.error = null;
+    this.message = null;
+
+    // Get selected account details for confirmation message
+    const selectedAccount = this.accounts.find(acc => acc.id === Number(this.selectedAccountId));
+    const accountInfo = selectedAccount ?
+      `${selectedAccount.maskedAccountNumber} (${selectedAccount.accountType})` :
+      this.selectedAccountId;
+
+    // Show confirmation dialog with detailed info
     const confirmation = window.confirm(
-      `Êtes-vous sûr de vouloir recharger ${this.amount} MAD à ${this.phoneNumber} via ${this.selectedProvider} ?`
+      `Confirmation de Recharge\n\n` +
+      `Fournisseur: ${this.selectedProvider}\n` +
+      `Numéro: ${this.phoneNumber}\n` +
+      `Montant: ${this.amount} MAD\n` +
+      `Compte: ${accountInfo}\n\n` +
+      `Voulez-vous confirmer cette opération?`
     );
 
     if (!confirmation) {
@@ -108,26 +145,34 @@ export class RechargeComponent {
       phoneNumber: this.phoneNumber
     };
 
+    this.isSubmitting = true;
     this.isLoading = true;
-    this.message = '';
-    this.error = null;
 
     this.http.post(`${this.apiUrl}/recharge`, payload).subscribe({
       next: () => {
         this.message = 'Recharge effectuée avec succès ✅';
         this.rechargeSubmitted.emit();
-        this.isLoading = false;
         // Reset form
-        this.selectedAccountId = '';
-        this.selectedProvider = '';
-        this.amount = null;
-        this.phoneNumber = '';
+        this.resetForm();
+        this.isSubmitting = false;
+        this.isLoading = false;
       },
-      error: () => {
-        this.message = 'Échec de la recharge. Veuillez réessayer ❌';
+      error: (err) => {
+        this.error = err.error?.message || 'Échec de la recharge. Veuillez réessayer ❌';
+        this.isSubmitting = false;
         this.isLoading = false;
       }
     });
+  }
+
+  setQuickAmount(value: number): void {
+    this.amount = value;
+  }
+
+  validatePhoneNumber(phone: string): boolean {
+    // Basic Moroccan phone number validation
+    const regex = /^(06|07)\d{8}$/;
+    return regex.test(phone);
   }
 
   private resetForm(): void {
