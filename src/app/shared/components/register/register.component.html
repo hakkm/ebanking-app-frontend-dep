@@ -1,23 +1,17 @@
-<!-- register.component.html -->
 <div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 via-indigo-950 to-black overflow-hidden relative">
-  <!-- Ambient lighting effects -->
   <div class="absolute top-0 right-0 w-96 h-96 bg-indigo-600/20 rounded-full blur-3xl animate-pulse opacity-30"></div>
   <div class="absolute bottom-0 left-0 w-96 h-96 bg-purple-600/20 rounded-full blur-3xl animate-pulse opacity-30 animation-delay-2000"></div>
 
-  <!-- Glass card container -->
   <div class="flex flex-col md:flex-row bg-gray-900/60 backdrop-blur-sm rounded-2xl shadow-2xl w-full max-w-5xl border border-gray-800 z-10 relative m-4 overflow-hidden">
-    <!-- Image Section for Registration -->
     <div class="w-full md:w-1/2 relative hidden md:block">
       <img
-          src="/banking-secure.jpg"
-          alt="Atlas Banking"
-          class="object-cover h-full w-full"
+        src="/banking-secure.jpg"
+        alt="Atlas Banking"
+        class="object-cover h-full w-full"
       >
     </div>
 
-    <!-- Form Container -->
     <div class="w-full md:w-1/2 p-8">
-      <!-- Header section with logo -->
       <div class="flex flex-col items-center mb-6">
         <div class="w-12 h-12 rounded-full bg-gradient-to-r from-indigo-600 to-purple-600 flex items-center justify-center mb-3 shadow-lg">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -28,14 +22,11 @@
         <p class="text-gray-400 text-sm">Join Atlas Banking for secure digital finance</p>
       </div>
 
-      <!-- Error message -->
       <div *ngIf="error" class="mb-6 p-3 bg-red-900/30 border border-red-800 rounded-lg">
         <p class="text-red-400 text-sm">{{ error }}</p>
       </div>
 
-      <!-- Registration form -->
       <form (ngSubmit)="onSubmit()" #registerForm="ngForm">
-        <!-- Username field -->
         <div class="mb-5">
           <label for="username" class="block text-gray-300 text-sm mb-2">Username</label>
           <div class="relative">
@@ -63,7 +54,6 @@
           </div>
         </div>
 
-        <!-- Email field -->
         <div class="mb-5">
           <label for="email" class="block text-gray-300 text-sm mb-2">Email Address</label>
           <div class="relative">
@@ -91,7 +81,33 @@
           </div>
         </div>
 
-        <!-- Password field -->
+        <div class="mb-5">
+          <label for="phone" class="block text-gray-300 text-sm mb-2">Phone Number</label>
+          <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12a2 2 0 012 2v10a2 2 0 01-2 2H3a2 2 0 01-2-2V7a2 2 0 012-2zm9 3H3v2h9V8zm0 4H3v2h9v-2z" />
+              </svg>
+            </div>
+            <input
+              id="phone"
+              type="tel"
+              [(ngModel)]="user.phone"
+              name="phone"
+              required
+              pattern="[0-9]{10,15}"
+              #phone="ngModel"
+              class="w-full bg-gray-800/50 border border-gray-700 pl-10 pr-4 py-2.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-200 transition duration-200"
+              [ngClass]="{'border-red-600 focus:ring-red-500': phone.touched && phone.invalid}"
+              placeholder="1234567890"
+            >
+          </div>
+          <div *ngIf="phone.touched && phone.invalid" class="text-red-500 text-xs mt-1">
+            <div *ngIf="phone.errors?.['required']">Phone number is required</div>
+            <div *ngIf="phone.errors?.['pattern']">Please enter a valid phone number (10-15 digits)</div>
+          </div>
+        </div>
+
         <div class="mb-6">
           <label for="password" class="block text-gray-300 text-sm mb-2">Password</label>
           <div class="relative">
@@ -108,6 +124,7 @@
               required
               minlength="6"
               #password="ngModel"
+              (input)="onPasswordChange()"
               class="w-full bg-gray-800/50 border border-gray-700 pl-10 pr-4 py-2.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-200 transition duration-200"
               [ngClass]="{'border-red-600 focus:ring-red-500': password.touched && password.invalid}"
               placeholder="••••••••"
@@ -117,9 +134,11 @@
             <div *ngIf="password.errors?.['required']">Password is required</div>
             <div *ngIf="password.errors?.['minlength']">Password must be at least 6 characters</div>
           </div>
+          <div class="mt-2 text-sm text-gray-400">
+            Password Strength: {{ passwordFeedback || 'None' }}
+          </div>
         </div>
 
-        <!-- Password requirements hint -->
         <div class="mb-6 p-3 bg-gray-800/80 rounded-lg border border-gray-700">
           <h3 class="text-gray-300 text-xs font-medium mb-2">Password Requirements:</h3>
           <ul class="text-xs text-gray-400 space-y-1 pl-5 list-disc">
@@ -130,7 +149,6 @@
           </ul>
         </div>
 
-        <!-- Terms and conditions checkbox -->
         <div class="flex items-start mb-6">
           <div class="flex items-center h-5">
             <input
@@ -153,7 +171,6 @@
           </div>
         </div>
 
-        <!-- Register button -->
         <button
           type="submit"
           class="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-2.5 rounded-lg hover:from-indigo-700 hover:to-purple-700 transition-all duration-300 shadow-lg disabled:opacity-70 disabled:cursor-not-allowed relative overflow-hidden group"
@@ -165,11 +182,9 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
             </svg>
           </div>
-          <!-- Shine effect with Tailwind only -->
           <div class="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white to-transparent opacity-0 group-hover:opacity-20 group-hover:translate-x-full -skew-x-12 transition-all duration-1000 ease-out"></div>
         </button>
 
-        <!-- Login link -->
         <p class="text-center text-gray-400 mt-6">
           Already have an account? <a routerLink="/login" class="text-indigo-400 hover:text-indigo-300 font-medium transition duration-200">Sign In</a>
         </p>
