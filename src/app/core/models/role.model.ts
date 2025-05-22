@@ -1,3 +1,5 @@
-export interface Role {
-  name: string;
+export enum Role {
+  AGENT = 'AGENT',
+  USER = 'USER',
+  ADMIN = 'ADMIN',
 }
