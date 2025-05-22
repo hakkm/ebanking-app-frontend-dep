@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 import { User } from '../../../core/models/user.model';
-import {CommonModule} from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ToastrService } from 'ngx-toastr';
 
@@ -14,7 +14,7 @@ import { ToastrService } from 'ngx-toastr';
   styleUrls: ['./register.component.css']
 })
 export class RegisterComponent {
-  user: User = { username: '', password: '', email: '', role: { name: 'CLIENT' } };
+  user: User = { username: '', password: '', email: '', role: { name: 'CLIENT' }, phone: '' };
   error: string | null = null;
   isLoading: boolean = false;
   agreeToTerms: boolean = false;
@@ -28,7 +28,6 @@ export class RegisterComponent {
   ) {}
 
   checkPasswordStrength(password: string): void {
-    // Simple password strength check
     this.passwordStrength = 0;
 
     if (!password) {
@@ -36,19 +35,11 @@ export class RegisterComponent {
       return;
     }
 
-    // Length check
     if (password.length >= 6) this.passwordStrength += 25;
-
-    // Uppercase check
     if (/[A-Z]/.test(password)) this.passwordStrength += 25;
-
-    // Number check
     if (/[0-9]/.test(password)) this.passwordStrength += 25;
-
-    // Special character check
     if (/[^A-Za-z0-9]/.test(password)) this.passwordStrength += 25;
 
-    // Set feedback based on strength
     if (this.passwordStrength <= 25) {
       this.passwordFeedback = 'Weak';
     } else if (this.passwordStrength <= 50) {
@@ -65,10 +56,9 @@ export class RegisterComponent {
   }
 
   onSubmit(): void {
-    this.error = null; // Clear previous errors
+    this.error = null;
     this.isLoading = true;
 
-    // Validate form data
     if (!this.agreeToTerms) {
       this.error = 'You must agree to the terms and conditions';
       this.isLoading = false;
