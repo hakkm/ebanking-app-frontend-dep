@@ -13,6 +13,7 @@ import { authGuard } from './core/guards/auth.guard';
 import { AddRecipientComponent } from './shared/components/add-recipient/add-recipient.component';
 import { DashboardComponent } from './features/crypto/components/dashboard/dashboard.component';
 import { RechargeComponent } from './shared/components/rechargetel/rechargetel.component';
+import { AgentLoginComponent } from './shared/components/agent-login/agent-login.component';
 
 export const routes: Routes = [
   {
@@ -38,6 +39,13 @@ export const routes: Routes = [
       { path: 'register', component: RegisterComponent }
     ]
   },
+  {
+    path: 'agent',
+    children: [ 
+      {path: 'login', component: AgentLoginComponent},
+    ]
+  }
+  ,
   {path: 'crypto', loadChildren: () => import('./features/crypto/crypto.module').then(m => m.CryptoModule)},
   { path: '**', redirectTo: 'home' }
 ];
