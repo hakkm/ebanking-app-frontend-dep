@@ -1,0 +1,27 @@
+<!-- Dashboard Component -->
+<div class="max-w-6xl min-h-screen bg-gray-900 text-white mx-auto py-6 px-4 sm:px-6 lg:px-8">
+  <header class="mb-6">
+    <h1 class="text-2xl font-bold">Crypto Trading Platform</h1>
+    <p class="text-gray-400 text-sm">Trade Bitcoin and Ethereum with real-time pricing</p>
+  </header>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- Left and Middle Columns -->
+    <div class="lg:col-span-2 space-y-6">
+      <!-- Market Prices -->
+      <app-market-prices></app-market-prices>
+
+      <!-- Portfolio Overview -->
+      <app-portfolio-overview></app-portfolio-overview>
+
+      <!-- Transaction History -->
+      <app-transaction-history></app-transaction-history>
+    </div>
+
+    <!-- Right Column -->
+    <div class="lg:col-span-1">
+      <!-- Trade Component -->
+      <app-trade></app-trade>
+    </div>
+  </div>
+</div>

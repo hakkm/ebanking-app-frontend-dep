@@ -1,0 +1,27 @@
+.price-card {
+  transition: transform 0.2s ease, background-color 0.3s ease;
+}
+
+.price-card:hover {
+  transform: translateY(-2px);
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+/* Price change animations */
+@keyframes priceUp {
+  0%, 100% { color: inherit; }
+  50% { color: #10b981; } /* Green for price increase */
+}
+
+@keyframes priceDown {
+  0%, 100% { color: inherit; }
+  50% { color: #ef4444; } /* Red for price decrease */
+}
+
+.price-up {
+  animation: priceUp 1.5s ease;
+}
+
+.price-down {
+  animation: priceDown 1.5s ease;
+}
