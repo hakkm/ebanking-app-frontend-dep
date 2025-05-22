@@ -1,2 +1,57 @@
 /* You can add global styles to this file, and also import other style files */
 @import "tailwindcss";
+
+:root {
+    
+  --color-primary: #4F46E5; 
+  --color-primary-hover: #4338CA;
+  --color-primary-light: #6366F1;
+  
+  
+  --color-background: #0F1419; 
+  --color-background-secondary: #1A202C; 
+  --color-background-tertiary: #2D3748; 
+  --color-background-accent: #374151; 
+  
+  
+  --color-text-primary: #FFFFFF; 
+  --color-text-secondary: #9CA3AF; 
+  --color-text-tertiary: #6B7280; 
+  --color-text-accent: #60A5FA; 
+  
+  
+  --color-success: #10B981; 
+  --color-success-light: #34D399;
+  
+  
+  --color-warning: #F59E0B; 
+  --color-warning-light: #FBBF24;
+  
+  
+  --color-border: #374151; 
+  --color-border-light: #4B5563;
+  
+  
+  --color-sidebar-bg: #111827; 
+  --color-sidebar-hover: #1F2937; 
+  --color-sidebar-active: #1E40AF; 
+  
+  
+  --color-progress: #3B82F6; 
+  --color-progress-bg: #374151; 
+  
+  
+  --color-hover: rgba(79, 70, 229, 0.1); 
+  --color-active: rgba(79, 70, 229, 0.2); 
+  --color-disabled: #6B7280;
+  
+  
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  
+  
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+}

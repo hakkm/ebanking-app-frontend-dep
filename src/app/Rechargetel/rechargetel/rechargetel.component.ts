@@ -4,10 +4,10 @@ import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { RouterLink } from '@angular/router';
 import { environment } from '../../../environments/environment';
-import { AuthService } from '../../auth/services/auth.service';
-import { AccountService } from '../../auth/services/account.service';
-import { Account } from '../../auth/models/account.model';
-import { User } from '../../auth/models/user.model';
+import { AuthService } from '../../core/services/auth.service';
+import { AccountService } from '../../core/services/account.service';
+import { Account } from '../../core/models/account.model';
+import { User } from '../../core/models/user.model';
 
 @Component({
   selector: 'app-recharge',

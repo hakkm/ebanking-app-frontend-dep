@@ -2,13 +2,14 @@ import { Component, OnInit } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Recipient } from '../auth/models/recipient.model';
-import { recipientExternal } from '../auth/models/recipientExternal.model';
-import { Account } from '../auth/models/account.model';
-import { AccountService } from '../auth/services/account.service';
-import { RecipientService } from '../auth/services/recipient.service';
-import { Transaction } from '../auth/models/transaction.model';
-import { ExternalTransaction } from '../auth/models/ExternalTransaction.model';
+import { Recipient } from '../../../core/models/recipient.model';
+import { recipientExternal } from '../../../core/models/recipientExternal.model';
+import { Account } from '../../../core/models/account.model';
+import { AccountService } from '../../../core/services/account.service';
+import { RecipientService } from '../../../core/services/recipient.service';
+import { Transaction } from '../../../core/models/transaction.model';
+import {ExternalTransaction} from '../../../core/models/ExternalTransaction.model';
+import { TransactionService } from '../../../core/services/transaction.service';
 
 @Component({
   selector: 'app-transfer',
@@ -72,7 +73,8 @@ export class VirementComponent implements OnInit {
 
   constructor(
     private accountService: AccountService,
-    private recipientService: RecipientService
+    private recipientService: RecipientService,
+    private transactionService: TransactionService
   ) {}
 
   ngOnInit(): void {
@@ -183,22 +185,43 @@ export class VirementComponent implements OnInit {
       description: this.transferModel.reason
     };
 
-    this.accountService.createTransfer(transaction).subscribe({
-      next: (result) => {
-        this.isSubmitting = false;
-        this.successMessage = `Virement interne de ${result.amount} MAD effectué avec succès!`;
-        this.resetForm();
-        this.scrollToTop();
-      },
-      error: (err) => {
-        this.error = err.error?.message || 'Échec du virement interne. Veuillez vérifier votre saisie ou votre solde.';
-        this.isSubmitting = false;
-        this.scrollToTop();
-      }
-    });
-  }
+        this.transactionService.createTransfer(transaction).subscribe({
+          next: (result) => {
+            this.isSubmitting = false;
+            this.successMessage = `Internal transfer of $${result.amount} completed!`;
+            this.resetForm();
+          },
+          error: (err) => {
+            this.error = err.error?.message || 'Failed to create internal transfer. Please check your input or balance.';
+            this.isSubmitting = false;
+          }
+        });
+        //  else {
+        const externalTransaction: ExternalTransaction = {
+          sourceAccountId: Number(this.transferModel.fromAccount),
+          recipientId: Number(this.transferModel.recipient),
+          amount: this.transferModel.amount!,
+          reason: this.transferModel.reason
+        };
 
-  private processExternalTransfer(): void {
+        this.transactionService.createExternalTransfer(externalTransaction).subscribe({
+          next: (result) => {
+            this.isSubmitting = false;
+            this.successMessage = `External transfer of $${result.amount} completed at ${result.executedAt}!`;
+            this.resetForm();
+          },
+          error: (err) => {
+            this.error = err.error?.message || 'Failed to create external transfer. Please check your input or balance.';
+            this.isSubmitting = false;
+          }
+        });
+      }
+    // } else {
+    //   this.error = 'Please fill all required fields correctly.';
+  //   }
+  // }
+
+    private processExternalTransfer(): void {
     const externalTransaction: ExternalTransaction = {
       sourceAccountId: Number(this.transferModel.fromAccount),
       recipientId: Number(this.transferModel.recipient),
@@ -206,7 +229,7 @@ export class VirementComponent implements OnInit {
       reason: this.transferModel.reason
     };
 
-    this.accountService.createExternalTransfer(externalTransaction).subscribe({
+    this.transactionService.createExternalTransfer(externalTransaction).subscribe({
       next: (result) => {
         this.isSubmitting = false;
         // Fix: Handle potential undefined executedAt
@@ -222,6 +245,8 @@ export class VirementComponent implements OnInit {
       }
     });
   }
+
+
 
   isFormValid(): boolean {
     const amount = this.transferModel.amount;
