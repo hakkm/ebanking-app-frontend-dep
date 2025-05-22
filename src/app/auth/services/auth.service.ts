@@ -45,6 +45,7 @@ export class AuthService {
   }
 
   register(user: User): Observable<any> {
+    console.log('Registering user:', user);
     return this.http.post(`${this.apiUrl}/public/register`, user, {
       headers: { 'Content-Type': 'application/json' }
     }).pipe(

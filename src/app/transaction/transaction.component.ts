@@ -19,7 +19,7 @@ interface DisplayTransaction {
 @Component({
   selector: 'app-transactions',
   standalone: true,
-  imports: [NgClass, NgForOf, NgIf, DatePipe, CurrencyPipe, RouterLink],
+  imports: [NgClass, NgForOf, NgIf, DatePipe, CurrencyPipe],
   templateUrl: './transaction.component.html',
   styleUrls: ['transaction.component.css']
 })
