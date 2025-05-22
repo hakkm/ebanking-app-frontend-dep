@@ -8,10 +8,11 @@ import {VirementComponent} from './shared/components/virement/virement.component
 import {TransactionsComponent} from './shared/components/transaction/transaction.component';
 import {LoginComponent} from './shared/components/login/login.component';
 import {RegisterComponent} from './shared/components/register/register.component';
-import {RechargeComponent} from './Rechargetel/rechargetel/rechargetel.component';
+
 import { authGuard } from './core/guards/auth.guard';
 import { AddRecipientComponent } from './shared/components/add-recipient/add-recipient.component';
 import { DashboardComponent } from './features/crypto/components/dashboard/dashboard.component';
+import { RechargeComponent } from './shared/components/rechargetel/rechargetel.component';
 
 export const routes: Routes = [
   {
