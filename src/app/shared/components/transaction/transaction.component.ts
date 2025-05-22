@@ -1,8 +1,12 @@
 import { Component, OnInit } from '@angular/core';
 import { NgClass, NgForOf, NgIf, DatePipe, CurrencyPipe } from '@angular/common';
+import { AccountService } from '../../../core/services/account.service';
+
+import { TransactionService } from '../../../core/services/transaction.service';
 import { RouterLink } from '@angular/router';
-import { AccountService } from '../auth/services/account.service';
-import { Account } from '../auth/models/account.model';
+import { Account } from '../../../core/models/account.model';
+
+
 
 interface DisplayTransaction {
   type: 'Internal' | 'External';
@@ -33,7 +37,10 @@ export class TransactionsComponent implements OnInit {
   // For mobile view
   isMobileView = window.innerWidth < 768;
 
-  constructor(private accountService: AccountService) {}
+  constructor(
+    private accountService: AccountService,
+    private transactionService: TransactionService
+  ) {}
 
   ngOnInit(): void {
     this.loadAccounts();
@@ -76,7 +83,7 @@ export class TransactionsComponent implements OnInit {
     this.error = null;
 
     // Fetch internal transactions
-    this.accountService.getTransactions(account.id).subscribe({
+    this.transactionService.getTransactions(account.id).subscribe({
       next: (internalTxs) => {
         const internalDisplayTxs: DisplayTransaction[] = internalTxs.map(tx => ({
           type: 'Internal',
@@ -89,7 +96,7 @@ export class TransactionsComponent implements OnInit {
         }));
 
         // Fetch external transactions
-        this.accountService.getExternalTransactions().subscribe({
+        this.transactionService.getExternalTransactions().subscribe({
           next: (externalTxs) => {
             const externalDisplayTxs: DisplayTransaction[] = externalTxs
               .filter(tx => tx.sourceAccountId === account.id)

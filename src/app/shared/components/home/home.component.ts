@@ -1,11 +1,13 @@
 import { Component, OnInit } from '@angular/core';
-import { User } from '../auth/models/user.model';
-import { Account } from '../auth/models/account.model';
-import { AuthService } from '../auth/services/auth.service';
-import { AccountService } from '../auth/services/account.service';
-import { RouterLink} from '@angular/router';
+import { User } from '../../../core/models/user.model';
+import { Account } from '../../../core/models/account.model';
+import { AuthService } from '../../../core/services/auth.service';
+import { AccountService } from '../../../core/services/account.service';
+import { RouterLink, RouterOutlet } from '@angular/router';
 import { NgForOf, NgIf, DatePipe, NgClass } from '@angular/common';
-import { Transaction } from '../auth/models/transaction.model';
+import { RechargeComponent } from '../../../Rechargetel/rechargetel/rechargetel.component';
+import { Transaction } from '../../../core/models/transaction.model';
+import { TransactionService } from '../../../core/services/transaction.service';
 
 @Component({
   selector: 'app-home',
@@ -32,7 +34,8 @@ export class HomeComponent implements OnInit {
 
   constructor(
     protected authService: AuthService,
-    private accountService: AccountService
+    private accountService: AccountService,
+    private transactionService: TransactionService
   ) {}
 
   ngOnInit(): void {
@@ -81,7 +84,7 @@ export class HomeComponent implements OnInit {
 
   loadTransactions(accountId: number): void {
     this.isLoadingTransactions = true;
-    this.accountService.getTransactions(accountId).subscribe({
+    this.transactionService.getTransactions(accountId).subscribe({
       next: (transactions) => {
         this.transactions = transactions;
         this.isLoadingTransactions = false;

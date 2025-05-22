@@ -2,8 +2,8 @@ import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
 import { RouterLink, RouterLinkActive, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { Subscription } from 'rxjs';
-import {User} from '../../../auth/models/user.model';
-import {AuthService} from '../../../auth/services/auth.service';
+import {User} from '../../../core/models/user.model';
+import {AuthService} from '../../../core/services/auth.service';
 
 @Component({
   selector: 'app-header',
