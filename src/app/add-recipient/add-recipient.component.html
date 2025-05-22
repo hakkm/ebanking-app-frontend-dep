@@ -134,8 +134,12 @@
             />
           </div>
           <p class="text-xs text-gray-400">Enter the full RIB (Relevé d'Identité Bancaire) of the external bank account</p>
+          <!-- Display bank info if available -->
+          <div *ngIf="bankInfo" class="mt-2 flex items-center">
+            <img [src]="bankInfo.logo" [alt]="bankInfo.name" class="bank-logo mr-2" />
+            <span class="text-gray-300">{{ bankInfo.name }}</span>
+          </div>
         </div>
-
         <!-- Form Actions -->
         <div class="pt-4 border-t border-gray-700 flex flex-col sm:flex-row gap-3 sm:justify-end">
           <button
