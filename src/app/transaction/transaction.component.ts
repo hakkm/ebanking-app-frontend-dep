@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { NgClass, NgForOf, NgIf, DatePipe, CurrencyPipe } from '@angular/common';
+import { RouterLink } from '@angular/router';
 import { AccountService } from '../auth/services/account.service';
 import { Account } from '../auth/models/account.model';
 
@@ -18,8 +19,9 @@ interface DisplayTransaction {
 @Component({
   selector: 'app-transactions',
   standalone: true,
-  imports: [NgClass, NgForOf, NgIf, DatePipe, CurrencyPipe],
-  templateUrl: './transaction.component.html'
+  imports: [NgClass, NgForOf, NgIf, DatePipe, CurrencyPipe, RouterLink],
+  templateUrl: './transaction.component.html',
+  styleUrls: ['transaction.component.css']
 })
 export class TransactionsComponent implements OnInit {
   accounts: Account[] = [];
@@ -28,10 +30,24 @@ export class TransactionsComponent implements OnInit {
   isLoading = false;
   error: string | null = null;
 
+  // For mobile view
+  isMobileView = window.innerWidth < 768;
+
   constructor(private accountService: AccountService) {}
 
   ngOnInit(): void {
     this.loadAccounts();
+    // Check for mobile view on resize
+    window.addEventListener('resize', this.checkScreenSize.bind(this));
+  }
+
+  ngOnDestroy(): void {
+    // Remove event listener
+    window.removeEventListener('resize', this.checkScreenSize.bind(this));
+  }
+
+  checkScreenSize(): void {
+    this.isMobileView = window.innerWidth < 768;
   }
 
   loadAccounts(): void {
@@ -46,7 +62,7 @@ export class TransactionsComponent implements OnInit {
         }
       },
       error: (err) => {
-        this.error = 'Failed to load accounts';
+        this.error = 'Échec du chargement des comptes. Veuillez réessayer plus tard.';
         this.isLoading = false;
         console.error(err);
       }
@@ -66,7 +82,7 @@ export class TransactionsComponent implements OnInit {
           type: 'Internal',
           direction: tx.fromAccountId === account.id ? 'Out' : 'In',
           amount: tx.amount,
-          description: tx.description || 'No description',
+          description: tx.description || 'Aucune description',
           date: tx.createdAt || new Date().toISOString(),
           fromAccountId: tx.fromAccountId,
           toAccountId: tx.toAccountId
@@ -81,7 +97,7 @@ export class TransactionsComponent implements OnInit {
                 type: 'External',
                 direction: 'Out',
                 amount: tx.amount,
-                description: tx.reason || 'No reason',
+                description: tx.reason || 'Aucune raison',
                 date: tx.executedAt || new Date().toISOString(),
                 sourceAccountId: tx.sourceAccountId,
                 recipientId: tx.recipientId
@@ -94,17 +110,38 @@ export class TransactionsComponent implements OnInit {
             this.isLoading = false;
           },
           error: (err) => {
-            this.error = 'Failed to load external transactions';
+            this.error = 'Échec du chargement des transactions externes';
             this.isLoading = false;
             console.error(err);
           }
         });
       },
       error: (err) => {
-        this.error = 'Failed to load internal transactions';
+        this.error = 'Échec du chargement des transactions internes';
         this.isLoading = false;
         console.error(err);
       }
     });
+  }
+
+  /**
+   * Get a formatted account name or number for display
+   */
+  getAccountLabel(accountId: number | undefined): string {
+    if (!accountId) return '-';
+
+    const account = this.accounts.find(a => a.id === accountId);
+    if (account) {
+      return account.alias || account.maskedAccountNumber;
+    }
+    return `Compte #${accountId}`;
+  }
+
+  /**
+   * Track transaction items for better ngFor performance
+   */
+  trackByFn(index: number, item: DisplayTransaction): string {
+    // Create a unique key from transaction properties
+    return `${item.date}-${item.fromAccountId || item.sourceAccountId}-${item.toAccountId || item.recipientId}-${item.amount}`;
   }
 }
