@@ -197,24 +197,24 @@ export class VirementComponent implements OnInit {
           }
         });
         //  else {
-        const externalTransaction: ExternalTransaction = {
-          sourceAccountId: Number(this.transferModel.fromAccount),
-          recipientId: Number(this.transferModel.recipient),
-          amount: this.transferModel.amount!,
-          reason: this.transferModel.reason
-        };
-
-        this.transactionService.createExternalTransfer(externalTransaction).subscribe({
-          next: (result) => {
-            this.isSubmitting = false;
-            this.successMessage = `External transfer of $${result.amount} completed at ${result.executedAt}!`;
-            this.resetForm();
-          },
-          error: (err) => {
-            this.error = err.error?.message || 'Failed to create external transfer. Please check your input or balance.';
-            this.isSubmitting = false;
-          }
-        });
+        // const externalTransaction: ExternalTransaction = {
+        //   sourceAccountId: Number(this.transferModel.fromAccount),
+        //   recipientId: Number(this.transferModel.recipient),
+        //   amount: this.transferModel.amount!,
+        //   reason: this.transferModel.reason
+        // };
+        //
+        // this.transactionService.createExternalTransfer(externalTransaction).subscribe({
+        //   next: (result) => {
+        //     this.isSubmitting = false;
+        //     this.successMessage = `External transfer of $${result.amount} completed at ${result.executedAt}!`;
+        //     this.resetForm();
+        //   },
+        //   error: (err) => {
+        //     this.error = err.error?.message || 'Failed to create external transfer. Please check your input or balance.';
+        //     this.isSubmitting = false;
+        //   }
+        // });
       }
     // } else {
     //   this.error = 'Please fill all required fields correctly.';
@@ -222,6 +222,7 @@ export class VirementComponent implements OnInit {
   // }
 
     private processExternalTransfer(): void {
+
     const externalTransaction: ExternalTransaction = {
       sourceAccountId: Number(this.transferModel.fromAccount),
       recipientId: Number(this.transferModel.recipient),
