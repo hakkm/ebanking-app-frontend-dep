@@ -8,45 +8,16 @@ import { Account } from '../../../core/models/account.model';
 import { AccountService } from '../../../core/services/account.service';
 import { RecipientService } from '../../../core/services/recipient.service';
 import { Transaction } from '../../../core/models/transaction.model';
-import {ExternalTransaction} from '../../../core/models/ExternalTransaction.model';
+import { ExternalTransaction } from '../../../core/models/ExternalTransaction.model';
 import { TransactionService } from '../../../core/services/transaction.service';
+import { ConfirmationModalComponent, ConfirmationData } from './virement-confirmation-modal';
 
 @Component({
   selector: 'app-transfer',
   templateUrl: './virement.component.html',
   standalone: true,
-  imports: [FormsModule, RouterModule, CommonModule],
-  styles: [`
-    /* Custom scrollbar styling */
-    ::-webkit-scrollbar {
-      width: 8px;
-    }
-
-    ::-webkit-scrollbar-track {
-      background: rgba(31, 41, 55, 0.8);
-      border-radius: 10px;
-    }
-
-    ::-webkit-scrollbar-thumb {
-      background: rgba(34, 197, 94, 0.4);
-      border-radius: 10px;
-    }
-
-    ::-webkit-scrollbar-thumb:hover {
-      background: rgba(34, 197, 94, 0.6);
-    }
-
-    /* Animation for form submission */
-    .form-submitting {
-      pointer-events: none;
-      opacity: 0.7;
-    }
-
-    /* Custom radio button animations */
-    input[type="radio"]:checked + div {
-      transform: scale(1.02);
-    }
-  `]
+  imports: [FormsModule, RouterModule, CommonModule, ConfirmationModalComponent],
+  styleUrls: [`virement.component.css`]
 })
 export class VirementComponent implements OnInit {
   transferModel: {
@@ -70,6 +41,10 @@ export class VirementComponent implements OnInit {
   isSubmitting = false;
   error: string | null = null;
   successMessage: string | null = null;
+
+  // Modal properties
+  showConfirmationModal = false;
+  confirmationData: ConfirmationData | null = null;
 
   constructor(
     private accountService: AccountService,
@@ -135,46 +110,60 @@ export class VirementComponent implements OnInit {
 
   onSubmitTransfer(): void {
     if (this.isFormValid() && !this.isSubmitting) {
-      this.isSubmitting = true;
-      this.error = null;
-      this.successMessage = null;
-
-      // Show confirmation dialog
-      const selectedAccount = this.accounts.find(acc => acc.id === Number(this.transferModel.fromAccount));
-      const accountInfo = selectedAccount ? `${selectedAccount.maskedAccountNumber} (${selectedAccount.accountType})` : 'Compte sélectionné';
-
-      let recipientInfo = '';
-      if (this.transferModel.recipientType === 'internal') {
-        const recipient = this.recipients.find(r => r.recipientAccountId === Number(this.transferModel.recipient));
-        recipientInfo = recipient ? (recipient.alias || recipient.accountNumber) : 'Bénéficiaire sélectionné';
-      } else {
-        const recipient = this.externalRecipients.find(r => r.id === Number(this.transferModel.recipient));
-        recipientInfo = recipient ? (recipient.alias || recipient.accountNumber) : 'Bénéficiaire sélectionné';
-      }
-
-      const confirmation = window.confirm(
-        `Confirmation du Virement\n\n` +
-        `Type: ${this.transferModel.recipientType === 'internal' ? 'Interne' : 'Externe'}\n` +
-        `De: ${accountInfo}\n` +
-        `Vers: ${recipientInfo}\n` +
-        `Montant: ${this.transferModel.amount} MAD\n` +
-        `Motif: ${this.transferModel.reason || 'Aucun motif spécifié'}\n\n` +
-        `Voulez-vous confirmer ce virement?`
-      );
-
-      if (!confirmation) {
-        this.isSubmitting = false;
-        return;
-      }
-
-      if (this.transferModel.recipientType === 'internal') {
-        this.processInternalTransfer();
-      } else {
-        this.processExternalTransfer();
-      }
+      // Prepare confirmation data
+      this.prepareConfirmationData();
+      this.showConfirmationModal = true;
     } else {
       this.error = 'Veuillez remplir tous les champs obligatoires correctement.';
     }
+  }
+
+  private prepareConfirmationData(): void {
+    const selectedAccount = this.accounts.find(acc => acc.id === Number(this.transferModel.fromAccount));
+    const accountInfo = selectedAccount ? `${selectedAccount.maskedAccountNumber} (${selectedAccount.accountType})` : 'Compte sélectionné';
+
+    let recipientInfo = '';
+    if (this.transferModel.recipientType === 'internal') {
+      const recipient = this.recipients.find(r => r.recipientAccountId === Number(this.transferModel.recipient));
+      recipientInfo = recipient ? (recipient.alias || recipient.accountNumber) : 'Bénéficiaire sélectionné';
+    } else {
+      const recipient = this.externalRecipients.find(r => r.id === Number(this.transferModel.recipient));
+      recipientInfo = recipient ? (recipient.alias || recipient.accountNumber) : 'Bénéficiaire sélectionné';
+    }
+
+    // Calculate fees for external transfers (example: 0.5% with minimum 5 MAD)
+    const fees = this.transferModel.recipientType === 'external' && this.transferModel.amount
+      ? Math.max(this.transferModel.amount * 0.005, 5)
+      : 0;
+
+    this.confirmationData = {
+      title: 'Confirmation du Virement',
+      type: this.transferModel.recipientType as 'internal' | 'external',
+      fromAccount: accountInfo,
+      toRecipient: recipientInfo,
+      amount: this.transferModel.amount || 0,
+      currency: 'MAD',
+      reason: this.transferModel.reason || undefined,
+      fees: fees > 0 ? fees : undefined
+    };
+  }
+
+  onConfirmTransfer(): void {
+    this.showConfirmationModal = false;
+    this.isSubmitting = true;
+    this.error = null;
+    this.successMessage = null;
+
+    if (this.transferModel.recipientType === 'internal') {
+      this.processInternalTransfer();
+    } else {
+      this.processExternalTransfer();
+    }
+  }
+
+  onCancelTransfer(): void {
+    this.showConfirmationModal = false;
+    this.confirmationData = null;
   }
 
   private processInternalTransfer(): void {
@@ -185,44 +174,22 @@ export class VirementComponent implements OnInit {
       description: this.transferModel.reason
     };
 
-        this.transactionService.createTransfer(transaction).subscribe({
-          next: (result) => {
-            this.isSubmitting = false;
-            this.successMessage = `Internal transfer of $${result.amount} completed!`;
-            this.resetForm();
-          },
-          error: (err) => {
-            this.error = err.error?.message || 'Failed to create internal transfer. Please check your input or balance.';
-            this.isSubmitting = false;
-          }
-        });
-        //  else {
-        // const externalTransaction: ExternalTransaction = {
-        //   sourceAccountId: Number(this.transferModel.fromAccount),
-        //   recipientId: Number(this.transferModel.recipient),
-        //   amount: this.transferModel.amount!,
-        //   reason: this.transferModel.reason
-        // };
-        //
-        // this.transactionService.createExternalTransfer(externalTransaction).subscribe({
-        //   next: (result) => {
-        //     this.isSubmitting = false;
-        //     this.successMessage = `External transfer of $${result.amount} completed at ${result.executedAt}!`;
-        //     this.resetForm();
-        //   },
-        //   error: (err) => {
-        //     this.error = err.error?.message || 'Failed to create external transfer. Please check your input or balance.';
-        //     this.isSubmitting = false;
-        //   }
-        // });
+    this.transactionService.createTransfer(transaction).subscribe({
+      next: (result) => {
+        this.isSubmitting = false;
+        this.successMessage = `Virement interne de ${this.formatCurrency(result.amount)} effectué avec succès!`;
+        this.resetForm();
+        this.scrollToTop();
+      },
+      error: (err) => {
+        this.error = err.error?.message || 'Échec du virement interne. Veuillez vérifier votre saisie ou votre solde.';
+        this.isSubmitting = false;
+        this.scrollToTop();
       }
-    // } else {
-    //   this.error = 'Please fill all required fields correctly.';
-  //   }
-  // }
+    });
+  }
 
-    private processExternalTransfer(): void {
-
+  private processExternalTransfer(): void {
     const externalTransaction: ExternalTransaction = {
       sourceAccountId: Number(this.transferModel.fromAccount),
       recipientId: Number(this.transferModel.recipient),
@@ -235,7 +202,7 @@ export class VirementComponent implements OnInit {
         this.isSubmitting = false;
         // Fix: Handle potential undefined executedAt
         const executedDate = result.executedAt ? new Date(result.executedAt).toLocaleString('fr-FR') : 'maintenant';
-        this.successMessage = `Virement externe de ${result.amount} MAD effectué avec succès le ${executedDate}!`;
+        this.successMessage = `Virement externe de ${this.formatCurrency(result.amount)} effectué avec succès le ${executedDate}!`;
         this.resetForm();
         this.scrollToTop();
       },
@@ -246,8 +213,6 @@ export class VirementComponent implements OnInit {
       }
     });
   }
-
-
 
   isFormValid(): boolean {
     const amount = this.transferModel.amount;
