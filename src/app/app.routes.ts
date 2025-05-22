@@ -1,14 +1,16 @@
-import {Routes} from '@angular/router';
-import {MainLayoutComponent} from './main-layout/main-layout.component';
-import {PublicLayoutComponent} from './public-layout/public-layout.component';
-import {authGuard} from './auth.guard';
-import {HomeComponent} from './home/home.component';
-import {AddRecipientComponent} from './add-recipient/add-recipient.component';
-import {VirementComponent} from './virement/virement.component';
-import {TransactionsComponent} from './transaction/transaction.component';
-import {LoginComponent} from './auth/components/login/login.component';
-import {RegisterComponent} from './auth/components/register/register.component';
+import { Routes } from '@angular/router';
+import { MainLayoutComponent } from './shared/layouts/main-layout/main-layout.component';
+import { PublicLayoutComponent } from './shared/layouts/public-layout/public-layout.component';
+
+import {HomeComponent} from './shared/components/home/home.component';
+
+import {VirementComponent} from './shared/components/virement/virement.component';
+import {TransactionsComponent} from './shared/components/transaction/transaction.component';
+import {LoginComponent} from './shared/components/login/login.component';
+import {RegisterComponent} from './shared/components/register/register.component';
 import {RechargeComponent} from './Rechargetel/rechargetel/rechargetel.component';
+import { authGuard } from './core/guards/auth.guard';
+import { AddRecipientComponent } from './shared/components/add-recipient/add-recipient.component';
 import { DashboardComponent } from './features/crypto/components/dashboard/dashboard.component';
 
 export const routes: Routes = [

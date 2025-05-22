@@ -4,7 +4,7 @@ import { BehaviorSubject, Observable, throwError } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
 import { User } from '../models/user.model';
 import { environment } from '../../../environments/environment';
-import {TokenService} from '../../core/services/token.service';
+import {TokenService} from './token.service';
 
 @Injectable({
   providedIn: 'root'
@@ -45,6 +45,7 @@ export class AuthService {
   }
 
   register(user: User): Observable<any> {
+    console.log('Registering user:', user);
     return this.http.post(`${this.apiUrl}/public/register`, user, {
       headers: { 'Content-Type': 'application/json' }
     }).pipe(
