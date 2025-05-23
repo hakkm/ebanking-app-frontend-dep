@@ -1,0 +1,59 @@
+<div class="p-6 overflow-auto">
+  <!-- Subheader -->
+  <div class="mb-6 flex justify-between items-center bg-background-secondary p-4 rounded-radius-md shadow-shadow-md">
+    <h2 class="text-lg font-semibold text-text-primary">Transactions for John Doe</h2>
+    <div class="flex space-x-4">
+      <select class="p-2 bg-background-tertiary rounded-radius-sm text-text-secondary focus:outline-none focus:ring-2 focus:ring-primary" [(ngModel)]="filterType" (ngModelChange)="applyFilter()">
+        <option value="user">User Transactions</option>
+        <option value="all">All Transactions</option>
+      </select>
+      <input type="date" class="p-2 bg-background-tertiary rounded-radius-sm text-text-secondary focus:outline-none focus:ring-2 focus:ring-primary" [(ngModel)]="filterDate" (ngModelChange)="applyFilter()">
+      <button class="px-4 py-2 bg-primary rounded-radius-sm hover:bg-primary-hover transition-colors duration-200 text-text-primary" (click)="sortTransactions()">Sort by Date</button>
+    </div>
+  </div>
+
+  <!-- Transactions Table -->
+  <div class="p-4 rounded-radius-md bg-background-secondary shadow-shadow-md">
+    <table class="w-full text-left">
+      <thead>
+        <tr class="border-b border-border">
+          <th class="py-2 text-sm font-medium text-text-secondary">Date</th>
+          <th class="py-2 text-sm font-medium text-text-secondary">Amount</th>
+          <th class="py-2 text-sm font-medium text-text-secondary">Type</th>
+          <th class="py-2 text-sm font-medium text-text-secondary">Status</th>
+          <th class="py-2 text-sm font-medium text-text-secondary">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let transaction of filteredTransactions" class="border-b border-border hover:bg-background-accent transition-colors duration-200 animate-fade-in">
+          <td class="py-2 text-text-primary">{{ transaction.date }}</td>
+          <td class="py-2 text-text-primary">${{ transaction.amount }}</td>
+          <td class="py-2 text-text-secondary">{{ transaction.type }}</td>
+          <td class="py-2" [ngClass]="{'text-success': transaction.status === 'Completed', 'text-warning': transaction.status === 'Pending'}">{{ transaction.status }}</td>
+          <td class="py-2">
+            <button class="px-2 py-1 bg-primary rounded-radius-sm hover:bg-primary-hover transition-colors duration-200 text-text-primary" (click)="openModal(transaction)">See Details</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <p *ngIf="filteredTransactions.length === 0" class="text-center text-text-tertiary mt-4">No transactions found.</p>
+  </div>
+
+  <!-- Modal for Transaction Details -->
+  <div class="fixed inset-0 bg-black bg-opacity-50 hidden" id="transactionModal" (click)="closeModal($event)">
+    <div class="bg-background-secondary p-6 rounded-radius-md max-w-lg mx-auto mt-20 animate-slide-up" (click)="stopPropagation($event)" *ngIf="selectedTransaction">
+      <h3 class="text-lg font-bold text-text-primary mb-4">Transaction Details</h3>
+      <div class="space-y-3">
+        <p><span class="text-text-secondary">Date:</span> {{ selectedTransaction.date }}</p>
+        <p><span class="text-text-secondary">Amount:</span> ${{ selectedTransaction.amount }}</p>
+        <p><span class="text-text-secondary">Type:</span> {{ selectedTransaction.type }}</p>
+        <p><span class="text-text-secondary">Status:</span> <span [ngClass]="{'text-success': selectedTransaction.status === 'Completed', 'text-warning': selectedTransaction.status === 'Pending'}">{{ selectedTransaction.status }}</span></p>
+        <p><span class="text-text-secondary">Description:</span> {{ selectedTransaction.description }}</p>
+      </div>
+      <div class="mt-6 flex justify-end space-x-4">
+        <button class="px-4 py-2 bg-danger rounded-radius-sm hover:bg-danger-light transition-colors duration-200 text-text-primary" (click)="reportTransaction()">Report</button>
+        <button class="px-4 py-2 bg-primary rounded-radius-sm hover:bg-primary-hover transition-colors duration-200 text-text-primary" (click)="closeModal()">Close</button>
+      </div>
+    </div>
+  </div>
+</div>

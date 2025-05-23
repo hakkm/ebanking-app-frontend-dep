@@ -17,6 +17,7 @@ import { AgentLoginComponent } from './shared/components/agent-login/agent-login
 import { AgentDashboardComponent } from './shared/components/agent-dashboard/agent-dashboard.component';
 import { AgentLayoutComponent } from './shared/layouts/agent-layout/agent-layout.component';
 import { AgentUsersComponent } from './shared/components/agent-users/agent-users.component';
+import { AgentTransactionComponent } from './shared/components/agent-transaction/agent-transaction.component';
 
 export const routes: Routes = [
   {
@@ -48,7 +49,8 @@ export const routes: Routes = [
     children: [ 
       {path: 'login', component: AgentLoginComponent},
       {path: 'dashboard', component: AgentDashboardComponent},
-      {path: 'manage-users', component: AgentUsersComponent}
+      {path: 'manage-users', component: AgentUsersComponent},
+      {path: 'transactions', component: AgentTransactionComponent},
     ]
   }
   ,
