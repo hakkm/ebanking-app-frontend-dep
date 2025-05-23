@@ -14,6 +14,7 @@ import { AddRecipientComponent } from './shared/components/add-recipient/add-rec
 import { DashboardComponent } from './features/crypto/components/dashboard/dashboard.component';
 import { RechargeComponent } from './shared/components/rechargetel/rechargetel.component';
 import { AgentLoginComponent } from './shared/components/agent-login/agent-login.component';
+import { AgentDashboardComponent } from './shared/components/agent-dashboard/agent-dashboard.component';
 
 export const routes: Routes = [
   {
@@ -43,6 +44,7 @@ export const routes: Routes = [
     path: 'agent',
     children: [ 
       {path: 'login', component: AgentLoginComponent},
+      {path: 'dashboard', component: AgentDashboardComponent}
     ]
   }
   ,

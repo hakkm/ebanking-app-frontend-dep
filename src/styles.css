@@ -1,7 +1,7 @@
 /* You can add global styles to this file, and also import other style files */
 @import "tailwindcss";
 
-:root {
+@theme {
     
   --color-primary: #4F46E5; 
   --color-primary-hover: #4338CA;

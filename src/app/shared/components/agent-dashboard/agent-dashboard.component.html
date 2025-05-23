@@ -1,0 +1,137 @@
+<div class="flex h-screen bg-background text-text-primary">
+  <!-- Sidebar -->
+
+<aside class="w-64 p-4 bg-sidebar-bg border-r border-border">
+  <app-agent-sidebar></app-agent-sidebar>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="flex-1 p-6 overflow-auto">
+    <!-- Header -->
+    
+    <app-agent-header></app-agent-header>
+
+    <!-- Overview Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+      <div class="p-4 rounded-radius-md bg-background-secondary shadow-shadow-md transition-transform duration-200 hover:scale-105">
+        <h3 class="text-sm font-medium text-text-secondary">Transactions Today</h3>
+        <p class="text-2xl font-bold text-text-primary mt-1">125</p>
+        <p class="text-xs text-success mt-1">↑ 3.2% this week</p>
+      </div>
+      <div class="p-4 rounded-radius-md bg-background-secondary shadow-shadow-md transition-transform duration-200 hover:scale-105">
+        <h3 class="text-sm font-medium text-text-secondary">Subscribed Users</h3>
+        <p class="text-2xl font-bold text-text-primary mt-1">500</p>
+        <!-- <div class="w-full bg-progress-bg rounded-radius-sm h-2 mt-2">
+          <div class="bg-progress h-2 rounded-radius-sm" style="width: 85%"></div>
+        </div> -->
+      </div>
+      <div class="p-4 rounded-radius-md bg-background-secondary shadow-shadow-md transition-transform duration-200 hover:scale-105">
+        <h3 class="text-sm font-medium text-text-secondary">Internal Transactions</h3>
+        <p class="text-2xl font-bold text-text-primary mt-1">75</p>
+        <p class="text-xs text-warning-light mt-1">Due in 3 days</p>
+      </div>
+      <div class="p-4 rounded-radius-md bg-background-secondary shadow-shadow-md transition-transform duration-200 hover:scale-105">
+        <h3 class="text-sm font-medium text-text-secondary">External Transactions</h3>
+        <p class="text-2xl font-bold text-text-primary mt-1">50</p>
+        <p class="text-xs text-text-tertiary mt-1">Last updated: 5 mins ago</p>
+      </div>
+    </div>
+
+    <!-- Transaction History and Quick Actions -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+      <!-- Transaction History Graph -->
+      <div class="lg:col-span-2 p-4 rounded-radius-md bg-background-secondary shadow-shadow-md">
+        <h3 class="text-sm font-medium text-text-secondary mb-2">Transaction History (Last 7 Days)</h3>
+        <canvas id="transactionChart" class="w-full h-48"></canvas>
+      </div>
+
+      <!-- Quick Actions -->
+      <div class="p-4 rounded-radius-md bg-background-secondary shadow-shadow-md">
+        <h3 class="text-sm font-medium text-text-secondary mb-2">Quick Actions</h3>
+        <div class="grid grid-cols-2 gap-3">
+          <button class="p-2 bg-primary rounded-radius-sm hover:bg-primary-hover transition-colors duration-200 flex items-center justify-center">
+            <span class="material-icons text-text-primary">Create User</span>
+          </button>
+          <button class="p-2 bg-primary rounded-radius-sm hover:bg-primary-hover transition-colors duration-200 flex items-center justify-center">
+            <span class="material-icons text-text-primary">Close Account</span>
+          </button>
+          <button class="p-2 bg-primary rounded-radius-sm hover:bg-primary-hover transition-colors duration-200 flex items-center justify-center">
+            <span class="material-icons text-text-primary">See Transactions</span>
+          </button>
+          <button class="p-2 bg-primary rounded-radius-sm hover:bg-primary-hover transition-colors duration-200 flex items-center justify-center">
+            <span class="material-icons text-text-primary">See Users</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent Users -->
+    <div class="p-4 rounded-radius-md bg-background-secondary shadow-shadow-md">
+      <div class="flex justify-between items-center mb-2">
+        <h3 class="text-sm font-medium text-text-secondary">Recent Users</h3>
+        <a href="#" class="text-text-accent text-sm hover:underline">View All</a>
+      </div>
+      <ul class="space-y-3">
+        <li class="flex justify-between items-center text-text-primary text-sm p-2 rounded-radius-sm hover:bg-background-accent transition-colors duration-200">
+          <div class="flex items-center">
+            <span class="material-icons mr-2 text-text-secondary">person</span>
+            <span>John Doe</span>
+          </div>
+          <span class="text-text-secondary">Joined: May 20, 2025</span>
+        </li>
+        <li class="flex justify-between items-center text-text-primary text-sm p-2 rounded-radius-sm hover:bg-background-accent transition-colors duration-200">
+          <div class="flex items-center">
+            <span class="material-icons mr-2 text-text-secondary">person</span>
+            <span>Jane Smith</span>
+          </div>
+          <span class="text-text-secondary">Joined: May 19, 2025</span>
+        </li>
+        <li class="flex justify-between items-center text-text-primary text-sm p-2 rounded-radius-sm hover:bg-background-accent transition-colors duration-200">
+          <div class="flex items-center">
+            <span class="material-icons mr-2 text-text-secondary">person</span>
+            <span>Mary Johnson</span>
+          </div>
+          <span class="text-text-secondary">Joined: May 18, 2025</span>
+        </li>
+      </ul>
+    </div>
+  </main>
+
+  <!-- Chart.js Script -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    const ctx = document.getElementById('transactionChart').getContext('2d');
+    new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: ['May 17', 'May 18', 'May 19', 'May 20', 'May 21', 'May 22', 'May 23'],
+        datasets: [{
+          label: 'Transactions',
+          data: [90, 110, 95, 120, 130, 115, 125],
+          borderColor: '#3B82F6', // --color-progress
+          backgroundColor: 'rgba(59, 130, 246, 0.2)',
+          fill: true,
+          tension: 0.4
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: { color: '#9CA3AF' }, // --color-text-secondary
+            grid: { color: '#374151' } // --color-border
+          },
+          x: {
+            ticks: { color: '#9CA3AF' }, // --color-text-secondary
+            grid: { display: false }
+          }
+        },
+        plugins: {
+          legend: { labels: { color: '#9CA3AF' } } // --color-text-secondary
+        }
+      }
+    });
+  </script>
+</div>
