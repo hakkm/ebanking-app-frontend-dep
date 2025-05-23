@@ -36,7 +36,7 @@
     <td class="py-2 flex space-x-2">
         <button class="px-2 py-1 bg-primary rounded-radius-sm hover:bg-primary-hover transition-colors duration-200 text-text-primary" (click)="openModal('john@example.com')">See Transactions</button>
         <button class="px-2 py-1 bg-warning rounded-radius-sm hover:bg-warning-light transition-colors duration-200 text-text-primary">Update</button>
-        <button class="px-2 py-1 bg-danger rounded-radius-sm hover:bg-danger-light transition-colors duration-200 text-text-primary">Delete</button>
+        <button class="px-2 py-1 bg-red-500 rounded-radius-sm hover:bg-red-400 transition-colors duration-200 text-text-primary">Delete</button>
     </td>
     </tr>
     
@@ -48,12 +48,13 @@
 <div class="flex justify-between items-center mt-4">
     <div class="text-text-secondary">Showing {{startIndex + 1}}-{{endIndex}} of {{users.length}} users</div>
     <div class="flex space-x-2">
-        <button (click)="onPreviousPage()"  class="px-4 py-2 bg-primary text-text-primary rounded-radius-md hover:bg-primary-hover transition-colors duration-200 shadow-shadow-sm" >Previous</button>
-        <button (click)="onNextPage()" class="px-4 py-2 bg-primary text-text-primary rounded-radius-md hover:bg-primary-hover transition-colors duration-200 shadow-shadow-sm">Next</button>
+        <button (click)="onPreviousPage()" [disabled]="startIndex==0"  class="px-4 py-2 bg-primary text-text-primary rounded-radius-md hover:bg-primary-hover transition-colors duration-200 shadow-shadow-sm" >Previous</button>
+        <button (click)="onNextPage()" [disabled]="endIndex>=users.length" class="px-4 py-2 bg-primary text-text-primary rounded-radius-md hover:bg-primary-hover transition-colors duration-200 shadow-shadow-sm">Next</button>
     </div>
 </div>
 <!-- Modal for Recent Transactions --><div class="fixed inset-0 bg-black bg-opacity-50 hidden" id="transactionModal" (click)="closeModal($event)">
 <div class="bg-background-secondary p-6 rounded-radius-md max-w-md mx-auto mt-20" (click)="stopPropagation($event)">
+  <!-- I SHOULD MAKE THIS DYNAMIC -->
 <h3 class="text-lg font-bold text-text-primary mb-4">Recent Transactions</h3>
 <ul class="space-y-2">
     <li class="text-text-primary">May 22, 2025 - $50.00 (Transfer)</li>
@@ -71,7 +72,7 @@
   function openModal(email) {
     const modal = document.getElementById('transactionModal');
     modal.classList.remove('hidden');
-    // In a real app, fetch recent transactions for the user with email
+    
   }
 
   function closeModal(event) {
