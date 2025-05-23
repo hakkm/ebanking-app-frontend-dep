@@ -13,45 +13,45 @@
 <table class="w-full text-left">
 <thead>
     <tr class="border-b border-border">
-    <th class="py-2 text-sm font-medium text-text-secondary">Name</th>
+    <th class="py-2 text-sm font-medium text-text-secondary">Id</th>
     <th class="py-2 text-sm font-medium text-text-secondary">Email</th>
-    <th class="py-2 text-sm font-medium text-text-secondary">Joined</th>
-    <th class="py-2 text-sm font-medium text-text-secondary">Actions</th>
+    <th class="py-2 text-sm font-medium text-text-secondary">Username</th>
+    <th class="py-2 text-sm font-medium text-text-secondary">Created At</th>
+    <th class="py-2 text-sm font-medium text-text-secondary">Phone</th>
+    <th class="py-2 text-sm font-medium text-text-secondary"></th>
+    <th class="py-2 text-sm font-medium text-text-secondary"></th>
+    
+    
     </tr>
 </thead>
 <tbody>
-    <tr class="border-b border-border hover:bg-background-accent transition-colors duration-200">
-    <td class="py-2 text-text-primary">John Doe</td>
-    <td class="py-2 text-text-secondary">{{"john@example.com"}}</td>
-    <td class="py-2 text-text-secondary">May 20, 2025</td>
+    <tr class="border-b border-border hover:bg-background-accent transition-colors duration-200" *ngFor="let user of renderedUsers">
+    <td class="py-2 text-text-primary cursor-pointer">{{user.id}}</td>
+    <td class="py-2 text-text-secondary cursor-pointer">{{user.email}}</td>
+    <td class="py-2 text-text-secondary cursor-pointer">{{user.username}}</td>
+    <td class="py-2 text-text-secondary cursor-pointer">{{user.createTime | date}}</td>
+    
+    <td class="py-2 text-text-secondary cursor-pointer">{{user.phone}}</td>
+    
     <td class="py-2 flex space-x-2">
         <button class="px-2 py-1 bg-primary rounded-radius-sm hover:bg-primary-hover transition-colors duration-200 text-text-primary" (click)="openModal('john@example.com')">See Transactions</button>
         <button class="px-2 py-1 bg-warning rounded-radius-sm hover:bg-warning-light transition-colors duration-200 text-text-primary">Update</button>
         <button class="px-2 py-1 bg-danger rounded-radius-sm hover:bg-danger-light transition-colors duration-200 text-text-primary">Delete</button>
     </td>
     </tr>
-    <tr class="border-b border-border hover:bg-background-accent transition-colors duration-200">
-    <td class="py-2 text-text-primary">Jane Smith</td>
-    <td class="py-2 text-text-secondary">{{"jane@example.com"}}</td>
-    <td class="py-2 text-text-secondary">May 19, 2025</td>
-    <td class="py-2 flex space-x-2">
-        <button class="px-2 py-1 bg-primary rounded-radius-sm hover:bg-primary-hover transition-colors duration-200 text-text-primary" (click)="openModal('jane@example.com')">See Transactions</button>
-        <button class="px-2 py-1 bg-warning rounded-radius-sm hover:bg-warning-light transition-colors duration-200 text-text-primary">Update</button>
-        <button class="px-2 py-1 bg-danger rounded-radius-sm hover:bg-danger-light transition-colors duration-200 text-text-primary">Delete</button>
-    </td>
-    </tr>
-    <tr class="border-b border-border hover:bg-background-accent transition-colors duration-200">
-    <td class="py-2 text-text-primary">Mary Johnson</td>
-    <td class="py-2 text-text-secondary">{{"mary@example.com"}}</td>
-    <td class="py-2 text-text-secondary">May 18, 2025</td>
-    <td class="py-2 flex space-x-2">
-        <button class="px-2 py-1 bg-primary rounded-radius-sm hover:bg-primary-hover transition-colors duration-200 text-text-primary" (click)="openModal('mary@example.com')">See Transactions</button>
-        <button class="px-2 py-1 bg-warning rounded-radius-sm hover:bg-warning-light transition-colors duration-200 text-text-primary">Update</button>
-        <button class="px-2 py-1 bg-danger rounded-radius-sm hover:bg-danger-light transition-colors duration-200 text-text-primary">Delete</button>
-    </td>
-    </tr>
+    
 </tbody>
 </table></div>
+<div>
+  
+
+<div class="flex justify-between items-center mt-4">
+    <div class="text-text-secondary">Showing {{startIndex + 1}}-{{endIndex}} of {{users.length}} users</div>
+    <div class="flex space-x-2">
+        <button (click)="onPreviousPage()"  class="px-4 py-2 bg-primary text-text-primary rounded-radius-md hover:bg-primary-hover transition-colors duration-200 shadow-shadow-sm" >Previous</button>
+        <button (click)="onNextPage()" class="px-4 py-2 bg-primary text-text-primary rounded-radius-md hover:bg-primary-hover transition-colors duration-200 shadow-shadow-sm">Next</button>
+    </div>
+</div>
 <!-- Modal for Recent Transactions --><div class="fixed inset-0 bg-black bg-opacity-50 hidden" id="transactionModal" (click)="closeModal($event)">
 <div class="bg-background-secondary p-6 rounded-radius-md max-w-md mx-auto mt-20" (click)="stopPropagation($event)">
 <h3 class="text-lg font-bold text-text-primary mb-4">Recent Transactions</h3>
