@@ -37,7 +37,7 @@
       <form (ngSubmit)="onSubmit()" #loginForm="ngForm">
         <!-- Email field -->
         <div class="mb-5">
-          <label for="email" class="block text-gray-300 text-sm mb-2">Email Address</label>
+          <label for="name" class="block text-gray-300 text-sm mb-2">Email Address</label>
           <div class="relative">
             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -45,10 +45,10 @@
               </svg>
             </div>
             <input
-              id="email"
-              type="email"
-              name="email"
-              [(ngModel)]="email"
+              id="name"
+              type="text"
+              name="name"
+              [(ngModel)]="name"
               required
               #emailModel="ngModel"
               class="w-full bg-gray-800/50 border border-gray-700 pl-10 pr-4 py-2.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-200 transition duration-200"
