@@ -15,6 +15,8 @@ import { DashboardComponent } from './features/crypto/components/dashboard/dashb
 import { RechargeComponent } from './shared/components/rechargetel/rechargetel.component';
 import { AgentLoginComponent } from './shared/components/agent-login/agent-login.component';
 import { AgentDashboardComponent } from './shared/components/agent-dashboard/agent-dashboard.component';
+import { AgentLayoutComponent } from './shared/layouts/agent-layout/agent-layout.component';
+import { AgentUsersComponent } from './shared/components/agent-users/agent-users.component';
 
 export const routes: Routes = [
   {
@@ -42,9 +44,11 @@ export const routes: Routes = [
   },
   {
     path: 'agent',
+    component: AgentLayoutComponent,
     children: [ 
       {path: 'login', component: AgentLoginComponent},
-      {path: 'dashboard', component: AgentDashboardComponent}
+      {path: 'dashboard', component: AgentDashboardComponent},
+      {path: 'manage-users', component: AgentUsersComponent}
     ]
   }
   ,
