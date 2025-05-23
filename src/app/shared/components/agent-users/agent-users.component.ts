@@ -2,10 +2,11 @@ import { Component, OnInit } from '@angular/core';
 import { UserService } from '../../../core/services/user.service';
 import { Client } from '../../../core/models/client.model';
 import { CommonModule } from '@angular/common';
+import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-agent-users',
-  imports: [CommonModule],
+  imports: [CommonModule, RouterLink],
   templateUrl: './agent-users.component.html',
   styleUrl: './agent-users.component.css'
 })

@@ -35,8 +35,8 @@
     
     <td class="py-2 flex space-x-2">
         <button class="px-2 py-1 bg-primary rounded-radius-sm hover:bg-primary-hover transition-colors duration-200 text-text-primary" (click)="openModal('john@example.com')">See Transactions</button>
-        <button class="px-2 py-1 bg-warning rounded-radius-sm hover:bg-warning-light transition-colors duration-200 text-text-primary">Update</button>
-        <button class="px-2 py-1 bg-red-500 rounded-radius-sm hover:bg-red-400 transition-colors duration-200 text-text-primary">Delete</button>
+        <button [routerLink]="`/agent/user-profile/${user.id}`" class="px-2 py-1 bg-warning rounded-radius-sm hover:bg-warning-light transition-colors duration-200 text-text-primary">Go to profile</button>
+        <!-- <button class="px-2 py-1 bg-red-500 rounded-radius-sm hover:bg-red-400 transition-colors duration-200 text-text-primary">Delete</button> -->
     </td>
     </tr>
     

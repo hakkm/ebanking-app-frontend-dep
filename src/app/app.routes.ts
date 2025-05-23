@@ -18,6 +18,7 @@ import { AgentDashboardComponent } from './shared/components/agent-dashboard/age
 import { AgentLayoutComponent } from './shared/layouts/agent-layout/agent-layout.component';
 import { AgentUsersComponent } from './shared/components/agent-users/agent-users.component';
 import { AgentTransactionComponent } from './shared/components/agent-transaction/agent-transaction.component';
+import { AgentUserProfileComponent } from './shared/components/agent-user-profile/agent-user-profile.component';
 
 export const routes: Routes = [
   {
@@ -51,6 +52,8 @@ export const routes: Routes = [
       {path: 'dashboard', component: AgentDashboardComponent},
       {path: 'manage-users', component: AgentUsersComponent},
       {path: 'transactions', component: AgentTransactionComponent},
+      {path: 'transactions', component: AgentTransactionComponent},
+      {path: 'user-profile/:id', component: AgentUserProfileComponent},
     ]
   }
   ,
