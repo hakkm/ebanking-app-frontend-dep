@@ -14,7 +14,7 @@ import { ToastrService } from 'ngx-toastr';
   styleUrls: ['./register.component.css']
 })
 export class RegisterComponent {
-  user: User = { username: '', password: '', email: '', role: { name: 'CLIENT' }, phone: '' };
+  user: User = { username: '', password: '', email: '', role: {name: 'CLIENT'}, phone: '' };
   error: string | null = null;
   isLoading: boolean = false;
   agreeToTerms: boolean = false;
