@@ -8,7 +8,7 @@ import { RouterLink } from '@angular/router';
   selector: 'app-agent-users',
   imports: [CommonModule, RouterLink],
   templateUrl: './agent-users.component.html',
-  styleUrl: './agent-users.component.css'
+  
 })
 export class AgentUsersComponent implements OnInit {
   
