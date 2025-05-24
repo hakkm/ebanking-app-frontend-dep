@@ -2,11 +2,12 @@ import { Component, OnInit, HostListener } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { SidebarComponent } from '../../components/sidebar/sidebar.component';
 import { CommonModule } from '@angular/common';
+import {ChatbotComponent} from '../../components/chatbot/chatbot.component';
 
 @Component({
   selector: 'app-main-layout',
   standalone: true,
-  imports: [RouterOutlet, SidebarComponent, CommonModule],
+  imports: [RouterOutlet, SidebarComponent, CommonModule, ChatbotComponent],
   template: `
     <div class="flex h-screen bg-gray-950 overflow-hidden">
       <!-- Backdrop for mobile sidebar (appears when sidebar is open on mobile) -->
@@ -69,6 +70,19 @@ import { CommonModule } from '@angular/common';
           <router-outlet></router-outlet>
         </main>
       </div>
+      <!-- Chatbot component -->
+      <app-chatbot
+        [isOpen]="isChatbotOpen"
+        (closeRequest)="closeChatbot()"
+      ></app-chatbot>
+      <!-- FLOATING CHATBOT BUTTON -->
+      <button *ngIf="!isChatbotOpen"
+              (click)="toggleChatbot()"
+              class="fixed bottom-6 right-6 w-14 h-14 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 z-40 flex items-center justify-center">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+        </svg>
+      </button>
     </div>
   `,
   styles: [`
@@ -100,17 +114,25 @@ import { CommonModule } from '@angular/common';
 export class MainLayoutComponent implements OnInit {
   isSidebarOpen = true;
   isMobileView = false;
+  isChatbotOpen = false;
+
 
   ngOnInit(): void {
     // Check initial screen size
     this.checkScreenSize();
   }
 
+  /**
+   * Listen to window resize events to adjust sidebar visibility
+   */
   @HostListener('window:resize', ['$event'])
   onResize() {
     this.checkScreenSize();
   }
 
+  /**
+   * Check the screen size and set the sidebar visibility accordingly
+   */
   checkScreenSize(): void {
     this.isMobileView = window.innerWidth < 768;
 
@@ -122,7 +144,24 @@ export class MainLayoutComponent implements OnInit {
     }
   }
 
+  /**
+   * Toggle the sidebar visibility
+   */
   toggleSidebar(): void {
     this.isSidebarOpen = !this.isSidebarOpen;
+  }
+
+  /**
+   * Toggle the chatbot visibility
+   */
+  toggleChatbot(): void {
+    this.isChatbotOpen = !this.isChatbotOpen;
+  }
+
+  /**
+   * Close the chatbot
+   */
+  closeChatbot(): void {
+    this.isChatbotOpen = false;
   }
 }
