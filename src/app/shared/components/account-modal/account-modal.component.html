@@ -1,0 +1,52 @@
+<div class="fixed inset-0 bg-black bg-opacity-50" id="ciireateAccountModal" (click)="closeModal($event)">
+<div class="bg-background-secondary p-6 rounded-radius-md max-w-md mx-auto mt-20 animate-slide-up" (click)="stopPropagation($event)">
+    <h3 class="text-lg font-bold text-text-primary mb-4">{{title}}</h3>
+    <form (ngSubmit)="actionAccount()" class="space-y-4">
+
+    <div>
+        <label class="block text-text-secondary text-sm mb-1">Account Alias</label>
+        <input type="text" [(ngModel)]="newAccount.alias" name="alias" class="w-full p-2 bg-background-tertiary rounded-radius-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-primary" required>
+    </div>
+
+    <div >
+        <label class="block text-text-secondary text-sm mb-1">Account Number</label>
+        <input type="text" [(ngModel)]="newAccount.accountNumber" name="number" class="w-full p-2 bg-background-tertiary rounded-radius-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-primary" required [disabled]="submitButtonText=='Update'">
+    </div>
+
+
+
+
+    <div>
+        <label class="block text-text-secondary text-sm mb-1">{{`${submitButtonText=="Create"? 'Initial': ''}`}} Balance</label>
+        <input type="number" [(ngModel)]="newAccount.balance" name="balance" class="w-full p-2 bg-background-tertiary rounded-radius-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-primary" required>
+    </div>
+
+    <div>
+        <label class="block text-text-secondary text-sm mb-1">Currency</label>
+        <input type="text" [(ngModel)]="newAccount.currency" name="currency" class="w-full p-2 bg-background-tertiary rounded-radius-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-primary" required>
+    </div>
+
+    <div>
+        <label class="block text-text-secondary text-sm mb-1">Account Status</label>
+        <select [(ngModel)]="newAccount.status" name="status" class="w-full p-2 bg-background-tertiary rounded-radius-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-primary" required>
+        <option value="ACTIVE">Active</option>
+        <option value="CLOSED">Closed</option>
+        </select>
+    </div>
+    <div>
+        <label class="block text-text-secondary text-sm mb-1">Account Type</label>
+        <select [(ngModel)]="newAccount.accountType" name="type" class="w-full p-2 bg-background-tertiary rounded-radius-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-primary" required>
+        <option value="Savings">Savings</option>
+        <option value="Checking">Checking</option>
+        <option value="Crypto">Crypto</option>
+        </select>
+    </div>
+        
+
+    <div class="flex justify-end space-x-4">
+        <button type="button" class="px-4 py-2 bg-danger rounded-radius-sm hover:bg-danger-light transition-colors duration-200 text-text-primary" (click)="closeModal()">Cancel</button>
+        <button type="submit" class="px-4 py-2 bg-primary rounded-radius-sm hover:bg-primary-hover transition-colors duration-200 text-text-primary">{{submitButtonText}}</button>
+
+    </div>
+    </form>
+</div>

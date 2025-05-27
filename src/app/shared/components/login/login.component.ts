@@ -48,6 +48,7 @@ export class LoginComponent {
           progressBar: true,
           timeOut: 3000
         });
+        console.log("Login successful");
         this.router.navigate(['/dashboard']);
       },
       error: (err) => {

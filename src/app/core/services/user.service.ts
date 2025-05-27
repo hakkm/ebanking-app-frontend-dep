@@ -39,7 +39,7 @@ export class UserService {
   }
 
   getAccounts(id: number) {
-    return this.http.get(environment.apiUrl + `/client/accounts/${id}`)
+    return this.http.get(environment.apiUrl + `/agent/accounts/user/${id}`)
   }
 
   createAccount(account: AccountExport) {
@@ -48,5 +48,32 @@ export class UserService {
     
     return this.http.post(environment.apiUrl + '/agent/accounts', account)
     
+  }
+
+  getAccount(id: number) {
+    return this.http.get<AccountExport>(environment.apiUrl + `/agent/accounts/${id}`);
+  }
+  updateAccount(account: AccountExport) {
+    
+    this.getAccount(account.id).subscribe((existingAccount: AccountExport) => {
+      account.createdAt = existingAccount.createdAt; 
+      account.accountNumber = existingAccount.accountNumber;
+    },
+      (error: any) => {
+        console.error('Error fetching existing account:', error);
+      }
+    );
+
+
+    
+
+    return this.http.put(environment.apiUrl + `/agent/accounts/${account.id}`, account); 
+  }
+
+
+
+
+  deleteAccount(id: number) {
+    return this.http.delete(environment.apiUrl + `/agent/accounts/${id}`);
   }
 }

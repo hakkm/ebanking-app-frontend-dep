@@ -6,4 +6,5 @@ export interface Account {
   accountType: string;
   status: string;
   alias: string;
+  createdAt?: string;
 }

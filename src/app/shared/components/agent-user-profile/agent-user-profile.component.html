@@ -39,33 +39,74 @@
   <div class="p-4 rounded-radius-md bg-background-secondary shadow-shadow-md">
     <div class="flex justify-between items-center mb-4">
       <h3 class="text-sm font-medium text-text-secondary">Accounts</h3>
-      <button class="px-4 py-2 bg-primary rounded-radius-sm hover:bg-primary-hover transition-colors duration-200 text-text-primary" (click)="openCreateAccountModal()">
+      <button class="px-4 py-2 bg-primary rounded-radius-sm hover:bg-primary-hover transition-colors duration-200 text-text-primary" (click)="openModal('createAccountModal')">
         Create Account
       </button>
     </div>
     <table class="w-full text-left">
       <thead>
         <tr class="border-b border-border">
+          <th class="py-2 text-sm font-medium text-text-secondary">Account Name</th>
           <th class="py-2 text-sm font-medium text-text-secondary">Account Type</th>
           <th class="py-2 text-sm font-medium text-text-secondary">Account Number</th>
           <th class="py-2 text-sm font-medium text-text-secondary">Balance</th>
           <th class="py-2 text-sm font-medium text-text-secondary">Status</th>
+          <th class="py-2 text-sm font-medium text-text-secondary"></th>
+          
         </tr>
       </thead>
       <tbody>
         <tr *ngFor="let account of accounts" class="border-b border-border hover:bg-background-accent transition-colors duration-200 animate-fade-in">
+          <td class="py-2 text-text-primary">{{ account.alias }}</td>
           <td class="py-2 text-text-primary">{{ account.accountType }}</td>
           <td class="py-2 text-text-primary">{{ account.maskedAccountNumber }}</td>
           <td class="py-2 text-text-primary">${{ account.balance }}</td>
           <td class="py-2 text-text-secondary">{{ account.status }}</td>
+          <td class="py-2 text-text-secondary">
+            <button class="px-4 py-2 bg-primary rounded-radius-sm hover:bg-primary-hover transition-colors duration-200 text-text-primary mr-4" (click)="openModal('updateAccountModal', account)">
+              Update
+            </button>
+            
+            <button class="px-4 py-2 bg-red-500 rounded-radius-sm hover:bg-red-400 transition-colors duration-200 text-text-primary cursor-pointer" (click)="deleteAccount(account.id)"> 
+              Delete
+            </button>
+          </td>
         </tr>
       </tbody>
     </table>
     <p *ngIf="accounts.length === 0" class="text-center text-text-tertiary mt-4">No accounts found.</p>
   </div>
 
+  <app-account-modal
+    id="createAccountModal"
+    [title]="'Create New Account'"
+    [submitButtonText]="'Create'"
+    [newAccount]="newAccount"
+    (closeModalEvent)="closeModal('createAccountModal')"
+    (actionAccountEvent)="createAccount()"
+    (stopPropagationEvent)="stopPropagation($event)"
+    style="display:none"
+    
+  >
+
+  </app-account-modal>
+
+
+  <app-account-modal
+    id="updateAccountModal"
+    [title]="'Update Account'"
+    [submitButtonText]="'Update'"
+    [newAccount]="updatedAccount"
+    (closeModalEvent)="closeModal('updateAccountModal')"
+    (actionAccountEvent)="updateAccount()"
+    (stopPropagationEvent)="stopPropagation($event)"
+    style="display:none"
+    
+  >
+
+  </app-account-modal>
   <!-- Modal for Creating Account -->
-  <div class="fixed inset-0 bg-black bg-opacity-50 hidden" id="createAccountModal" (click)="closeModal($event)">
+  <!-- <div class="fixed inset-0 bg-black bg-opacity-50 hidden" id="createAccountModal" (click)="closeModal($event)">
     <div class="bg-background-secondary p-6 rounded-radius-md max-w-md mx-auto mt-20 animate-slide-up" (click)="stopPropagation($event)">
       <h3 class="text-lg font-bold text-text-primary mb-4">Create New Account</h3>
       <form (ngSubmit)="createAccount()" class="space-y-4">
@@ -113,6 +154,6 @@
           <button type="submit" class="px-4 py-2 bg-primary rounded-radius-sm hover:bg-primary-hover transition-colors duration-200 text-text-primary">Create</button>
         </div>
       </form>
-    </div>
-  </div>
+    </div> -->
+  <!-- </div> -->
 </div>
