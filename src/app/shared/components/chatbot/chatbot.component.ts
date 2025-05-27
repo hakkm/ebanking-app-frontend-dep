@@ -1,6 +1,7 @@
 import { Component, Input, Output, EventEmitter, ViewChild, ElementRef, AfterViewChecked } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import {ChatRequest, ChatService} from '../../../core/services/chat.service';
 
 interface ChatMessage {
   text: string;
@@ -66,58 +67,78 @@ export class ChatbotComponent implements AfterViewChecked {
   currentMessage = '';
   messages: ChatMessage[] = [];
   isTyping = false;
+  private sessionId: string | null = null;
+  isConnecting = false;
 
-  // Multilingual responses
-  private responses = {
-    fr: [
-      "Bonjour ! Comment puis-je vous aider avec vos services bancaires aujourd'hui ?",
-      "Je peux vous aider avec vos comptes, virements, et autres services bancaires.",
-      "Pour plus d'informations sur vos comptes, consultez la section 'Mes Comptes'.",
-      "Vous pouvez effectuer un virement en accédant à la section 'Virements'.",
-      "Avez-vous besoin d'aide pour ajouter un nouveau bénéficiaire ?",
-      "Vos données sont sécurisées avec notre système de cryptage avancé.",
-      "Pour consulter l'historique de vos transactions, rendez-vous dans 'Transactions'.",
-      "Je suis là pour vous aider 24h/24 et 7j/7 !",
-      "Souhaitez-vous connaître votre solde actuel ?",
-      "N'hésitez pas à me poser des questions sur nos services bancaires."
-    ],
-    en: [
-      "Hello! How can I help you with your banking services today?",
-      "I can assist you with your accounts, transfers, and other banking services.",
-      "For more information about your accounts, check the 'My Accounts' section.",
-      "You can make a transfer by accessing the 'Transfers' section.",
-      "Do you need help adding a new recipient?",
-      "Your data is secure with our advanced encryption system.",
-      "To view your transaction history, go to 'Transactions'.",
-      "I'm here to help you 24/7!",
-      "Would you like to know your current balance?",
-      "Feel free to ask me questions about our banking services."
-    ],
-    ar: [
-      "مرحباً! كيف يمكنني مساعدتك في خدماتك المصرفية اليوم؟",
-      "يمكنني مساعدتك في حساباتك والتحويلات والخدمات المصرفية الأخرى.",
-      "لمزيد من المعلومات حول حساباتك، تحقق من قسم 'حساباتي'.",
-      "يمكنك إجراء تحويل عن طريق الوصول إلى قسم 'التحويلات'.",
-      "هل تحتاج مساعدة في إضافة مستفيد جديد؟",
-      "بياناتك آمنة مع نظام التشفير المتقدم لدينا.",
-      "لعرض تاريخ معاملاتك، انتقل إلى 'المعاملات'.",
-      "أنا هنا لمساعدتك على مدار الساعة!",
-      "هل تريد معرفة رصيدك الحالي؟",
-      "لا تتردد في طرح أسئلة حول خدماتنا المصرفية."
-    ],
-    ma: [
-      "أهلاً! كيفاش نقدر نعاونك في الخدمات البنكية ديالك اليوم؟",
-      "نقدر نعاونك في الحسابات ديالك والتحويلات والخدمات البنكية الأخرى.",
-      "باش تعرف أكثر على الحسابات ديالك، شوف قسم 'الحسابات ديالي'.",
-      "تقدر دير تحويل من قسم 'التحويلات'.",
-      "واش محتاج مساعدة باش تزيد مستفيد جديد؟",
-      "البيانات ديالك آمنة مع نظام التشفير المتقدم ديالنا.",
-      "باش تشوف تاريخ المعاملات ديالك، مشي لـ'المعاملات'.",
-      "أنا هنا باش نعاونك 24/7!",
-      "واش بغيتي تعرف الرصيد ديالك دابا؟",
-      "ما تتردّش تسولني على الخدمات البنكية ديالنا."
-    ]
-  };
+  constructor(private chatService: ChatService) {}
+
+
+  ngOnInit() {
+    this.initializeSession();
+  }
+
+
+  private initializeSession() {
+    this.isConnecting = true;
+    this.chatService.startNewSession().subscribe({
+      next: (sessionId) => {
+        this.sessionId = sessionId;
+        this.chatService.setSessionId(sessionId);
+        this.isConnecting = false;
+      },
+      error: (error) => {
+        console.error('Failed to start session:', error);
+        this.isConnecting = false;
+      }
+    });
+  }
+
+
+
+  sendMessage() {
+    if (!this.currentMessage.trim() || this.isTyping || !this.sessionId) return;
+
+    // Add user message
+    const userMessage: ChatMessage = {
+      text: this.currentMessage,
+      isUser: true,
+      timestamp: this.getCurrentTime()
+    };
+    this.messages.push(userMessage);
+
+    const messageToSend = this.currentMessage;
+    this.currentMessage = '';
+    this.isTyping = true;
+
+    // Send to backend
+    const request: ChatRequest = {
+      memoryId: this.sessionId,
+      message: messageToSend,
+      language: this.selectedLanguage
+    };
+
+    this.chatService.sendMessage(request).subscribe({
+      next: (response) => {
+        const botMessage: ChatMessage = {
+          text: response,
+          isUser: false,
+          timestamp: this.getCurrentTime()
+        };
+        this.messages.push(botMessage);
+        this.isTyping = false;
+      },
+      error: (error) => {
+        console.error('Chat error:', error);
+        const errorMessage: ChatMessage = {
+          text: this.getErrorMessage(),
+          isUser: false,
+          timestamp: this.getCurrentTime()
+        };
+        this.messages.push(errorMessage);
+        this.isTyping = false;
+      }
+    });
+  }
 
   private welcomeMessages = {
     fr: "Bonjour ! Je suis votre assistant virtuel Atlas Banking. Comment puis-je vous aider aujourd'hui ?",
@@ -133,6 +154,55 @@ export class ChatbotComponent implements AfterViewChecked {
     ma: "كتب الرسالة ديالك..."
   };
 
+
+  private getErrorMessage(): string {
+    const errorMessages = {
+      fr: "Désolé, une erreur s'est produite. Veuillez réessayer.",
+      en: "Sorry, an error occurred. Please try again.",
+      ar: "آسف، حدث خطأ. يرجى المحاولة مرة أخرى.",
+      ma: "سماح ليا، وقع خطأ. عاود جرب."
+    };
+    return errorMessages[this.selectedLanguage];
+  }
+
+
+  getConnectingText(): string {
+    const connecting = {
+      fr: 'Connexion...',
+      en: 'Connecting...',
+      ar: 'جاري الاتصال...',
+      ma: 'كنتصل...'
+    };
+
+    return connecting[this.selectedLanguage];
+
+  }
+
+  getOnlineText(): string {
+    const online = {
+      fr: 'En ligne',
+      en: 'Online',
+      ar: 'متصل',
+      ma: 'متصل'
+    };
+
+    return online[this.selectedLanguage];
+
+  }
+
+  getTypingText(): string {
+    const typing = {
+      fr: 'Atlas tape...',
+      en: 'Atlas is typing...',
+      ar: 'أطلس يكتب...',
+      ma: 'أطلس كيكتب...'
+    };
+    return typing[this.selectedLanguage];
+  }
+
+
+
+
   ngAfterViewChecked() {
     this.scrollToBottom();
   }
@@ -141,74 +211,17 @@ export class ChatbotComponent implements AfterViewChecked {
     if (event) {
       event.stopPropagation();
     }
+
+    // End session when closing
+    if (this.sessionId) {
+      this.chatService.endSession(this.sessionId).subscribe();
+    }
+
     this.closeRequest.emit();
   }
-
   onLanguageChange() {
     // Clear messages when language changes
     this.messages = [];
-  }
-
-  sendMessage() {
-    if (!this.currentMessage.trim() || this.isTyping) return;
-
-    // Add user message
-    const userMessage: ChatMessage = {
-      text: this.currentMessage,
-      isUser: true,
-      timestamp: this.getCurrentTime()
-    };
-    this.messages.push(userMessage);
-
-    // Clear input
-    const messageToProcess = this.currentMessage;
-    this.currentMessage = '';
-
-    // Show typing indicator
-    this.isTyping = true;
-
-    // Simulate bot response delay
-    setTimeout(() => {
-      const botResponse = this.generateResponse(messageToProcess);
-      const botMessage: ChatMessage = {
-        text: botResponse,
-        isUser: false,
-        timestamp: this.getCurrentTime()
-      };
-      this.messages.push(botMessage);
-      this.isTyping = false;
-    }, 1000 + Math.random() * 2000); // Random delay between 1-3 seconds
-  }
-
-  private generateResponse(userMessage: string): string {
-    const responses = this.responses[this.selectedLanguage];
-
-    // Simple keyword-based responses
-    const lowerMessage = userMessage.toLowerCase();
-
-    // Account-related keywords
-    if (lowerMessage.includes('account') || lowerMessage.includes('compte') || lowerMessage.includes('حساب')) {
-      return responses[2]; // Account info response
-    }
-
-    // Transfer-related keywords
-    if (lowerMessage.includes('transfer') || lowerMessage.includes('virement') || lowerMessage.includes('تحويل')) {
-      return responses[3]; // Transfer response
-    }
-
-    // Balance-related keywords
-    if (lowerMessage.includes('balance') || lowerMessage.includes('solde') || lowerMessage.includes('رصيد')) {
-      return responses[8]; // Balance response
-    }
-
-    // Security-related keywords
-    if (lowerMessage.includes('secure') || lowerMessage.includes('sécur') || lowerMessage.includes('أمان')) {
-      return responses[5]; // Security response
-    }
-
-    // Default random response
-    const randomIndex = Math.floor(Math.random() * responses.length);
-    return responses[randomIndex];
   }
 
   getWelcomeMessage(): string {

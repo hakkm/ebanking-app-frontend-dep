@@ -4,7 +4,7 @@ import { Account } from '../../../core/models/account.model';
 import { AuthService } from '../../../core/services/auth.service';
 import { AccountService } from '../../../core/services/account.service';
 import { RouterLink, RouterOutlet } from '@angular/router';
-import { NgForOf, NgIf, DatePipe, NgClass } from '@angular/common';
+import {NgForOf, NgIf, DatePipe, NgClass, DecimalPipe} from '@angular/common';
 import { RechargeComponent } from '../../../Rechargetel/rechargetel/rechargetel.component';
 import { Transaction } from '../../../core/models/transaction.model';
 import { TransactionService } from '../../../core/services/transaction.service';
@@ -17,7 +17,8 @@ import { TransactionService } from '../../../core/services/transaction.service';
     NgIf,
     NgForOf,
     DatePipe,
-    NgClass
+    NgClass,
+    DecimalPipe
   ],
   standalone: true,
   styleUrls: ['./home.component.css']
@@ -25,7 +26,9 @@ import { TransactionService } from '../../../core/services/transaction.service';
 export class HomeComponent implements OnInit {
   currentUser: User | null = null;
   accounts: Account[] = [];
+  activeAccountsPercentage: number = 0;
   transactions: Transaction[] = [];
+  mostRecentTransaction: Transaction | null = null;
   isLoading = true;
   isLoadingTransactions = true;
   error: string | null = null;
@@ -66,7 +69,13 @@ export class HomeComponent implements OnInit {
         this.accounts = accounts;
         this.isLoading = false;
 
-        // Once accounts are loaded, load transactions for the first account
+        // Calculate active accounts percentage based on total accounts
+        const activeAccounts = accounts.filter(account => account.status === 'ACTIVE').length;
+        this.activeAccountsPercentage = accounts.length > 0
+          ? (activeAccounts / accounts.length) * 100
+          : 0;
+
+        // Load transactions for the first account
         if (accounts.length > 0) {
           this.loadTransactions(accounts[0].id);
         } else {
@@ -82,19 +91,45 @@ export class HomeComponent implements OnInit {
     });
   }
 
+
+  // loadTransactions(accountId: number): void {
+  //   this.isLoadingTransactions = true;
+  //   this.transactionService.getTransactions(accountId).subscribe({
+  //     next: (transactions) => {
+  //       this.transactions = transactions;
+  //       this.isLoadingTransactions = false;
+  //     },
+  //     error: (err) => {
+  //       console.error('Error loading transactions:', err);
+  //       this.isLoadingTransactions = false;
+  //     }
+  //   });
+  // }
+
+
   loadTransactions(accountId: number): void {
     this.isLoadingTransactions = true;
     this.transactionService.getTransactions(accountId).subscribe({
       next: (transactions) => {
         this.transactions = transactions;
         this.isLoadingTransactions = false;
+
+        // Find the most recent transaction
+        this.mostRecentTransaction = transactions.length > 0
+          ? transactions.reduce((latest, current) =>
+            new Date(current.createdAt ?? 0) > new Date(latest.createdAt ?? 0) ? current : latest
+          )
+          : null;
       },
       error: (err) => {
         console.error('Error loading transactions:', err);
         this.isLoadingTransactions = false;
+        this.mostRecentTransaction = null;
       }
     });
   }
+
+
 
   loadProviders(): void {
     this.accountService.getProviders().subscribe({
@@ -123,6 +158,15 @@ export class HomeComponent implements OnInit {
       return numericAmount.toFixed(2); // Fallback to plain number
     }
   }
+
+
+  getTransactionCurrency(transaction: Transaction): string {
+    const account = this.accounts.find(
+      acc => acc.id === transaction.fromAccountId || acc.id === transaction.toAccountId
+    );
+    return account ? account.currency : 'MAD';
+  }
+
 
   getTotalBalance(): string {
     // Calculate total balance across all accounts
