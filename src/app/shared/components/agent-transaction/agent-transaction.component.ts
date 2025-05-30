@@ -3,6 +3,7 @@ import { TransactionService } from '../../../core/services/transaction.service';
 import { BrowserModule } from '@angular/platform-browser';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { AgentService } from '../../../core/services/agent.service';
 
 
 @Component({
@@ -15,14 +16,17 @@ export class AgentTransactionComponent implements OnInit {
 
 
 
-  transactions: any[] = [];
+  transactions: any = [];
   filteredTransactions: any[] = [];
   selectedTransaction: any;
   filterType: string = 'user';
   filterDate: string = '';
   isAscending: boolean = true;
 
-  constructor(private transactionService: TransactionService) {}
+  constructor(
+    private transactionService: TransactionService,
+    private agentService: AgentService
+  ) {}
 
   ngOnInit() {
     // this.transactionService.getTransactions(1).subscribe(
@@ -41,6 +45,19 @@ export class AgentTransactionComponent implements OnInit {
       { id: 4, date: '2025-05-20', amount: 75.00, type: 'Transfer', status: 'Completed', user: 'Jane Smith', description: 'Transfer to checking' },
       { id: 5, date: '2025-05-19', amount: 100.00, type: 'Payment', status: 'Pending', user: 'Mary Johnson', description: 'Rent payment' },
   ];
+
+    this.agentService.getTransactions().subscribe(
+      (data) => {
+        console.log(data)
+        this.transactions = data;
+        console.log('Transactions inside:', this.transactions);
+        // this.filteredTransactions = data;
+      },
+      (error) => {
+        console.error('Error fetching transactions:', error);
+      }
+    );
+    this.filteredTransactions = [...this.transactions];
 
     this.applyFilter();
   }

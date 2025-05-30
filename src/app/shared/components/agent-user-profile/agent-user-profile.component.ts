@@ -28,6 +28,7 @@ export class AgentUserProfileComponent implements OnInit {
   constructor(
     private userService: UserService,
     private route: ActivatedRoute,
+    private router: Router
   ) {}
 
   ngOnInit() {
@@ -58,13 +59,39 @@ export class AgentUserProfileComponent implements OnInit {
   }
 
   updateUser() {
-    this.userService.updateUser(this.user);
+    this.userService.updateUser(this.user).subscribe((response: any) => {
+      console.log('User updated:', response);
+      // this.user = response;
+      this.closeModal("updateUserModal");
+    },
+      (error: any) => {
+        console.error('Error updating user:', error);
+        alert('Error updating user! (Implementation pending)');
+      }
+    );
+    console.log('User updated:', this.user);
     alert('User updated successfully! (Implementation pending)');
   }
 
   deleteUser() {
     if (confirm('Are you sure you want to delete this user?')) {
-      this.userService.deleteUser();
+      this.userService.deleteUser(this.user).subscribe(() => {
+        console.log('User deleted:', this.user);
+        // Optionally redirect or update UI after deletion
+        this.router.navigate(['/agent/users']);
+      },
+        (error: any) => {
+          console.error('Error deleting user:', error);
+        alert('Error deleting user! (Implementation pending)');
+        }
+      );
+      
+      this.closeModal("deleteUserModal");
+      console.log('User deleted:', this.user);
+      
+      this.user = {} as Client; // Reset user data
+      this.accounts = []; // Clear accounts
+      this.newAccount = {} as AccountExport; // Reset new account data
       alert('User deleted! (Implementation pending)');
       // Redirect or update UI as needed
     }

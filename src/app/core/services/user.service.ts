@@ -28,14 +28,11 @@ export class UserService {
   }
 
   updateUser(user: any) {
-    // this.user = { ...user };
-    // In a real app, make an API call to update the user
+    return this.http.put(environment.apiUrl + `/agent/users/${user.id}`, user)
   }
 
-  deleteUser() {
-    // In a real app, make an API call to delete the user
-//    this.user = null;
-    // this.accounts = [];
+  deleteUser(user: any) {
+    return this.http.delete(environment.apiUrl + `/agent/users/${user.id}`);
   }
 
   getAccounts(id: number) {

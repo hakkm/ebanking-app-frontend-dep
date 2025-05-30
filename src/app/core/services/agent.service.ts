@@ -18,4 +18,8 @@ export class AgentService {
     return this.http.post(environment.apiUrl + '/agent/public/login', {name, password});
   }
 
+  getTransactions(){
+    return this.http.get(environment.apiUrl + '/agent/transactions');
+  }
+
 }
