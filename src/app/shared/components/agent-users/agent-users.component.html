@@ -1,88 +1,588 @@
-<!-- Header -->
- <header class="flex justify-between items-center mb-6">
-        
-<div class="flex items-center space-x-3">
-<button class="px-4 py-2 bg-primary text-text-primary rounded-radius-md hover:bg-primary-hover transition-colors duration-200 shadow-shadow-sm">
-    + Add User
-</button>
-<button class="px-4 py-2 bg-primary text-text-primary rounded-radius-md hover:bg-primary-hover transition-colors duration-200 shadow-shadow-sm">
-    Export to CSV
-</button>
-</div></header>
-<!-- Users Table --><div class="p-4 rounded-radius-md bg-background-secondary shadow-shadow-md">
-<table class="w-full text-left">
-<thead>
-    <tr class="border-b border-border">
-    <th class="py-2 text-sm font-medium text-text-secondary">Id</th>
-    <th class="py-2 text-sm font-medium text-text-secondary">Email</th>
-    <th class="py-2 text-sm font-medium text-text-secondary">Username</th>
-    <th class="py-2 text-sm font-medium text-text-secondary">Created At</th>
-    <th class="py-2 text-sm font-medium text-text-secondary">Phone</th>
-    <th class="py-2 text-sm font-medium text-text-secondary"></th>
-    <th class="py-2 text-sm font-medium text-text-secondary"></th>
-    
-    
-    </tr>
-</thead>
-<tbody>
-    <tr class="border-b border-border hover:bg-background-accent transition-colors duration-200" *ngFor="let user of renderedUsers">
-    <td class="py-2 text-text-primary cursor-pointer">{{user.id}}</td>
-    <td class="py-2 text-text-secondary cursor-pointer">{{user.email}}</td>
-    <td class="py-2 text-text-secondary cursor-pointer">{{user.username}}</td>
-    <td class="py-2 text-text-secondary cursor-pointer">{{user.createTime | date}}</td>
-    
-    <td class="py-2 text-text-secondary cursor-pointer">{{user.phone}}</td>
-    
-    <td class="py-2 flex space-x-2">
-        <button class="px-2 py-1 bg-primary rounded-radius-sm hover:bg-primary-hover transition-colors duration-200 text-text-primary" (click)="openModal('john@example.com')">See Transactions</button>
-        <button [routerLink]="`/agent/user-profile/${user.id}`" class="px-2 py-1 bg-warning rounded-radius-sm hover:bg-warning-light transition-colors duration-200 text-text-primary">Go to profile</button>
-        <!-- <button class="px-2 py-1 bg-red-500 rounded-radius-sm hover:bg-red-400 transition-colors duration-200 text-text-primary">Delete</button> -->
-    </td>
-    </tr>
-    
-</tbody>
-</table></div>
-<div>
-  
-
-<div class="flex justify-between items-center mt-4">
-    <div class="text-text-secondary">Showing {{startIndex + 1}}-{{endIndex}} of {{users.length}} users</div>
-    <div class="flex space-x-2">
-        <button (click)="onPreviousPage()" [disabled]="startIndex==0"  class="px-4 py-2 bg-primary text-text-primary rounded-radius-md hover:bg-primary-hover transition-colors duration-200 shadow-shadow-sm" >Previous</button>
-        <button (click)="onNextPage()" [disabled]="endIndex>=users.length" class="px-4 py-2 bg-primary text-text-primary rounded-radius-md hover:bg-primary-hover transition-colors duration-200 shadow-shadow-sm">Next</button>
+<div class="space-y-6">
+  <!-- Page Header -->
+  <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
+    <div>
+      <h1 class="text-2xl font-bold text-white">User Management</h1>
+      <p class="text-gray-400 mt-1">Manage and monitor all user accounts</p>
     </div>
+
+    <!-- Header Actions -->
+    <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
+      <!-- Search Bar -->
+      <div class="relative">
+        <input
+          type="text"
+          placeholder="Search users..."
+          [(ngModel)]="searchQuery"
+          (input)="onSearch()"
+          class="w-full sm:w-64 px-4 py-2 pl-10 bg-gray-800/50 border border-gray-600 rounded-xl text-gray-200 placeholder-gray-400 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all duration-200">
+        <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M15.5 14h-.79l-.28-.27A6.5 6.5 0 1 0 13 15.5l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+        </svg>
+      </div>
+
+      <!-- Filter Dropdown -->
+      <div class="relative">
+        <button
+          (click)="toggleFilterDropdown()"
+          class="flex items-center space-x-2 px-4 py-2 bg-gray-800/50 border border-gray-600 rounded-xl text-gray-300 hover:text-white hover:border-gray-500 transition-all duration-200">
+          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M10 18h4v-2h-4v2zM3 6v2h18V6H3zm3 7h12v-2H6v2z"/>
+          </svg>
+          <span>Filter</span>
+          <svg class="w-4 h-4" [class.rotate-180]="showFilterDropdown" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M7 10l5 5 5-5z"/>
+          </svg>
+        </button>
+
+        <!-- Filter Dropdown Menu -->
+        <div *ngIf="showFilterDropdown"
+             class="absolute right-0 top-full mt-2 w-48 bg-gray-900 border border-gray-700 rounded-xl shadow-2xl z-50 backdrop-blur-sm">
+          <div class="p-2">
+            <button
+              (click)="applyFilter('all')"
+              [ngClass]="{
+                'bg-indigo-600 bg-opacity-20': currentFilter === 'all',
+                'w-full text-left px-3 py-2 text-sm text-gray-300 hover:text-white hover:bg-gray-800 hover:bg-opacity-50 rounded-lg transition-all duration-200': true
+              }">
+              All Users
+            </button>
+            <button
+              (click)="applyFilter('active')"
+              [ngClass]="{
+                'bg-indigo-600 bg-opacity-20': currentFilter === 'active',
+                'w-full text-left px-3 py-2 text-sm text-gray-300 hover:text-white hover:bg-gray-800 hover:bg-opacity-50 rounded-lg transition-all duration-200': true
+              }">
+              Active Users
+            </button>
+            <button
+              (click)="applyFilter('inactive')"
+              [ngClass]="{
+                'bg-indigo-600 bg-opacity-20': currentFilter === 'inactive',
+                'w-full text-left px-3 py-2 text-sm text-gray-300 hover:text-white hover:bg-gray-800 hover:bg-opacity-50 rounded-lg transition-all duration-200': true
+              }">
+              Inactive Users
+            </button>
+            <button
+              (click)="applyFilter('recent')"
+              [ngClass]="{
+                'bg-indigo-600 bg-opacity-20': currentFilter === 'recent',
+                'w-full text-left px-3 py-2 text-sm text-gray-300 hover:text-white hover:bg-gray-800 hover:bg-opacity-50 rounded-lg transition-all duration-200': true
+              }">
+              Recently Added
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <button
+        (click)="openAddUserModal()"
+        class="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all duration-200 shadow-lg hover:shadow-[0_8px_32px_rgba(79,70,229,0.3)] font-medium">
+        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+        </svg>
+        <span>Add User</span>
+      </button>
+
+      <button
+        (click)="exportToCSV()"
+        class="flex items-center space-x-2 px-4 py-2 bg-gray-700 border border-gray-600 text-gray-300 rounded-xl hover:bg-gray-600 hover:text-white hover:border-gray-500 transition-all duration-200">
+        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/>
+        </svg>
+        <span class="hidden sm:inline">Export CSV</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Stats Cards -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div [ngClass]="{
+      'bg-gradient-to-br from-indigo-600 to-purple-600 bg-opacity-20 backdrop-blur-sm border border-indigo-500 border-opacity-30 rounded-xl p-4': true
+    }">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-indigo-400 text-sm font-medium">Total Users</p>
+          <p class="text-2xl font-bold text-white">{{ totalUsers }}</p>
+        </div>
+        <div class="w-12 h-12 bg-indigo-600/30 rounded-xl flex items-center justify-center">
+          <svg class="w-6 h-6 text-indigo-400" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M12 12.75c1.63 0 3.07.39 4.24.9 1.08.48 1.76 1.56 1.76 2.73V18H6v-1.61c0-1.18.68-2.26 1.76-2.73 1.17-.52 2.61-.91 4.24-.91zM4 13c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm1.13 1.1c-.37-.06-.74-.1-1.13-.1-.99 0-1.93.21-2.78.58A2.01 2.01 0 0 0 0 16.43V18h4.5v-1.61c0-.83.23-1.61.63-2.29zM20 13c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm4 3.43c0-.81-.48-1.53-1.22-1.85A6.95 6.95 0 0 0 20 14c-.39 0-.76.04-1.13.1.4.68.63 1.46.63 2.29V18H24v-1.57zM12 6c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3z"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <div [ngClass]="{
+      'bg-gradient-to-br from-green-600 to-emerald-600 bg-opacity-20 backdrop-blur-sm border border-green-500 border-opacity-30 rounded-xl p-4': true
+    }">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-green-400 text-sm font-medium">Active Users</p>
+          <p class="text-2xl font-bold text-white">{{ activeUsers }}</p>
+        </div>
+        <div class="w-12 h-12 bg-green-600/30 rounded-xl flex items-center justify-center">
+          <svg class="w-6 h-6 text-green-400" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <div [ngClass]="{
+      'bg-gradient-to-br from-yellow-600 to-orange-600 bg-opacity-20 backdrop-blur-sm border border-yellow-500 border-opacity-30 rounded-xl p-4': true
+    }">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-yellow-400 text-sm font-medium">New This Month</p>
+          <p class="text-2xl font-bold text-white">{{ newUsersThisMonth }}</p>
+        </div>
+        <div class="w-12 h-12 bg-yellow-600/30 rounded-xl flex items-center justify-center">
+          <svg class="w-6 h-6 text-yellow-400" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <div [ngClass]="{
+      'bg-gradient-to-br from-red-600 to-pink-600 bg-opacity-20 backdrop-blur-sm border border-red-500 border-opacity-30 rounded-xl p-4': true
+    }">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-red-400 text-sm font-medium">Pending Review</p>
+          <p class="text-2xl font-bold text-white">{{ pendingUsers }}</p>
+        </div>
+        <div class="w-12 h-12 bg-red-600/30 rounded-xl flex items-center justify-center">
+          <svg class="w-6 h-6 text-red-400" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Enhanced Users Table -->
+  <div class="bg-gray-900/50 backdrop-blur-sm border border-gray-700/50 rounded-xl overflow-hidden">
+    <!-- Table Header -->
+    <div class="p-6 border-b border-gray-700/50">
+      <div class="flex items-center justify-between">
+        <h2 class="text-lg font-semibold text-white">Users Directory</h2>
+        <div class="flex items-center space-x-2 text-sm text-gray-400">
+          <span>{{ filteredUsers.length }} results</span>
+          <div class="w-px h-4 bg-gray-600"></div>
+          <span>Page {{ currentPage }} of {{ totalPages }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Table Content -->
+    <div class="overflow-x-auto">
+      <table class="w-full">
+        <thead class="bg-gray-800/50">
+        <tr>
+          <th class="px-6 py-4 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+            <button (click)="sortBy('id')" class="flex items-center space-x-1 hover:text-gray-300 transition-colors duration-200">
+              <span>User ID</span>
+              <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M7 10l5 5 5-5z"/>
+              </svg>
+            </button>
+          </th>
+          <th class="px-6 py-4 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+            <button (click)="sortBy('email')" class="flex items-center space-x-1 hover:text-gray-300 transition-colors duration-200">
+              <span>User Info</span>
+              <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M7 10l5 5 5-5z"/>
+              </svg>
+            </button>
+          </th>
+          <th class="px-6 py-4 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Status</th>
+          <th class="px-6 py-4 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+            <button (click)="sortBy('createTime')" class="flex items-center space-x-1 hover:text-gray-300 transition-colors duration-200">
+              <span>Created</span>
+              <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M7 10l5 5 5-5z"/>
+              </svg>
+            </button>
+          </th>
+          <th class="px-6 py-4 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Contact</th>
+          <th class="px-6 py-4 text-right text-xs font-medium text-gray-400 uppercase tracking-wider">Actions</th>
+        </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-700/50">
+        <tr *ngFor="let user of renderedUsers; trackBy: trackByUserId"
+            class="hover:bg-gray-800/30 transition-colors duration-200 group">
+          <!-- User ID -->
+          <td class="px-6 py-4 whitespace-nowrap">
+            <div class="flex items-center space-x-3">
+              <div class="w-10 h-10 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-xl flex items-center justify-center text-white font-medium text-sm">
+                {{ getUserInitials(user) }}
+              </div>
+              <div>
+                <p class="text-sm font-medium text-white">#{{ user.id }}</p>
+                <p class="text-xs text-gray-400">{{ getUserJoinDate(user.createTime) }}</p>
+              </div>
+            </div>
+          </td>
+
+          <!-- User Info -->
+          <td class="px-6 py-4">
+            <div>
+              <p class="text-sm font-medium text-white">{{ user.username }}</p>
+              <p class="text-sm text-gray-400">{{ user.email }}</p>
+            </div>
+          </td>
+
+          <!-- Status -->
+          <td class="px-6 py-4 whitespace-nowrap">
+            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border"
+                  [ngClass]="{
+                    'bg-green-600 bg-opacity-20 text-green-400 border-green-500 border-opacity-30': getUserStatus(user) === 'active',
+                    'bg-yellow-600 bg-opacity-20 text-yellow-400 border-yellow-500 border-opacity-30': getUserStatus(user) === 'pending',
+                    'bg-red-600 bg-opacity-20 text-red-400 border-red-500 border-opacity-30': getUserStatus(user) === 'inactive'
+                  }">
+              <div class="w-1.5 h-1.5 rounded-full mr-1.5"
+                   [ngClass]="{
+                     'bg-green-400': getUserStatus(user) === 'active',
+                     'bg-yellow-400': getUserStatus(user) === 'pending',
+                     'bg-red-400': getUserStatus(user) === 'inactive'
+                   }"></div>
+              {{ getUserStatus(user) | titlecase }}
+            </span>
+          </td>
+
+          <!-- Created Date -->
+          <td class="px-6 py-4 whitespace-nowrap">
+            <div>
+              <p class="text-sm text-white">{{ user.createTime | date:'MMM d, y' }}</p>
+              <p class="text-xs text-gray-400">{{ user.createTime | date:'h:mm a' }}</p>
+            </div>
+          </td>
+
+          <!-- Contact -->
+          <td class="px-6 py-4 whitespace-nowrap">
+            <div>
+              <p class="text-sm text-gray-300">{{ user.phone || 'Not provided' }}</p>
+              <button class="text-xs text-indigo-400 hover:text-indigo-300 transition-colors duration-200">
+                Send Message
+              </button>
+            </div>
+          </td>
+
+          <!-- Actions -->
+          <td class="px-6 py-4 whitespace-nowrap text-right">
+            <div class="flex items-center justify-end space-x-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+              <button
+                (click)="viewTransactions(user)"
+                class="inline-flex items-center px-3 py-1.5 bg-indigo-600/20 text-indigo-400 rounded-lg hover:bg-indigo-600/30 hover:text-indigo-300 transition-all duration-200 text-xs font-medium border border-indigo-600/30">
+                <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M19.5 3.5L18 2l-1.5 1.5L15 2l-1.5 1.5L12 2l-1.5 1.5L9 2L7.5 3.5L6 2v14H3v3c0 1.66 1.34 3 3 3h12c1.66 0 3-1.34 3-3V2l-1.5 1.5z"/>
+                </svg>
+                Transactions
+              </button>
+
+              <button
+                [routerLink]="'/agent/user-profile/' + user.id"
+                class="inline-flex items-center px-3 py-1.5 bg-green-600/20 text-green-400 rounded-lg hover:bg-green-600/30 hover:text-green-300 transition-all duration-200 text-xs font-medium border border-green-600/30">
+                <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                </svg>
+                Profile
+              </button>
+
+              <div class="relative">
+                <button
+                  (click)="toggleUserActions(user.id)"
+                  class="p-1.5 text-gray-400 hover:text-white hover:bg-gray-700/50 rounded-lg transition-all duration-200">
+                  <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/>
+                  </svg>
+                </button>
+
+                <!-- User Actions Dropdown -->
+                <div *ngIf="activeUserActions === user.id"
+                     class="absolute right-0 top-full mt-1 w-40 bg-gray-900 border border-gray-700 rounded-lg shadow-2xl z-50 backdrop-blur-sm">
+                  <div class="p-1">
+                    <button class="w-full text-left px-3 py-2 text-xs text-gray-300 hover:text-white hover:bg-gray-800/50 rounded-md transition-all duration-200">
+                      Edit User
+                    </button>
+                    <button class="w-full text-left px-3 py-2 text-xs text-gray-300 hover:text-white hover:bg-gray-800/50 rounded-md transition-all duration-200">
+                      Reset Password
+                    </button>
+                    <button class="w-full text-left px-3 py-2 text-xs text-red-400 hover:text-red-300 hover:bg-red-600/10 rounded-md transition-all duration-200">
+                      Suspend User
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </td>
+        </tr>
+        </tbody>
+      </table>
+
+      <!-- Empty State -->
+      <div *ngIf="renderedUsers.length === 0" class="text-center py-12">
+        <svg class="w-16 h-16 text-gray-600 mx-auto mb-4" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M12 12.75c1.63 0 3.07.39 4.24.9 1.08.48 1.76 1.56 1.76 2.73V18H6v-1.61c0-1.18.68-2.26 1.76-2.73 1.17-.52 2.61-.91 4.24-.91zM4 13c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm1.13 1.1c-.37-.06-.74-.1-1.13-.1-.99 0-1.93.21-2.78.58A2.01 2.01 0 0 0 0 16.43V18h4.5v-1.61c0-.83.23-1.61.63-2.29zM20 13c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm4 3.43c0-.81-.48-1.53-1.22-1.85A6.95 6.95 0 0 0 20 14c-.39 0-.76.04-1.13.1.4.68.63 1.46.63 2.29V18H24v-1.57zM12 6c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3z"/>
+        </svg>
+        <h3 class="text-lg font-medium text-gray-300 mb-2">No users found</h3>
+        <p class="text-gray-500">Try adjusting your search or filter criteria.</p>
+      </div>
+    </div>
+
+    <!-- Enhanced Pagination -->
+    <div class="px-6 py-4 border-t border-gray-700/50 bg-gray-800/30">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0">
+        <div class="text-sm text-gray-400">
+          Showing <span class="font-medium text-white">{{ startIndex + 1 }}</span> to
+          <span class="font-medium text-white">{{ Math.min(endIndex, filteredUsers.length) }}</span> of
+          <span class="font-medium text-white">{{ filteredUsers.length }}</span> results
+        </div>
+
+        <div class="flex items-center space-x-2">
+          <!-- Page Size Selector -->
+          <select
+            [(ngModel)]="pageSize"
+            (change)="onPageSizeChange()"
+            class="px-3 py-1.5 bg-gray-800 border border-gray-600 rounded-lg text-gray-300 text-sm focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/20">
+            <option value="10">10 per page</option>
+            <option value="25">25 per page</option>
+            <option value="50">50 per page</option>
+            <option value="100">100 per page</option>
+          </select>
+
+          <div class="flex items-center space-x-1">
+            <button
+              (click)="goToFirstPage()"
+              [disabled]="currentPage === 1"
+              class="p-2 text-gray-400 hover:text-white hover:bg-gray-700/50 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
+              <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M18.41 16.59L13.82 12l4.59-4.59L17 6l-6 6 6 6 1.41-1.41zM6 6h2v12H6V6z"/>
+              </svg>
+            </button>
+
+            <button
+              (click)="onPreviousPage()"
+              [disabled]="currentPage === 1"
+              class="px-3 py-1.5 text-gray-400 hover:text-white hover:bg-gray-700/50 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
+              Previous
+            </button>
+
+            <!-- Page Numbers -->
+            <div class="flex items-center space-x-1">
+              <button
+                *ngFor="let page of getVisiblePages()"
+                (click)="goToPage(page)"
+                [class.bg-indigo-600]="page === currentPage"
+                [class.text-white]="page === currentPage"
+                [class.text-gray-400]="page !== currentPage"
+                class="w-8 h-8 text-sm rounded-lg hover:bg-gray-700/50 hover:text-white transition-all duration-200">
+                {{ page }}
+              </button>
+            </div>
+
+            <button
+              (click)="onNextPage()"
+              [disabled]="currentPage === totalPages"
+              class="px-3 py-1.5 text-gray-400 hover:text-white hover:bg-gray-700/50 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
+              Next
+            </button>
+
+            <button
+              (click)="goToLastPage()"
+              [disabled]="currentPage === totalPages"
+              class="p-2 text-gray-400 hover:text-white hover:bg-gray-700/50 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
+              <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M5.59 7.41L10.18 12l-4.59 4.59L7 18l6-6-6-6-1.41 1.41zM16 6h2v12h-2V6z"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Enhanced Transaction Modal -->
+  <div *ngIf="showTransactionModal"
+       class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+       (click)="closeTransactionModal()">
+    <div class="bg-gray-900/95 backdrop-blur-md border border-gray-700 rounded-xl shadow-2xl w-full max-w-2xl max-h-[80vh] overflow-hidden"
+         (click)="$event.stopPropagation()">
+
+      <!-- Modal Header -->
+      <div class="flex items-center justify-between p-6 border-b border-gray-700">
+        <div class="flex items-center space-x-3">
+          <div class="w-10 h-10 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-xl flex items-center justify-center">
+            <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M19.5 3.5L18 2l-1.5 1.5L15 2l-1.5 1.5L12 2l-1.5 1.5L9 2L7.5 3.5L6 2v14H3v3c0 1.66 1.34 3 3 3h12c1.66 0 3-1.34 3-3V2l-1.5 1.5z"/>
+            </svg>
+          </div>
+          <div>
+            <h3 class="text-lg font-semibold text-white">Recent Transactions</h3>
+            <p class="text-sm text-gray-400">{{ selectedUser?.username }} ({{ selectedUser?.email }})</p>
+          </div>
+        </div>
+        <button
+          (click)="closeTransactionModal()"
+          class="p-2 text-gray-400 hover:text-white hover:bg-gray-700/50 rounded-lg transition-all duration-200">
+          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Modal Content -->
+      <div class="p-6 max-h-96 overflow-y-auto">
+        <div *ngIf="userTransactions.length > 0; else noTransactions" class="space-y-4">
+          <div *ngFor="let transaction of userTransactions"
+               class="flex items-center justify-between p-4 bg-gray-800 bg-opacity-30 rounded-xl border border-gray-700 border-opacity-50 hover:bg-gray-800 hover:bg-opacity-50 transition-colors duration-200">
+            <div class="flex items-center space-x-4">
+              <div class="w-10 h-10 rounded-xl flex items-center justify-center"
+                   [ngClass]="{
+                     'bg-green-600 bg-opacity-20': transaction.type === 'deposit',
+                     'bg-red-600 bg-opacity-20': transaction.type === 'withdrawal',
+                     'bg-blue-600 bg-opacity-20': transaction.type === 'transfer'
+                   }">
+                <svg class="w-5 h-5"
+                     [ngClass]="{
+                       'text-green-400': transaction.type === 'deposit',
+                       'text-red-400': transaction.type === 'withdrawal',
+                       'text-blue-400': transaction.type === 'transfer'
+                     }"
+                     fill="currentColor" viewBox="0 0 24 24">
+                  <path *ngIf="transaction.type === 'deposit'" d="M7 14l5-5 5 5z"/>
+                  <path *ngIf="transaction.type === 'withdrawal'" d="M7 10l5 5 5-5z"/>
+                  <path *ngIf="transaction.type === 'transfer'" d="M6.99 11L3 15l3.99 4v-3H14v-2H6.99v-3zM21 9l-3.99-4v3H10v2h7.01v3L21 9z"/>
+                </svg>
+              </div>
+              <div>
+                <p class="text-sm font-medium text-white">{{ transaction.description }}</p>
+                <p class="text-xs text-gray-400">{{ transaction.date | date:'MMM d, y - h:mm a' }}</p>
+                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium mt-1"
+                      [ngClass]="{
+                        'bg-green-600 bg-opacity-20 text-green-400': transaction.status === 'completed',
+                        'bg-yellow-600 bg-opacity-20 text-yellow-400': transaction.status === 'pending',
+                        'bg-red-600 bg-opacity-20 text-red-400': transaction.status === 'failed'
+                      }">
+                  {{ transaction.status | titlecase }}
+                </span>
+              </div>
+            </div>
+            <div class="text-right">
+              <p class="text-sm font-semibold"
+                 [ngClass]="{
+                   'text-green-400': transaction.type === 'deposit',
+                   'text-red-400': transaction.type === 'withdrawal',
+                   'text-blue-400': transaction.type === 'transfer'
+                 }">
+                <span *ngIf="transaction.type === 'deposit'">+</span>
+                <span *ngIf="transaction.type === 'withdrawal'">-</span>
+                ${{ transaction.amount | number:'1.2-2' }}
+              </p>
+              <p class="text-xs text-gray-400">{{ transaction.reference }}</p>
+            </div>
+          </div>
+        </div>
+
+        <ng-template #noTransactions>
+          <div class="text-center py-8">
+            <svg class="w-16 h-16 text-gray-600 mx-auto mb-4" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M19.5 3.5L18 2l-1.5 1.5L15 2l-1.5 1.5L12 2l-1.5 1.5L9 2L7.5 3.5L6 2v14H3v3c0 1.66 1.34 3 3 3h12c1.66 0 3-1.34 3-3V2l-1.5 1.5z"/>
+            </svg>
+            <h4 class="text-lg font-medium text-gray-300 mb-2">No transactions found</h4>
+            <p class="text-gray-500">This user hasn't made any transactions yet.</p>
+          </div>
+        </ng-template>
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="flex items-center justify-between p-6 border-t border-gray-700 bg-gray-800/30">
+        <button
+          class="text-sm text-indigo-400 hover:text-indigo-300 transition-colors duration-200 flex items-center space-x-2">
+          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M19 7h-3V6a4 4 0 0 0-8 0v1H5a1 1 0 0 0-1 1v11a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3V8a1 1 0 0 0-1-1zM10 6a2 2 0 0 1 4 0v1h-4V6zm8 13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V9h12v10z"/>
+          </svg>
+          <span>View Detailed Report</span>
+        </button>
+        <button
+          (click)="closeTransactionModal()"
+          class="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-all duration-200 border border-gray-600">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add User Modal -->
+  <div *ngIf="showAddUserModal"
+       class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+       (click)="closeAddUserModal()">
+    <div class="bg-gray-900/95 backdrop-blur-md border border-gray-700 rounded-xl shadow-2xl w-full max-w-md"
+         (click)="$event.stopPropagation()">
+
+      <!-- Add User Modal Header -->
+      <div class="flex items-center justify-between p-6 border-b border-gray-700">
+        <h3 class="text-lg font-semibold text-white">Add New User</h3>
+        <button
+          (click)="closeAddUserModal()"
+          class="p-2 text-gray-400 hover:text-white hover:bg-gray-700/50 rounded-lg transition-all duration-200">
+          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Add User Form -->
+      <div class="p-6">
+        <form (ngSubmit)="addNewUser()" #addUserForm="ngForm" class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-300 mb-2">Full Name</label>
+            <input
+              type="text"
+              [(ngModel)]="newUser.username"
+              name="username"
+              required
+              class="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/20">
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-300 mb-2">Email Address</label>
+            <input
+              type="email"
+              [(ngModel)]="newUser.email"
+              name="email"
+              required
+              class="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/20">
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-300 mb-2">Phone Number</label>
+            <input
+              type="tel"
+              [(ngModel)]="newUser.phone"
+              name="phone"
+              class="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/20">
+          </div>
+
+          <div class="flex items-center justify-end space-x-3 pt-4">
+            <button
+              type="button"
+              (click)="closeAddUserModal()"
+              class="px-4 py-2 text-gray-400 hover:text-white hover:bg-gray-700/50 rounded-lg transition-all duration-200">
+              Cancel
+            </button>
+            <button
+              type="submit"
+              [disabled]="!addUserForm.valid"
+              class="px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg hover:from-indigo-700 hover:to-purple-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
+              Create User
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
 </div>
-<!-- Modal for Recent Transactions --><div class="fixed inset-0 bg-black bg-opacity-50 hidden" id="transactionModal" (click)="closeModal($event)">
-<div class="bg-background-secondary p-6 rounded-radius-md max-w-md mx-auto mt-20" (click)="stopPropagation($event)">
-  <!-- I SHOULD MAKE THIS DYNAMIC -->
-<h3 class="text-lg font-bold text-text-primary mb-4">Recent Transactions</h3>
-<ul class="space-y-2">
-    <li class="text-text-primary">May 22, 2025 - $50.00 (Transfer)</li>
-    <li class="text-text-primary">May 21, 2025 - $30.00 (Payment)</li>
-    <li class="text-text-primary">May 20, 2025 - $25.00 (Deposit)</li>
-</ul>
-<div class="mt-4 flex justify-between">
-    <a href="#" class="text-text-accent hover:underline">See All</a>
-    <button class="px-4 py-2 bg-primary rounded-radius-sm hover:bg-primary-hover transition-colors duration-200 text-text-primary" (click)="closeModal()">Close</button>
-</div>
-</div></div>
-    
-
-<script>
-  function openModal(email) {
-    const modal = document.getElementById('transactionModal');
-    modal.classList.remove('hidden');
-    
-  }
-
-  function closeModal(event) {
-    const modal = document.getElementById('transactionModal');
-    if (event.target === modal) {
-      modal.classList.add('hidden');
-    }
-  }
-
-  function stopPropagation(event) {
-    event.stopPropagation();
-  }
-</script>
