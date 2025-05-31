@@ -17,7 +17,7 @@ export class AgentTransactionComponent implements OnInit {
 
 
   transactions: any = [];
-  filteredTransactions: any[] = [];
+  filteredTransactions: any = [];
   selectedTransaction: any;
   filterType: string = 'user';
   filterDate: string = '';
@@ -38,20 +38,14 @@ export class AgentTransactionComponent implements OnInit {
     //     console.error('Error fetching transactions:', error);
     //   }
     // );
-    this.transactions = [
-      { id: 1, date: '2025-05-23', amount: 50.00, type: 'Transfer', status: 'Completed', user: 'John Doe', description: 'Transfer to savings' },
-      { id: 2, date: '2025-05-22', amount: 30.00, type: 'Payment', status: 'Pending', user: 'John Doe', description: 'Utility bill payment' },
-      { id: 3, date: '2025-05-21', amount: 25.00, type: 'Deposit', status: 'Completed', user: 'John Doe', description: 'Salary deposit' },
-      { id: 4, date: '2025-05-20', amount: 75.00, type: 'Transfer', status: 'Completed', user: 'Jane Smith', description: 'Transfer to checking' },
-      { id: 5, date: '2025-05-19', amount: 100.00, type: 'Payment', status: 'Pending', user: 'Mary Johnson', description: 'Rent payment' },
-  ];
+    this.transactions = [];
 
     this.agentService.getTransactions().subscribe(
       (data) => {
         console.log(data)
         this.transactions = data;
         console.log('Transactions inside:', this.transactions);
-        // this.filteredTransactions = data;
+        this.filteredTransactions = data;
       },
       (error) => {
         console.error('Error fetching transactions:', error);
@@ -74,7 +68,7 @@ export class AgentTransactionComponent implements OnInit {
   }
 
   sortTransactions() {
-    this.filteredTransactions.sort((a, b) => {
+    this.filteredTransactions.sort((a:any, b:any) => {
       const dateA = new Date(a.date).getTime();
       const dateB = new Date(b.date).getTime();
       return this.isAscending ? dateA - dateB : dateB - dateA;

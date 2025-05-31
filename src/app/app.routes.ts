@@ -21,6 +21,21 @@ import { AgentTransactionComponent } from './shared/components/agent-transaction
 import { AgentUserProfileComponent } from './shared/components/agent-user-profile/agent-user-profile.component';
 
 export const routes: Routes = [
+
+  {path: 'agent/login', component: AgentLoginComponent},
+  {
+    path: 'agent',
+    component: AgentLayoutComponent,
+    children: [ 
+      
+      {path: 'dashboard', component: AgentDashboardComponent},
+      {path: 'manage-users', component: AgentUsersComponent},
+      {path: 'transactions', component: AgentTransactionComponent},
+      {path: 'transactions', component: AgentTransactionComponent},
+      {path: 'user-profile/:id', component: AgentUserProfileComponent},
+    ]
+  }
+  ,
   {
     path: '',
     component: MainLayoutComponent,
@@ -44,19 +59,8 @@ export const routes: Routes = [
       { path: 'register', component: RegisterComponent }
     ]
   },
-  {
-    path: 'agent',
-    component: AgentLayoutComponent,
-    children: [ 
-      {path: 'login', component: AgentLoginComponent},
-      {path: 'dashboard', component: AgentDashboardComponent},
-      {path: 'manage-users', component: AgentUsersComponent},
-      {path: 'transactions', component: AgentTransactionComponent},
-      {path: 'transactions', component: AgentTransactionComponent},
-      {path: 'user-profile/:id', component: AgentUserProfileComponent},
-    ]
-  }
-  ,
+
+
   {path: 'crypto', loadChildren: () => import('./features/crypto/crypto.module').then(m => m.CryptoModule)},
   { path: '**', redirectTo: 'home' }
 ];

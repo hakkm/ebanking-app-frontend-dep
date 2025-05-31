@@ -22,4 +22,8 @@ export class AgentService {
     return this.http.get(environment.apiUrl + '/agent/transactions');
   }
 
+  getTransaction(id: number) {
+    return this.http.get(environment.apiUrl + `/agent/transactions/${id}`);
+  }
+
 }

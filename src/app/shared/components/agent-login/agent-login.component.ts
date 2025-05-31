@@ -51,7 +51,9 @@ export class AgentLoginComponent {
           progressBar: true,
           timeOut: 3000
         });
-        this.router.navigate(['/dashboard']);
+        // sessionStora
+        this.router.navigate(['/agent/dashboard']);
+        
       },
       error: (err) => {
         this.error = err.message || 'Authentication failed. Please try again.';
