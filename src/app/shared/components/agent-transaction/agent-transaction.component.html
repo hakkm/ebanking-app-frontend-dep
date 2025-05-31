@@ -1,57 +1,516 @@
-<div class="p-6 overflow-auto">
-  <!-- Subheader -->
-  <div class="mb-6 flex justify-between items-center bg-background-secondary p-4 rounded-radius-md shadow-shadow-md">
-    <h2 class="text-lg font-semibold text-text-primary">Transactions for John Doe</h2>
-    <div class="flex space-x-4">
-      <select class="p-2 bg-background-tertiary rounded-radius-sm text-text-secondary focus:outline-none focus:ring-2 focus:ring-primary" [(ngModel)]="filterType" (ngModelChange)="applyFilter()">
-        <option value="user">User Transactions</option>
-        <option value="all">All Transactions</option>
-      </select>
-      <input type="date" class="p-2 bg-background-tertiary rounded-radius-sm text-text-secondary focus:outline-none focus:ring-2 focus:ring-primary" [(ngModel)]="filterDate" (ngModelChange)="applyFilter()">
-      <button class="px-4 py-2 bg-primary rounded-radius-sm hover:bg-primary-hover transition-colors duration-200 text-text-primary" (click)="sortTransactions()">Sort by Date</button>
+<!-- Enhanced Agent Transaction Page HTML -->
+<div class="p-6 space-y-6 bg-gray-950 min-h-screen">
+  <!-- Header Section with Stats -->
+  <div class="bg-gradient-to-br from-gray-900/80 to-gray-800/80 backdrop-blur-sm border border-gray-700/50 rounded-2xl p-6 shadow-2xl">
+    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
+      <div>
+        <h1 class="text-2xl font-bold text-white mb-2">Transaction Management</h1>
+        <p class="text-gray-400">Monitor and manage all banking transactions</p>
+      </div>
+
+      <!-- Quick Stats -->
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="bg-gray-800/50 rounded-xl p-4 border border-gray-700/30">
+          <div class="flex items-center space-x-2">
+            <div class="w-8 h-8 bg-green-600/20 rounded-lg flex items-center justify-center">
+              <svg class="w-4 h-4 text-green-400" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M7 14l3-3 3 3 5-5-1.41-1.41L12 12.17 9.41 9.59 6 13l1 1z"/>
+              </svg>
+            </div>
+            <div>
+              <p class="text-xs text-gray-400">Today</p>
+              <p class="text-sm font-semibold text-white">{{ todayCount }}</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-gray-800/50 rounded-xl p-4 border border-gray-700/30">
+          <div class="flex items-center space-x-2">
+            <div class="w-8 h-8 bg-blue-600/20 rounded-lg flex items-center justify-center">
+              <svg class="w-4 h-4 text-blue-400" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+              </svg>
+            </div>
+            <div>
+              <p class="text-xs text-gray-400">Completed</p>
+              <p class="text-sm font-semibold text-white">{{ completedCount }}</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-gray-800/50 rounded-xl p-4 border border-gray-700/30">
+          <div class="flex items-center space-x-2">
+            <div class="w-8 h-8 bg-yellow-600/20 rounded-lg flex items-center justify-center">
+              <svg class="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15h2v2h-2zm0-4h2V7h-2z"/>
+              </svg>
+            </div>
+            <div>
+              <p class="text-xs text-gray-400">Pending</p>
+              <p class="text-sm font-semibold text-white">{{ pendingCount }}</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-gray-800/50 rounded-xl p-4 border border-gray-700/30">
+          <div class="flex items-center space-x-2">
+            <div class="w-8 h-8 bg-purple-600/20 rounded-lg flex items-center justify-center">
+              <svg class="w-4 h-4 text-purple-400" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm0-4h-2V7h2v8z"/>
+              </svg>
+            </div>
+            <div>
+              <p class="text-xs text-gray-400">Total Volume</p>
+              <p class="text-sm font-semibold text-white">{{ formatCurrency(totalVolume, 'MAD') }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filters and Search Section -->
+  <div class="bg-gradient-to-br from-gray-900/80 to-gray-800/80 backdrop-blur-sm border border-gray-700/50 rounded-2xl p-6 shadow-xl">
+    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
+      <!-- Search Bar -->
+      <div class="relative flex-1 max-w-md">
+        <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 0 0 1.48-5.34c-.47-2.78-2.79-5-5.59-5.34a6.505 6.505 0 0 0-7.27 7.27c.34 2.8 2.56 5.12 5.34 5.59a6.5 6.5 0 0 0 5.34-1.48l.27.28v.79l4.25 4.25c.41.41 1.08.41 1.49 0 .41-.41.41-1.08 0-1.49L15.5 14zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+        </svg>
+        <input
+          type="text"
+          placeholder="Search transactions..."
+          [(ngModel)]="searchTerm"
+          (ngModelChange)="applyFilters()"
+          class="w-full pl-10 pr-4 py-3 bg-gray-800/50 border border-gray-700/50 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200">
+      </div>
+
+      <!-- Filter Controls -->
+      <div class="flex flex-wrap gap-4">
+        <!-- Status Filter -->
+        <select
+          [(ngModel)]="statusFilter"
+          (ngModelChange)="applyFilters()"
+          class="px-4 py-3 bg-gray-800/50 border border-gray-700/50 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all duration-200">
+          <option value="">All Status</option>
+          <option value="completed">Completed</option>
+          <option value="pending">Pending</option>
+          <option value="failed">Failed</option>
+        </select>
+
+        <!-- Type Filter -->
+        <select
+          [(ngModel)]="typeFilter"
+          (ngModelChange)="applyFilters()"
+          class="px-4 py-3 bg-gray-800/50 border border-gray-700/50 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all duration-200">
+          <option value="">All Types</option>
+          <option value="transfer">Transfer</option>
+          <option value="deposit">Deposit</option>
+          <option value="withdrawal">Withdrawal</option>
+          <option value="payment">Payment</option>
+        </select>
+
+        <!-- Date Range -->
+        <div class="flex space-x-2">
+          <input
+            type="date"
+            [(ngModel)]="startDate"
+            (ngModelChange)="applyFilters()"
+            class="px-4 py-3 bg-gray-800/50 border border-gray-700/50 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all duration-200">
+          <input
+            type="date"
+            [(ngModel)]="endDate"
+            (ngModelChange)="applyFilters()"
+            class="px-4 py-3 bg-gray-800/50 border border-gray-700/50 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all duration-200">
+        </div>
+
+        <!-- Export Button -->
+        <button
+          (click)="exportTransactions()"
+          class="px-6 py-3 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white rounded-xl font-medium transition-all duration-200 flex items-center space-x-2 shadow-lg hover:shadow-xl">
+          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/>
+          </svg>
+          <span>Export</span>
+        </button>
+      </div>
     </div>
   </div>
 
   <!-- Transactions Table -->
-  <div class="p-4 rounded-radius-md bg-background-secondary shadow-shadow-md">
-    <table class="w-full text-left">
-      <thead>
-        <tr class="border-b border-border">
-          <th class="py-2 text-sm font-medium text-text-secondary">from</th>
-          <th class="py-2 text-sm font-medium text-text-secondary">to</th>
-          <th class="py-2 text-sm font-medium text-text-secondary">amount</th>
-          <th class="py-2 text-sm font-medium text-text-secondary">cause</th>
-          <th class="py-2 text-sm font-medium text-text-secondary">create At</th>
+  <div class="bg-gradient-to-br from-gray-900/80 to-gray-800/80 backdrop-blur-sm border border-gray-700/50 rounded-2xl shadow-2xl overflow-hidden">
+    <!-- Table Header -->
+    <div class="px-6 py-4 border-b border-gray-700/50">
+      <div class="flex items-center justify-between">
+        <h3 class="text-lg font-semibold text-white">Recent Transactions</h3>
+        <div class="flex items-center space-x-2">
+          <span class="text-sm text-gray-400">{{ filteredTransactions.length }} of {{ transactions.length }} transactions</span>
+          <button
+            (click)="refreshTransactions()"
+            class="p-2 text-gray-400 hover:text-white hover:bg-gray-700/50 rounded-lg transition-all duration-200">
+            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="isLoading" class="p-12 text-center">
+      <div class="w-8 h-8 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+      <p class="text-gray-400">Loading transactions...</p>
+    </div>
+
+    <!-- Error State -->
+    <div *ngIf="error && !isLoading" class="p-12 text-center">
+      <div class="w-16 h-16 bg-red-600/20 rounded-full flex items-center justify-center mx-auto mb-4">
+        <svg class="w-8 h-8 text-red-400" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15h2v2h-2zm0-4h2V7h-2z"/>
+        </svg>
+      </div>
+      <h3 class="text-lg font-medium text-white mb-2">Error Loading Transactions</h3>
+      <p class="text-gray-400 mb-6">{{ error }}</p>
+      <button
+        (click)="refreshTransactions()"
+        class="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-medium transition-all duration-200">
+        Try Again
+      </button>
+    </div>
+
+    <!-- Table Content -->
+    <div *ngIf="!isLoading && !error" class="overflow-x-auto">
+      <table class="w-full">
+        <thead class="bg-gray-800/30">
+        <tr>
+          <th class="px-6 py-4 text-left text-xs font-medium text-gray-400 uppercase tracking-wider cursor-pointer hover:text-white transition-colors duration-200" (click)="sortBy('id')">
+            <div class="flex items-center space-x-1">
+              <span>Transaction ID</span>
+              <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M7 10l5 5 5-5z"/>
+              </svg>
+            </div>
+          </th>
+          <th class="px-6 py-4 text-left text-xs font-medium text-gray-400 uppercase tracking-wider cursor-pointer hover:text-white transition-colors duration-200" (click)="sortBy('fromAccountId')">
+            <div class="flex items-center space-x-1">
+              <span>From</span>
+              <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M7 10l5 5 5-5z"/>
+              </svg>
+            </div>
+          </th>
+          <th class="px-6 py-4 text-left text-xs font-medium text-gray-400 uppercase tracking-wider cursor-pointer hover:text-white transition-colors duration-200" (click)="sortBy('toAccountId')">
+            <div class="flex items-center space-x-1">
+              <span>To</span>
+              <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M7 10l5 5 5-5z"/>
+              </svg>
+            </div>
+          </th>
+          <th class="px-6 py-4 text-left text-xs font-medium text-gray-400 uppercase tracking-wider cursor-pointer hover:text-white transition-colors duration-200" (click)="sortBy('amount')">
+            <div class="flex items-center space-x-1">
+              <span>Amount</span>
+              <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M7 10l5 5 5-5z"/>
+              </svg>
+            </div>
+          </th>
+          <th class="px-6 py-4 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Status</th>
+          <th class="px-6 py-4 text-left text-xs font-medium text-gray-400 uppercase tracking-wider cursor-pointer hover:text-white transition-colors duration-200" (click)="sortBy('createdAt')">
+            <div class="flex items-center space-x-1">
+              <span>Date</span>
+              <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M7 10l5 5 5-5z"/>
+              </svg>
+            </div>
+          </th>
+          <th class="px-6 py-4 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Actions</th>
         </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let transaction of filteredTransactions" class="border-b border-border hover:bg-background-accent transition-colors duration-200 animate-fade-in">
-          <td class="py-2 text-text-primary">{{ transaction.fromAccountId }}</td>
-          <td class="py-2 text-text-primary">${{ transaction.fromAccountTo }}</td>
-          <td class="py-2 text-text-secondary">{{ transaction.amount }}</td>
-          <td class="py-2 text-text-secondary">{{ transaction.description }}</td>
-          <td class="py-2 text-text-secondary">{{ transaction.createdAt | date }}</td>
-          
+        </thead>
+        <tbody class="divide-y divide-gray-700/30">
+        <tr
+          *ngFor="let transaction of paginatedTransactions; trackBy: trackByTransaction"
+          class="hover:bg-gray-800/30 transition-all duration-200 group">
+
+          <!-- Transaction ID -->
+          <td class="px-6 py-4 whitespace-nowrap">
+            <div class="flex items-center">
+              <div class="w-8 h-8 bg-indigo-600/20 rounded-lg flex items-center justify-center mr-3">
+                <svg class="w-4 h-4 text-indigo-400" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/>
+                </svg>
+              </div>
+              <div>
+                <p class="text-sm font-medium text-white">#{{ getTransactionId(transaction) }}</p>
+                <p class="text-xs text-gray-400">{{ getTransactionType(transaction) }}</p>
+              </div>
+            </div>
+          </td>
+
+          <!-- From Account -->
+          <td class="px-6 py-4 whitespace-nowrap">
+            <div>
+              <p class="text-sm text-white">{{ transaction.fromAccountId || 'N/A' }}</p>
+              <p class="text-xs text-gray-400">{{ getAccountName(transaction.fromAccountId) }}</p>
+            </div>
+          </td>
+
+          <!-- To Account -->
+          <td class="px-6 py-4 whitespace-nowrap">
+            <div>
+              <p class="text-sm text-white">{{ transaction.toAccountId || 'N/A' }}</p>
+              <p class="text-xs text-gray-400">{{ getAccountName(transaction.toAccountId) }}</p>
+            </div>
+          </td>
+
+          <!-- Amount -->
+          <td class="px-6 py-4 whitespace-nowrap">
+            <div class="flex items-center">
+              <div [ngClass]="{
+                  'text-green-400': isPositiveTransaction(transaction),
+                  'text-red-400': !isPositiveTransaction(transaction),
+                  'text-gray-300': isNeutralTransaction(transaction)
+                }">
+                <p class="text-sm font-semibold">
+                  {{ isPositiveTransaction(transaction) ? '+' : '' }}{{ formatCurrency(transaction.amount, getTransactionCurrency(transaction)) }}
+                </p>
+                <p class="text-xs opacity-75">{{ getTransactionCurrency(transaction) }}</p>
+              </div>
+            </div>
+          </td>
+
+          <!-- Status -->
+          <td class="px-6 py-4 whitespace-nowrap">
+              <span [ngClass]="{
+                'bg-green-600/20 text-green-400 border-green-600/30': getTransactionStatus(transaction) === 'completed',
+                'bg-yellow-600/20 text-yellow-400 border-yellow-600/30': getTransactionStatus(transaction) === 'pending',
+                'bg-red-600/20 text-red-400 border-red-600/30': getTransactionStatus(transaction) === 'failed',
+                'bg-gray-600/20 text-gray-400 border-gray-600/30': getTransactionStatus(transaction) === 'unknown'
+              }"
+                    class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border">
+                <div [ngClass]="{
+                  'bg-green-400': getTransactionStatus(transaction) === 'completed',
+                  'bg-yellow-400': getTransactionStatus(transaction) === 'pending',
+                  'bg-red-400': getTransactionStatus(transaction) === 'failed',
+                  'bg-gray-400': getTransactionStatus(transaction) === 'unknown'
+                }"
+                     class="w-2 h-2 rounded-full mr-2"></div>
+                {{ getTransactionStatus(transaction) | titlecase }}
+              </span>
+          </td>
+
+          <!-- Date -->
+          <td class="px-6 py-4 whitespace-nowrap">
+            <div>
+              <p class="text-sm text-white">{{ transaction.createdAt | date:'MMM dd, yyyy' }}</p>
+              <p class="text-xs text-gray-400">{{ transaction.createdAt | date:'hh:mm a' }}</p>
+            </div>
+          </td>
+
+          <!-- Actions -->
+          <td class="px-6 py-4 whitespace-nowrap">
+            <div class="flex items-center space-x-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+              <button
+                (click)="viewTransaction(transaction)"
+                class="p-2 text-gray-400 hover:text-indigo-400 hover:bg-indigo-600/20 rounded-lg transition-all duration-200"
+                title="View Details">
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
+                </svg>
+              </button>
+              <button
+                (click)="downloadReceipt(transaction)"
+                class="p-2 text-gray-400 hover:text-green-400 hover:bg-green-600/20 rounded-lg transition-all duration-200"
+                title="Download Receipt">
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/>
+                </svg>
+              </button>
+              <button
+                (click)="flagTransaction(transaction)"
+                class="p-2 text-gray-400 hover:text-red-400 hover:bg-red-600/20 rounded-lg transition-all duration-200"
+                title="Flag Transaction">
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M14.4 6L14 4H5v17h2v-7h5.6l.4 2h7V6z"/>
+                </svg>
+              </button>
+            </div>
+          </td>
         </tr>
-      </tbody>
-    </table>
-    <p *ngIf="filteredTransactions.length === 0" class="text-center text-text-tertiary mt-4">No transactions found.</p>
+        </tbody>
+      </table>
+
+      <!-- Empty State -->
+      <div *ngIf="filteredTransactions.length === 0" class="p-12 text-center">
+        <div class="w-16 h-16 bg-gray-800/50 rounded-full flex items-center justify-center mx-auto mb-4">
+          <svg class="w-8 h-8 text-gray-400" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/>
+          </svg>
+        </div>
+        <h3 class="text-lg font-medium text-white mb-2">No transactions found</h3>
+        <p class="text-gray-400 mb-6">Try adjusting your filters or search criteria</p>
+        <button
+          (click)="clearFilters()"
+          class="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-medium transition-all duration-200">
+          Clear Filters
+        </button>
+      </div>
+    </div>
+
+    <!-- Pagination -->
+    <div *ngIf="filteredTransactions.length > 0 && !isLoading && !error" class="px-6 py-4 border-t border-gray-700/50">
+      <div class="flex items-center justify-between">
+        <div class="text-sm text-gray-400">
+          Showing {{ ((currentPage - 1) * pageSize) + 1 }} to {{ Math.min(currentPage * pageSize, filteredTransactions.length) }} of {{ filteredTransactions.length }} results
+        </div>
+        <div class="flex items-center space-x-2">
+          <button
+            [disabled]="currentPage === 1"
+            (click)="previousPage()"
+            class="px-3 py-2 text-gray-400 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-700/50 rounded-lg transition-all duration-200">
+            Previous
+          </button>
+
+          <div class="flex items-center space-x-1">
+            <button
+              *ngFor="let page of getPageNumbers()"
+              [class.bg-indigo-600]="page === currentPage"
+              [class.text-white]="page === currentPage"
+              [class.text-gray-400]="page !== currentPage"
+              (click)="goToPage(page)"
+              class="w-10 h-10 rounded-lg hover:bg-gray-700/50 transition-all duration-200 text-sm font-medium">
+              {{ page }}
+            </button>
+          </div>
+
+          <button
+            [disabled]="currentPage === totalPages"
+            (click)="nextPage()"
+            class="px-3 py-2 text-gray-400 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-700/50 rounded-lg transition-all duration-200">
+            Next
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 
-  <!-- Modal for Transaction Details -->
-  <div class="fixed inset-0 bg-black bg-opacity-50 hidden" id="transactionModal" (click)="closeModal($event)">
-    <div class="bg-background-secondary p-6 rounded-radius-md max-w-lg mx-auto mt-20 animate-slide-up" (click)="stopPropagation($event)" *ngIf="selectedTransaction">
-      <h3 class="text-lg font-bold text-text-primary mb-4">Transaction Details</h3>
-      <div class="space-y-3">
-        <p><span class="text-text-secondary">Date:</span> {{ selectedTransaction.date }}</p>
-        <p><span class="text-text-secondary">Amount:</span> ${{ selectedTransaction.amount }}</p>
-        <p><span class="text-text-secondary">Type:</span> {{ selectedTransaction.type }}</p>
-        <p><span class="text-text-secondary">Status:</span> <span [ngClass]="{'text-success': selectedTransaction.status === 'Completed', 'text-warning': selectedTransaction.status === 'Pending'}">{{ selectedTransaction.status }}</span></p>
-        <p><span class="text-text-secondary">Description:</span> {{ selectedTransaction.description }}</p>
+  <!-- Transaction Details Modal -->
+  <div
+    *ngIf="selectedTransaction && showModal"
+    class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+    (click)="closeModal()">
+    <div
+      class="bg-gradient-to-br from-gray-900 to-gray-800 border border-gray-700/50 rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl"
+      (click)="$event.stopPropagation()">
+
+      <!-- Modal Header -->
+      <div class="px-6 py-4 border-b border-gray-700/50">
+        <div class="flex items-center justify-between">
+          <h3 class="text-xl font-semibold text-white">Transaction Details</h3>
+          <button
+            (click)="closeModal()"
+            class="p-2 text-gray-400 hover:text-white hover:bg-gray-700/50 rounded-lg transition-all duration-200">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+            </svg>
+          </button>
+        </div>
       </div>
-      <div class="mt-6 flex justify-end space-x-4">
-        <button class="px-4 py-2 bg-danger rounded-radius-sm hover:bg-danger-light transition-colors duration-200 text-text-primary" (click)="reportTransaction()">Report</button>
-        <button class="px-4 py-2 bg-primary rounded-radius-sm hover:bg-primary-hover transition-colors duration-200 text-text-primary" (click)="closeModal()">Close</button>
+
+      <!-- Modal Content -->
+      <div class="p-6 space-y-6">
+        <!-- Transaction Overview -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="space-y-4">
+            <div>
+              <label class="text-xs font-medium text-gray-400 uppercase tracking-wider">Transaction ID</label>
+              <p class="text-lg font-semibold text-white mt-1">#{{ getTransactionId(selectedTransaction) }}</p>
+            </div>
+            <div>
+              <label class="text-xs font-medium text-gray-400 uppercase tracking-wider">Amount</label>
+              <p class="text-2xl font-bold text-white mt-1">{{ formatCurrency(selectedTransaction.amount, getTransactionCurrency(selectedTransaction)) }}</p>
+            </div>
+            <div>
+              <label class="text-xs font-medium text-gray-400 uppercase tracking-wider">Status</label>
+              <div class="mt-2">
+                <span [ngClass]="{
+                  'bg-green-600/20 text-green-400 border-green-600/30': getTransactionStatus(selectedTransaction) === 'completed',
+                  'bg-yellow-600/20 text-yellow-400 border-yellow-600/30': getTransactionStatus(selectedTransaction) === 'pending',
+                  'bg-red-600/20 text-red-400 border-red-600/30': getTransactionStatus(selectedTransaction) === 'failed'
+                }"
+                      class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium border">
+                  {{ getTransactionStatus(selectedTransaction) | titlecase }}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div class="space-y-4">
+            <div>
+              <label class="text-xs font-medium text-gray-400 uppercase tracking-wider">Date & Time</label>
+              <p class="text-lg text-white mt-1">{{ selectedTransaction.createdAt | date:'full' }}</p>
+            </div>
+            <div>
+              <label class="text-xs font-medium text-gray-400 uppercase tracking-wider">From Account</label>
+              <p class="text-lg text-white mt-1">{{ getAccountName(selectedTransaction.fromAccountId) }}</p>
+            </div>
+            <div>
+              <label class="text-xs font-medium text-gray-400 uppercase tracking-wider">To Account</label>
+              <p class="text-lg text-white mt-1">{{ getAccountName(selectedTransaction.toAccountId) }}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Description -->
+        <div>
+          <label class="text-xs font-medium text-gray-400 uppercase tracking-wider">Description</label>
+          <p class="text-gray-300 mt-2 bg-gray-800/30 rounded-lg p-4">{{ selectedTransaction.description || 'No description available' }}</p>
+        </div>
+
+        <!-- Additional Details -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="bg-gray-800/30 rounded-lg p-4">
+            <label class="text-xs font-medium text-gray-400 uppercase tracking-wider">Transaction ID</label>
+            <p class="text-white mt-1">{{ getTransactionId(selectedTransaction) }}</p>
+          </div>
+          <div class="bg-gray-800/30 rounded-lg p-4">
+            <label class="text-xs font-medium text-gray-400 uppercase tracking-wider">Currency</label>
+            <p class="text-white mt-1">{{ getTransactionCurrency(selectedTransaction) }}</p>
+          </div>
+          <div class="bg-gray-800/30 rounded-lg p-4">
+            <label class="text-xs font-medium text-gray-400 uppercase tracking-wider">Type</label>
+            <p class="text-white mt-1">{{ getTransactionType(selectedTransaction) | titlecase }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modal Actions -->
+      <div class="px-6 py-4 border-t border-gray-700/50 bg-gray-900/50">
+        <div class="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-3">
+          <button
+            (click)="downloadReceipt(selectedTransaction)"
+            class="px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-xl font-medium transition-all duration-200 flex items-center justify-center space-x-2">
+            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/>
+            </svg>
+            <span>Download Receipt</span>
+          </button>
+
+          <button
+            (click)="flagTransaction(selectedTransaction)"
+            class="px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-xl font-medium transition-all duration-200 flex items-center justify-center space-x-2">
+            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M14.4 6L14 4H5v17h2v-7h5.6l.4 2h7V6z"/>
+            </svg>
+            <span>Flag Transaction</span>
+          </button>
+
+          <button
+            (click)="closeModal()"
+            class="px-6 py-3 bg-gray-600 hover:bg-gray-700 text-white rounded-xl font-medium transition-all duration-200">
+            Close
+          </button>
+        </div>
       </div>
     </div>
   </div>
