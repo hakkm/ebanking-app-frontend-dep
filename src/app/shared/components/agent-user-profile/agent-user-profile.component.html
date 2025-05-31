@@ -1,0 +1,159 @@
+<div class="p-6 overflow-auto">
+  <!-- Subheader -->
+  <div class="mb-6 flex justify-between items-center bg-background-secondary p-4 rounded-radius-md shadow-shadow-md">
+    <h2 class="text-lg font-semibold text-text-primary">User Profile: {{user.username}}</h2>
+    <button class="px-4 py-2 bg-red-500 rounded-radius-sm hover:bg-red-400 transition-colors duration-200 text-text-primary" (click)="deleteUser()">
+      Delete User
+    </button>
+  </div>
+
+  <!-- User Update Form -->
+  <div class="p-4 rounded-radius-md bg-background-secondary shadow-shadow-md mb-6">
+    <h3 class="text-sm font-medium text-text-secondary mb-4">Update User Details</h3>
+    <form (ngSubmit)="updateUser()" class="space-y-4">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-text-secondary text-sm mb-1">Username</label>
+          <input type="text" [(ngModel)]="user.username" name="username" class="w-full p-2 bg-background-tertiary rounded-radius-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-primary" required>
+        </div>
+        <div>
+          <label class="block text-text-secondary text-sm mb-1">Email</label>
+          <input type="email" [(ngModel)]="user.email" name="email" class="w-full p-2 bg-background-tertiary rounded-radius-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-primary" required>
+        </div>
+        <div>
+          <label class="block text-text-secondary text-sm mb-1">Phone</label>
+          <input type="tel" [(ngModel)]="user.phone" name="phone" class="w-full p-2 bg-background-tertiary rounded-radius-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-primary" required>
+        </div>
+        <div>
+          <label class="block text-text-secondary text-sm mb-1">Created At</label>
+          <input type="text" [(ngModel)]="user.createTime" name="createdAt" class="w-full p-2 bg-background-tertiary rounded-radius-sm text-text-primary" disabled>
+        </div>
+      </div>
+      <button type="submit" class="px-4 py-2 bg-primary rounded-radius-sm hover:bg-primary-hover transition-colors duration-200 text-text-primary">
+        Update
+      </button>
+    </form>
+  </div>
+
+  <!-- Accounts Section -->
+  <div class="p-4 rounded-radius-md bg-background-secondary shadow-shadow-md">
+    <div class="flex justify-between items-center mb-4">
+      <h3 class="text-sm font-medium text-text-secondary">Accounts</h3>
+      <button class="px-4 py-2 bg-primary rounded-radius-sm hover:bg-primary-hover transition-colors duration-200 text-text-primary" (click)="openModal('createAccountModal')">
+        Create Account
+      </button>
+    </div>
+    <table class="w-full text-left">
+      <thead>
+        <tr class="border-b border-border">
+          <th class="py-2 text-sm font-medium text-text-secondary">Account Name</th>
+          <th class="py-2 text-sm font-medium text-text-secondary">Account Type</th>
+          <th class="py-2 text-sm font-medium text-text-secondary">Account Number</th>
+          <th class="py-2 text-sm font-medium text-text-secondary">Balance</th>
+          <th class="py-2 text-sm font-medium text-text-secondary">Status</th>
+          <th class="py-2 text-sm font-medium text-text-secondary"></th>
+          
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let account of accounts" class="border-b border-border hover:bg-background-accent transition-colors duration-200 animate-fade-in">
+          <td class="py-2 text-text-primary">{{ account.alias }}</td>
+          <td class="py-2 text-text-primary">{{ account.accountType }}</td>
+          <td class="py-2 text-text-primary">{{ account.maskedAccountNumber }}</td>
+          <td class="py-2 text-text-primary">${{ account.balance }}</td>
+          <td class="py-2 text-text-secondary">{{ account.status }}</td>
+          <td class="py-2 text-text-secondary">
+            <button class="px-4 py-2 bg-primary rounded-radius-sm hover:bg-primary-hover transition-colors duration-200 text-text-primary mr-4" (click)="openModal('updateAccountModal', account)">
+              Update
+            </button>
+            
+            <button class="px-4 py-2 bg-red-500 rounded-radius-sm hover:bg-red-400 transition-colors duration-200 text-text-primary cursor-pointer" (click)="deleteAccount(account.id)"> 
+              Delete
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <p *ngIf="accounts.length === 0" class="text-center text-text-tertiary mt-4">No accounts found.</p>
+  </div>
+
+  <app-account-modal
+    id="createAccountModal"
+    [title]="'Create New Account'"
+    [submitButtonText]="'Create'"
+    [newAccount]="newAccount"
+    (closeModalEvent)="closeModal('createAccountModal')"
+    (actionAccountEvent)="createAccount()"
+    (stopPropagationEvent)="stopPropagation($event)"
+    style="display:none"
+    
+  >
+
+  </app-account-modal>
+
+
+  <app-account-modal
+    id="updateAccountModal"
+    [title]="'Update Account'"
+    [submitButtonText]="'Update'"
+    [newAccount]="updatedAccount"
+    (closeModalEvent)="closeModal('updateAccountModal')"
+    (actionAccountEvent)="updateAccount()"
+    (stopPropagationEvent)="stopPropagation($event)"
+    style="display:none"
+    
+  >
+
+  </app-account-modal>
+  <!-- Modal for Creating Account -->
+  <!-- <div class="fixed inset-0 bg-black bg-opacity-50 hidden" id="createAccountModal" (click)="closeModal($event)">
+    <div class="bg-background-secondary p-6 rounded-radius-md max-w-md mx-auto mt-20 animate-slide-up" (click)="stopPropagation($event)">
+      <h3 class="text-lg font-bold text-text-primary mb-4">Create New Account</h3>
+      <form (ngSubmit)="createAccount()" class="space-y-4">
+
+        <div>
+          <label class="block text-text-secondary text-sm mb-1">Account Alias</label>
+          <input type="text" [(ngModel)]="newAccount.alias" name="alias" class="w-full p-2 bg-background-tertiary rounded-radius-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-primary" required>
+        </div>
+
+        <div>
+          <label class="block text-text-secondary text-sm mb-1">Account Number</label>
+          <input type="number" [(ngModel)]="newAccount.accountNumber" name="number" class="w-full p-2 bg-background-tertiary rounded-radius-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-primary" required>
+        </div>
+
+
+        <div>
+          <label class="block text-text-secondary text-sm mb-1">Initial Balance</label>
+          <input type="number" [(ngModel)]="newAccount.balance" name="balance" class="w-full p-2 bg-background-tertiary rounded-radius-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-primary" required>
+        </div>
+
+        <div>
+          <label class="block text-text-secondary text-sm mb-1">Currency</label>
+          <input type="text" [(ngModel)]="newAccount.currency" name="currency" class="w-full p-2 bg-background-tertiary rounded-radius-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-primary" required>
+        </div>
+
+        <div>
+          <label class="block text-text-secondary text-sm mb-1">Account Status</label>
+          <select [(ngModel)]="newAccount.status" name="status" class="w-full p-2 bg-background-tertiary rounded-radius-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-primary" required>
+            <option value="ACTIVE">Active</option>
+            <option value="CLOSED">Closed</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-text-secondary text-sm mb-1">Account Type</label>
+          <select [(ngModel)]="newAccount.accountType" name="type" class="w-full p-2 bg-background-tertiary rounded-radius-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-primary" required>
+            <option value="Savings">Savings</option>
+            <option value="Checking">Checking</option>
+            <option value="Crypto">Crypto</option>
+          </select>
+        </div>
+        
+
+        <div class="flex justify-end space-x-4">
+          <button type="button" class="px-4 py-2 bg-danger rounded-radius-sm hover:bg-danger-light transition-colors duration-200 text-text-primary" (click)="closeModal()">Cancel</button>
+          <button type="submit" class="px-4 py-2 bg-primary rounded-radius-sm hover:bg-primary-hover transition-colors duration-200 text-text-primary">Create</button>
+        </div>
+      </form>
+    </div> -->
+  <!-- </div> -->
+</div>
