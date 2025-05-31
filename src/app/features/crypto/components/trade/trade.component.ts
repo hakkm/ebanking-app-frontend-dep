@@ -153,7 +153,7 @@ export class TradeComponent implements OnInit, OnDestroy {
    * Loads the user's available USD balance
    */
   loadUsdBalance(): void {
-    this.cryptoService.getAvailableBalance('USD')
+    this.cryptoService.getAvailableBalance('USDT')
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (balance) => {
