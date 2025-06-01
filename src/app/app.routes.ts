@@ -13,8 +13,30 @@ import { authGuard } from './core/guards/auth.guard';
 import { AddRecipientComponent } from './shared/components/add-recipient/add-recipient.component';
 import { DashboardComponent } from './features/crypto/components/dashboard/dashboard.component';
 import {BudgetAlertComponent} from './Gestionbudget/gestionbudget/gestionbudget.component';
+import { RechargeComponent } from './shared/components/rechargetel/rechargetel.component';
+import { AgentLoginComponent } from './shared/components/agent-login/agent-login.component';
+import { AgentDashboardComponent } from './shared/components/agent-dashboard/agent-dashboard.component';
+import { AgentLayoutComponent } from './shared/layouts/agent-layout/agent-layout.component';
+import { AgentUsersComponent } from './shared/components/agent-users/agent-users.component';
+import { AgentTransactionComponent } from './shared/components/agent-transaction/agent-transaction.component';
+import { AgentUserProfileComponent } from './shared/components/agent-user-profile/agent-user-profile.component';
 
 export const routes: Routes = [
+
+  {path: 'agent/login', component: AgentLoginComponent},
+  {
+    path: 'agent',
+    component: AgentLayoutComponent,
+    children: [
+
+      {path: 'dashboard', component: AgentDashboardComponent},
+      {path: 'manage-users', component: AgentUsersComponent},
+      {path: 'transactions', component: AgentTransactionComponent},
+      {path: 'transactions', component: AgentTransactionComponent},
+      {path: 'user-profile/:id', component: AgentUserProfileComponent},
+    ]
+  }
+  ,
   {
     path: '',
     component: MainLayoutComponent,
@@ -39,6 +61,8 @@ export const routes: Routes = [
       { path: 'register', component: RegisterComponent }
     ]
   },
+
+
   {path: 'crypto', loadChildren: () => import('./features/crypto/crypto.module').then(m => m.CryptoModule)},
   { path: '**', redirectTo: 'home' }
 ];
