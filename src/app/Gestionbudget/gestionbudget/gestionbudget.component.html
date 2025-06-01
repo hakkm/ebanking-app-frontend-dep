@@ -1,0 +1,262 @@
+<div class="max-w-6xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+  <!-- Page title with icon -->
+  <div class="mb-6 flex items-center">
+    <div class="w-12 h-12 rounded-full bg-orange-600/20 flex items-center justify-center mr-3">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-orange-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-5 5v-1a2 2 0 00-2-2z" />
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 11H4l5-5v1a2 2 0 012 2z" />
+      </svg>
+    </div>
+    <h1 class="text-2xl font-semibold text-white">Alertes de Seuil</h1>
+  </div>
+
+  <!-- Main Form Card -->
+  <div class="bg-gradient-to-br from-gray-900 to-gray-800 rounded-xl shadow-xl overflow-hidden border border-gray-800">
+    <!-- Card Header -->
+    <div class="px-6 py-5 border-b border-gray-700 flex items-center justify-center">
+      <div class="space-x-3 flex items-center">
+        <span class="inline-block w-3 h-3 rounded-full bg-orange-500"></span>
+        <span class="inline-block w-3 h-3 rounded-full bg-green-500"></span>
+        <span class="inline-block w-3 h-3 rounded-full bg-indigo-500"></span>
+      </div>
+    </div>
+
+    <!-- Form Content -->
+    <div class="p-6">
+      <!-- Messages -->
+      <div *ngIf="successMessage" class="mb-6 p-4 bg-green-900/30 border border-green-700 text-green-400 rounded-lg backdrop-blur-sm">
+        <div class="flex items-center">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+          </svg>
+          {{ successMessage }}
+        </div>
+      </div>
+
+      <div *ngIf="errorMessage" class="mb-6 p-4 bg-red-900/30 border border-red-700 text-red-400 rounded-lg backdrop-blur-sm">
+        <div class="flex items-center">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+          {{ errorMessage }}
+        </div>
+      </div>
+
+      <!-- Loading state -->
+      <div *ngIf="loading" class="flex justify-center py-8">
+        <div class="flex flex-col items-center">
+          <div class="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-orange-500"></div>
+          <p class="mt-3 text-gray-400">Enregistrement...</p>
+        </div>
+      </div>
+
+      <!-- Alert Configuration Form -->
+      <form *ngIf="!loading" (ngSubmit)="submitAlert()" class="space-y-8">
+        <!-- Account Selection -->
+        <div class="space-y-2 bg-gray-800/30 p-4 rounded-lg border border-gray-700 hover:border-gray-600 transition duration-200">
+          <label class="block text-sm font-medium text-gray-300 flex items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-orange-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+            </svg>
+            Compte concerné <span class="text-orange-400 ml-1">*</span>
+          </label>
+          <select
+            [(ngModel)]="form.accountId"
+            name="accountId"
+            required
+            class="w-full bg-gray-800/50 border border-gray-700 px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-gray-200 appearance-none transition duration-200"
+          >
+            <option value="" disabled selected class="bg-gray-800 text-gray-400">Choisir un compte</option>
+            <option *ngFor="let account of accounts" [ngValue]="account.id" class="bg-gray-800 text-gray-200">
+              {{ account.maskedAccountNumber }} - {{ account.accountType }}
+            </option>
+          </select>
+          <div class="flex items-center justify-between mt-2">
+            <p class="text-xs text-gray-400">Compte à surveiller</p>
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+            </svg>
+          </div>
+        </div>
+
+        <!-- Alert Configuration Card -->
+        <div class="bg-gradient-to-br from-gray-800/50 to-gray-900/50 rounded-xl p-5 border border-gray-700">
+          <div class="flex items-center mb-4">
+            <div class="w-10 h-10 rounded-full bg-orange-600/20 flex items-center justify-center mr-3">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-orange-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+            </div>
+            <h3 class="text-lg font-medium text-white">Configuration de l'Alerte</h3>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Type de seuil -->
+            <div class="space-y-2">
+              <label class="block text-sm font-medium text-gray-300">
+                Type de seuil <span class="text-orange-400">*</span>
+              </label>
+              <select
+                [(ngModel)]="form.type"
+                name="type"
+                required
+                class="w-full bg-gray-800/50 border border-gray-700 px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-gray-200 appearance-none transition duration-200"
+              >
+                <option value="AMOUNT" class="bg-gray-800 text-gray-200">Montant fixe (€)</option>
+                <option value="PERCENTAGE" class="bg-gray-800 text-gray-200">Pourcentage (%) du solde actuel</option>
+              </select>
+              <p class="text-xs text-gray-400 flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                Choisir le type de seuil d'alerte
+              </p>
+            </div>
+
+            <!-- Valeur du seuil -->
+            <div class="space-y-2">
+              <label class="block text-sm font-medium text-gray-300">
+                Seuil <span class="text-orange-400">*</span>
+                <span *ngIf="form.type === 'AMOUNT'" class="text-gray-400">(en €)</span>
+                <span *ngIf="form.type === 'PERCENTAGE'" class="text-gray-400">(en %)</span>
+              </label>
+              <div class="relative">
+                <input
+                  type="number"
+                  [(ngModel)]="form.threshold"
+                  name="threshold"
+                  required
+                  min="0"
+                  step="0.01"
+                  placeholder="Valeur du seuil"
+                  class="w-full bg-gray-800/50 border border-gray-700 pl-4 pr-14 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-gray-200 transition duration-200"
+                />
+                <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                  <span class="text-gray-500" *ngIf="form.type === 'AMOUNT'">€</span>
+                  <span class="text-gray-500" *ngIf="form.type === 'PERCENTAGE'">%</span>
+                </div>
+              </div>
+              <p class="text-xs text-gray-400" *ngIf="form.type === 'AMOUNT'">
+                Ex: "Alerte si le solde descend sous 200 €"
+              </p>
+              <p class="text-xs text-gray-400" *ngIf="form.type === 'PERCENTAGE'">
+                Ex: "Alerte si le solde passe sous 20% du solde actuel"
+              </p>
+            </div>
+          </div>
+
+          <!-- Message personnalisé -->
+          <div class="space-y-2 mt-6">
+            <label class="block text-sm font-medium text-gray-300">
+              Message d'alerte <span class="text-orange-400">*</span>
+            </label>
+            <textarea
+              [(ngModel)]="form.message"
+              name="message"
+              required
+              rows="3"
+              placeholder="Personnalisez votre message d'alerte..."
+              class="w-full bg-gray-800/50 border border-gray-700 px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-gray-200 transition duration-200 resize-none"
+            ></textarea>
+            <p class="text-xs text-gray-400">Ce message sera affiché lors du déclenchement de l'alerte</p>
+          </div>
+        </div>
+
+        <!-- Date et Activation -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <!-- Date d'expiration -->
+          <div class="space-y-2 bg-gray-800/30 p-4 rounded-lg border border-gray-700 hover:border-gray-600 transition duration-200">
+            <label class="block text-sm font-medium text-gray-300 flex items-center">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-orange-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              Date d'expiration
+            </label>
+            <input
+              type="date"
+              [(ngModel)]="form.expiresAt"
+              name="expiresAt"
+              class="w-full bg-gray-800/50 border border-gray-700 px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-gray-200 transition duration-200"
+            />
+            <p class="text-xs text-gray-400">L'alerte ne sera plus active après cette date</p>
+          </div>
+
+          <!-- Activation -->
+          <div class="space-y-2 bg-gray-800/30 p-4 rounded-lg border border-gray-700 hover:border-gray-600 transition duration-200">
+            <label class="block text-sm font-medium text-gray-300 flex items-center">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-orange-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              Statut de l'alerte
+            </label>
+            <div class="flex items-center space-x-3 pt-2">
+              <div class="relative">
+                <input
+                  type="checkbox"
+                  id="enabled"
+                  [(ngModel)]="form.enabled"
+                  name="enabled"
+                  class="sr-only"
+                />
+                <label
+                  for="enabled"
+                  class="flex items-center cursor-pointer"
+                  [ngClass]="{
+                    'text-green-400': form.enabled,
+                    'text-gray-400': !form.enabled
+                  }"
+                >
+                  <div
+                    class="relative w-12 h-6 rounded-full transition-colors duration-200"
+                    [ngClass]="{
+                      'bg-green-600': form.enabled,
+                      'bg-gray-700': !form.enabled
+                    }"
+                  >
+                    <div
+                      class="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full transition-transform duration-200"
+                      [ngClass]="{
+                        'transform translate-x-6': form.enabled,
+                        'transform translate-x-0': !form.enabled
+                      }"
+                    ></div>
+                  </div>
+                  <span class="ml-3 text-sm">{{ form.enabled ? 'Alerte activée' : 'Alerte désactivée' }}</span>
+                </label>
+              </div>
+            </div>
+            <p class="text-xs text-gray-400">Activer ou désactiver cette alerte de seuil</p>
+          </div>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="pt-5 mt-5 border-t border-gray-700 flex flex-col sm:flex-row gap-3 sm:justify-end">
+          <button
+            type="button"
+            class="px-4 py-2.5 bg-gray-800 text-gray-300 hover:text-white rounded-lg hover:bg-gray-700 transition-colors duration-200 border border-gray-700 flex items-center justify-center"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+            Annuler
+          </button>
+
+          <button
+            type="submit"
+            [disabled]="loading"
+            class="px-6 py-3 bg-gradient-to-r from-orange-600/20 to-orange-500/20 text-orange-400 rounded-lg hover:from-orange-600/30 hover:to-orange-500/30 transition-all duration-300 border border-orange-800 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:from-orange-600/20 disabled:hover:to-orange-500/20"
+          >
+            <svg *ngIf="!loading" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <svg *ngIf="loading" class="animate-spin h-5 w-5 mr-1.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            {{ loading ? 'Enregistrement...' : 'Enregistrer l\'alerte' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
