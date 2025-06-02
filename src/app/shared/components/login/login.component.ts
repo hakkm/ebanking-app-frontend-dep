@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
-import {CommonModule} from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ToastrService } from 'ngx-toastr';
 
@@ -19,6 +19,8 @@ export class LoginComponent {
   isLoading: boolean = false;
   rememberMe: boolean = false;
   hidePassword: boolean = true;
+  showFaceVerification: boolean = false;
+  tempToken: string | null = null;
 
   constructor(
     private authService: AuthService,
@@ -34,7 +36,6 @@ export class LoginComponent {
     this.error = null;
     this.isLoading = true;
 
-    // Optional: Add validation before submitting
     if (!this.validateEmail(this.email)) {
       this.error = 'Please enter a valid email address';
       this.isLoading = false;
@@ -42,19 +43,19 @@ export class LoginComponent {
     }
 
     this.authService.login(this.email, this.password).subscribe({
-      next: () => {
-        this.toastr.success('Login successful!', '', {
+      next: (response :any) => {
+        this.tempToken = response.token;
+        this.showFaceVerification = true;
+        this.toastr.success('Password verified. Please proceed to face verification.', '', {
           positionClass: 'toast-bottom-right',
           progressBar: true,
           timeOut: 3000
         });
-        console.log("Login successful");
-        this.router.navigate(['/dashboard']);
+        this.isLoading = false;
       },
-      error: (err) => {
+      error: (err: any) => {
         this.error = err.message || 'Authentication failed. Please try again.';
-        // @ts-ignore
-        this.toastr.error(this.error, '', {
+        this.toastr.error(this.error || undefined, '', {
           positionClass: 'toast-bottom-right',
           progressBar: true,
           timeOut: 5000
@@ -65,6 +66,12 @@ export class LoginComponent {
         this.isLoading = false;
       }
     });
+  }
+
+  proceedToFaceVerification(): void {
+    if (this.tempToken) {
+      this.router.navigate(['/face-verification'], { state: { email: this.email, tempToken: this.tempToken } });
+    }
   }
 
   private validateEmail(email: string): boolean {
