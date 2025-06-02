@@ -1,15 +1,15 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { TransactionService } from '../../../core/services/transaction.service';
-import { AgentService } from '../../../core/services/agent.service';
-import { AccountService } from '../../../core/services/account.service';
+import { TransactionService } from '../../../../core/services/transaction.service';
+import { AgentService } from '../../../../core/services/agent.service';
+import { AccountService } from '../../../../core/services/account.service';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Subject } from 'rxjs';
 import { takeUntil, debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
 // Import your actual models
-import { Transaction } from '../../../core/models/transaction.model';
-import { Account } from '../../../core/models/account.model';
+import { Transaction } from '../../../../core/models/transaction.model';
+import { Account } from '../../../../core/models/account.model';
 
 interface PaginationInfo {
   currentPage: number;

@@ -1,10 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { NgClass, NgForOf, NgIf, DatePipe, CurrencyPipe } from '@angular/common';
-import { AccountService } from '../../../core/services/account.service';
+import { AccountService } from '../../../../core/services/account.service';
 
-import { TransactionService } from '../../../core/services/transaction.service';
+import { TransactionService } from '../../../../core/services/transaction.service';
 import { RouterLink } from '@angular/router';
-import { Account } from '../../../core/models/account.model';
+import { Account } from '../../../../core/models/account.model';
 
 
 

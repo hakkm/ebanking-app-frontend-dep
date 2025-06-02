@@ -1,13 +1,13 @@
 import { Component, OnInit } from '@angular/core';
-import { User } from '../../../core/models/user.model';
-import { Account } from '../../../core/models/account.model';
-import { AuthService } from '../../../core/services/auth.service';
-import { AccountService } from '../../../core/services/account.service';
+import { User } from '../../../../core/models/user.model';
+import { Account } from '../../../../core/models/account.model';
+import { AuthService } from '../../../../core/services/auth.service';
+import { AccountService } from '../../../../core/services/account.service';
 import { RouterLink, RouterOutlet } from '@angular/router';
 import {NgForOf, NgIf, DatePipe, NgClass, DecimalPipe} from '@angular/common';
 
-import { Transaction } from '../../../core/models/transaction.model';
-import { TransactionService } from '../../../core/services/transaction.service';
+import { Transaction } from '../../../../core/models/transaction.model';
+import { TransactionService } from '../../../../core/services/transaction.service';
 
 @Component({
   selector: 'app-home',

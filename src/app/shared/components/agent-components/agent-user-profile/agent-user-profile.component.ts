@@ -1,12 +1,12 @@
 import { Component, OnInit } from '@angular/core';
-import { UserService } from '../../../core/services/user.service';
+import { UserService } from '../../../../core/services/user.service';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Client } from '../../../core/models/client.model';
-import { Account } from '../../../core/models/account.model';
-import { AccountExport } from '../../../core/models/account.export.model';
-import { AccountModalComponent } from "../account-modal/account-modal.component";
+import { Client } from '../../../../core/models/client.model';
+import { Account } from '../../../../core/models/account.model';
+import { AccountExport } from '../../../../core/models/account.export.model';
+import { AccountModalComponent } from "../../client-components/account-modal/account-modal.component";
 
 @Component({
   selector: 'app-agent-user-profile',

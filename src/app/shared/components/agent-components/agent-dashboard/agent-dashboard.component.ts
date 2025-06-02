@@ -17,7 +17,7 @@ interface RecentUser {
 
 @Component({
   selector: 'app-agent-dashboard',
-  imports: [AgentSidebarComponent, AgentHeaderComponent, CommonModule],
+  imports: [CommonModule],
   templateUrl: './agent-dashboard.component.html',
   standalone: true
 })

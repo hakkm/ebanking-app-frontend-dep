@@ -1,10 +1,11 @@
-import { Component } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
-import { AuthService } from '../../../core/services/auth.service';
-import { User } from '../../../core/models/user.model';
+import { Component , OnInit} from '@angular/core';
+import { Router, RouterLink ,ActivatedRoute} from '@angular/router';
+import { AuthService } from '../../../../core/services/auth.service';
+import { User } from '../../../../core/models/user.model';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ToastrService } from 'ngx-toastr';
+
 
 @Component({
   selector: 'app-register',
@@ -13,7 +14,7 @@ import { ToastrService } from 'ngx-toastr';
   templateUrl: './register.component.html',
   styleUrls: ['./register.component.css']
 })
-export class RegisterComponent {
+export class RegisterComponent implements OnInit{
   user: User = { username: '', password: '', email: '', role: {name: 'CLIENT'}, phone: '' };
   error: string | null = null;
   isLoading: boolean = false;
@@ -24,8 +25,18 @@ export class RegisterComponent {
   constructor(
     private authService: AuthService,
     private router: Router,
-    private toastr: ToastrService
+    private toastr: ToastrService,
+    private route: ActivatedRoute
   ) {}
+
+  ngOnInit(): void {
+    const referralCode = this.route.snapshot.queryParamMap.get('ref');
+    if (referralCode) {
+      console.log(referralCode);
+      this.user.referredBy = referralCode;
+    }
+  }
+
 
   checkPasswordStrength(password: string): void {
     this.passwordStrength = 0;

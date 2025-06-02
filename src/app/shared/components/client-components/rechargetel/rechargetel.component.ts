@@ -3,11 +3,11 @@ import { NgIf, NgForOf, NgClass } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { RouterLink } from '@angular/router';
-import { Account } from '../../../core/models/account.model';
-import { User } from '../../../core/models/user.model';
-import { environment } from '../../../../environments/environment';
-import { AuthService } from '../../../core/services/auth.service';
-import { AccountService } from '../../../core/services/account.service';
+import { Account } from '../../../../core/models/account.model';
+import { User } from '../../../../core/models/user.model';
+import { environment } from '../../../../../environments/environment';
+import { AuthService } from '../../../../core/services/auth.service';
+import { AccountService } from '../../../../core/services/account.service';
 
 
 @Component({
