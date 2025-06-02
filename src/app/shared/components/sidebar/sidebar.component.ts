@@ -40,7 +40,7 @@ export class SidebarComponent implements OnInit {
     // If you need to do anything on component initialization
     // For example, retrieve user profile details
     if (!this.authService.currentUserValue) {
-      this.authService.getCurrentUser().subscribe();
+      console.log(this.authService.getCurrentUser());
     }
   }
 
