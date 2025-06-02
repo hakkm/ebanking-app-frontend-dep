@@ -31,7 +31,9 @@
               "src/assets/styles/tailwind.css",
               "node_modules/ngx-toastr/toastr.css"
             ],
-            "scripts": []
+            "scripts": [
+              "node_modules/webcamjs/webcam.min.js"
+            ]
           },
           "configurations": {
             "production": {

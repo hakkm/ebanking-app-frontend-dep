@@ -7,6 +7,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ToastrService } from 'ngx-toastr';
 
+// Declare Webcam to avoid TypeScript errors
 declare var Webcam: any;
 
 @Component({
@@ -39,20 +40,25 @@ export class RegisterComponent implements OnInit, AfterViewInit {
     const referralCode = this.route.snapshot.queryParamMap.get('ref');
     if (referralCode) {
       console.log(referralCode);
-      this.user.referredBy = referralCode;
     }
   }
 
   ngAfterViewInit(): void {
-    Webcam.set({
-      width: 320,
-      height: 240,
-      image_format: 'jpeg',
-      jpeg_quality: 90
-    });
-    Webcam.attach('#webcam');
+    // Ensure WebcamJS script is loaded before initializing
+    if (typeof Webcam !== 'undefined') {
+      Webcam.set({
+        width: 320,
+        height: 240,
+        image_format: 'jpeg',
+        jpeg_quality: 90
+      });
+      Webcam.attach('#webcam');
+    } else {
+      console.error('WebcamJS is not loaded.');
+    }
   }
 
+  // Rest of your component code remains unchanged
   togglePasswordVisibility(): void {
     this.hidePassword = !this.hidePassword;
   }
@@ -91,10 +97,14 @@ export class RegisterComponent implements OnInit, AfterViewInit {
       return;
     }
 
-    Webcam.snap((data_uri: string) => {
-      this.photos.push(data_uri);
-      this.photoError = null;
-    });
+    if (typeof Webcam !== 'undefined') {
+      Webcam.snap((data_uri: string) => {
+        this.photos.push(data_uri);
+        this.photoError = null;
+      });
+    } else {
+      this.photoError = 'WebcamJS is not available';
+    }
   }
 
   resetPhotos(): void {
@@ -119,10 +129,8 @@ export class RegisterComponent implements OnInit, AfterViewInit {
       return;
     }
 
-    // Register user
     this.authService.register(this.user).subscribe({
       next: () => {
-        // Enroll face photos
         let enrollCount = 0;
         this.photos.forEach(photo => {
           this.faceRecognitionService.enrollFace(this.user.email, photo).subscribe({
@@ -138,7 +146,7 @@ export class RegisterComponent implements OnInit, AfterViewInit {
                 this.isLoading = false;
               }
             },
-            error: (err : any) => {
+            error: (err: any) => {
               this.error = err.message || 'Face enrollment failed. Please try again.';
               this.toastr.error(this.error || undefined, '', {
                 positionClass: 'toast-bottom-right',
@@ -150,7 +158,7 @@ export class RegisterComponent implements OnInit, AfterViewInit {
           });
         });
       },
-      error: (err : any) => {
+      error: (err: any) => {
         this.error = err.message || 'Registration failed. Please try again.';
         this.toastr.error(this.error || undefined, '', {
           positionClass: 'toast-bottom-right',
