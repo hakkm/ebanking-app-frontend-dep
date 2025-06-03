@@ -1,0 +1,532 @@
+<div class="p-6 space-y-6 bg-gray-950 min-h-screen">
+  <!-- Header Section with Stats -->
+  <div class="bg-gradient-to-br from-gray-900/80 to-gray-800/80 backdrop-blur-sm border border-gray-700/50 rounded-2xl p-6 shadow-2xl">
+    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
+      <div>
+        <h1 class="text-2xl font-bold text-white mb-2">Account Management</h1>
+        <p class="text-gray-400">Manage and monitor agency accounts</p>
+      </div>
+
+      <!-- Quick Stats -->
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="bg-gray-800/50 rounded-xl p-4 border border-gray-700/30">
+          <div class="flex items-center space-x-2">
+            <div class="w-8 h-8 bg-green-600/20 rounded-lg flex items-center justify-center">
+              <svg class="w-4 h-4 text-green-400" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+              </svg>
+            </div>
+            <div>
+              <p class="text-xs text-gray-400">Active Accounts</p>
+              <p class="text-sm font-semibold text-white">{{ activeAccountsCount }}</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-gray-800/50 rounded-xl p-4 border border-gray-700/30">
+          <div class="flex items-center space-x-2">
+            <div class="w-8 h-8 bg-yellow-600/20 rounded-lg flex items-center justify-center">
+              <svg class="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15h2v2h-2zm0-4h2V7h-2z"/>
+              </svg>
+            </div>
+            <div>
+              <p class="text-xs text-gray-400">Pending Accounts</p>
+              <p class="text-sm font-semibold text-white">{{ pendingAccountsCount }}</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-gray-800/50 rounded-xl p-4 border border-gray-700/30">
+          <div class="flex items-center space-x-2">
+            <div class="w-8 h-8 bg-red-600/20 rounded-lg flex items-center justify-center">
+              <svg class="w-4 h-4 text-red-400" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 15l-5-5 1.41-1.41L12 14.17l7.59-7.59L19 8l-9 9z"/>
+              </svg>
+            </div>
+            <div>
+              <p class="text-xs text-gray-400">Suspended Accounts</p>
+              <p class="text-sm font-semibold text-white">{{ suspendedAccountsCount }}</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-gray-800/50 rounded-xl p-4 border border-gray-700/30">
+          <div class="flex items-center space-x-2">
+            <div class="w-8 h-8 bg-purple-600/20 rounded-lg flex items-center justify-center">
+              <svg class="w-4 h-4 text-purple-400" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm0-4h-2V7h2v8z"/>
+              </svg>
+            </div>
+            <div>
+              <p class="text-xs text-gray-400">Total Balance</p>
+              <p class="text-sm font-semibold text-white">{{ formatCurrency(totalBalance, 'MAD') }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filters and Search Section -->
+  <div class="bg-gradient-to-br from-gray-900/80 to-gray-800/80 backdrop-blur-sm border border-gray-700/50 rounded-2xl p-6 shadow-xl">
+    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
+      <!-- Search Bar -->
+      <div class="relative flex-1 max-w-md">
+        <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 0 0 1.48-5.34c-.47-2.78-2.79-5-5.59-5.34a6.505 6.505 0 0 0-7.27 7.27c.34 2.8 2.56 5.12 5.34 5.59a6.5 6.5 0 0 0 5.34-1.48l.27.28v.79l4.25 4.25c.41.41 1.08.41 1.49 0 .41-.41.41-1.08 0-1.49L15.5 14zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+        </svg>
+        <input
+          type="text"
+          placeholder="Search by ID, alias, type, or account number..."
+          [(ngModel)]="searchTerm"
+          (ngModelChange)="applyFilters()"
+          class="w-full pl-10 pr-4 py-3 bg-gray-800/50 border border-gray-700/50 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200">
+      </div>
+
+      <!-- Filter Controls -->
+      <div class="flex flex-wrap gap-4">
+        <!-- Status Filter -->
+        <select
+          [(ngModel)]="statusFilter"
+          (ngModelChange)="applyFilters()"
+          class="px-4 py-3 bg-gray-800/50 border border-gray-700/50 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all duration-200">
+          <option value="">All Status</option>
+          <option value="ACTIVE">Active</option>
+          <option value="PENDING">Pending</option>
+          <option value="SUSPENDED">Suspended</option>
+        </select>
+
+        <!-- Account Type Filter -->
+        <select
+          [(ngModel)]="typeFilter"
+          (ngModelChange)="applyFilters()"
+          class="px-4 py-3 bg-gray-800/50 border border-gray-700/50 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all duration-200">
+          <option value="">All Types</option>
+          <option value="Savings">Savings</option>
+          <option value="Checking">Checking</option>
+          <option value="Business">Business</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- Accounts Table -->
+  <div class="bg-gradient-to-br from-gray-900/80 to-gray-800/80 backdrop-blur-sm border border-gray-700/50 rounded-2xl shadow-2xl overflow-hidden">
+    <!-- Table Header -->
+    <div class="px-6 py-4 border-b border-gray-700/50">
+      <div class="flex items-center justify-between">
+        <h3 class="text-lg font-semibold text-white">Accounts</h3>
+        <div class="flex items-center space-x-2">
+          <span class="text-sm text-gray-400">{{ filteredAccounts.length }} of {{ accounts.length }} accounts</span>
+          <button
+            (click)="refreshAccounts()"
+            class="p-2 text-gray-400 hover:text-white hover:bg-gray-700/50 rounded-lg transition-all duration-200">
+            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="isLoading" class="p-12 text-center">
+      <div class="w-8 h-8 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+      <p class="text-gray-400">Loading accounts...</p>
+    </div>
+
+    <!-- Error State -->
+    <div *ngIf="error && !isLoading" class="p-12 text-center">
+      <div class="w-16 h-16 bg-red-600/20 rounded-full flex items-center justify-center mx-auto mb-4">
+        <svg class="w-8 h-8 text-red-400" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15h2v2h-2zm0-4h2V7h-2z"/>
+        </svg>
+      </div>
+      <h3 class="text-lg font-medium text-white mb-2">Error Loading Accounts</h3>
+      <p class="text-gray-400 mb-6">{{ error }}</p>
+      <button
+        (click)="refreshAccounts()"
+        class="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-medium transition-all duration-200">
+        Try Again
+      </button>
+    </div>
+
+    <!-- Table Content -->
+    <div *ngIf="!isLoading && !error" class="overflow-x-auto">
+      <table class="w-full">
+        <thead class="bg-gray-800/30">
+          <tr>
+            <th class="px-6 py-4 text-left text-xs font-medium text-gray-400 uppercase tracking-wider cursor-pointer hover:text-white transition-colors duration-200" (click)="sortBy('id')">
+              <div class="flex items-center space-x-1">
+                <span>Account ID</span>
+                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M7 10l5 5 5-5z"/>
+                </svg>
+              </div>
+            </th>
+            <th class="px-6 py-4 text-left text-xs font-medium text-gray-400 uppercase tracking-wider cursor-pointer hover:text-white transition-colors duration-200" (click)="sortBy('alias')">
+              <div class="flex items-center space-x-1">
+                <span>Alias</span>
+                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M7 10l5 5 5-5z"/>
+                </svg>
+              </div>
+            </th>
+            <th class="px-6 py-4 text-left text-xs font-medium text-gray-400 uppercase tracking-wider cursor-pointer hover:text-white transition-colors duration-200" (click)="sortBy('accountType')">
+              <div class="flex items-center space-x-1">
+                <span>Type</span>
+                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M7 10l5 5 5-5z"/>
+                </svg>
+              </div>
+            </th>
+            <th class="px-6 py-4 text-left text-xs font-medium text-gray-400 uppercase tracking-wider cursor-pointer hover:text-white transition-colors duration-200" (click)="sortBy('balance')">
+              <div class="flex items-center space-x-1">
+                <span>Balance</span>
+                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M7 10l5 5 5-5z"/>
+                </svg>
+              </div>
+            </th>
+            <th class="px-6 py-4 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Status</th>
+            <th class="px-6 py-4 text-left text-xs font-medium text-gray-400 uppercase tracking-wider cursor-pointer hover:text-white transition-colors duration-200" (click)="sortBy('maskedAccountNumber')">
+              <div class="flex items-center space-x-1">
+                <span>Account Number</span>
+                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M7 10l5 5 5-5z"/>
+                </svg>
+              </div>
+            </th>
+            <th class="px-6 py-4 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-700/30">
+          <tr *ngFor="let account of paginatedAccounts; trackBy: trackByAccount" class="hover:bg-gray-800/30 transition-all duration-200 group">
+            <!-- Account ID -->
+            <td class="px-6 py-4 whitespace-nowrap">
+              <div class="flex items-center">
+                <div class="w-8 h-8 bg-indigo-600/20 rounded-lg flex items-center justify-center mr-3">
+                  <svg class="w-4 h-4 text-indigo-400" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/>
+                  </svg>
+                </div>
+                <div>
+                  <p class="text-sm font-medium text-white">#{{ account.id }}</p>
+                  <p class="text-xs text-gray-400">{{ account.accountType }}</p>
+                </div>
+              </div>
+            </td>
+
+            <!-- Alias -->
+            <td class="px-6 py-4 whitespace-nowrap">
+              <div>
+                <p class="text-sm text-white">{{ account.alias }}</p>
+              </div>
+            </td>
+
+            <!-- Type -->
+            <td class="px-6 py-4 whitespace-nowrap">
+              <p class="text-sm text-white">{{ account.accountType }}</p>
+            </td>
+
+            <!-- Balance -->
+            <td class="px-6 py-4 whitespace-nowrap">
+              <div class="flex items-center">
+                <p class="text-sm font-semibold text-white">{{ formatCurrency(account.balance, account.currency) }}</p>
+              </div>
+            </td>
+
+            <!-- Status -->
+            <td class="px-6 py-4 whitespace-nowrap">
+              <span [ngClass]="{
+                'bg-green-600/20 text-green-400 border-green-600/30': account.status === 'ACTIVE',
+                'bg-yellow-600/20 text-yellow-400 border-yellow-600/30': account.status === 'PENDING',
+                'bg-red-600/20 text-red-400 border-red-600/30': account.status === 'SUSPENDED'
+              }" class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border">
+                <div [ngClass]="{
+                  'bg-green-400': account.status === 'ACTIVE',
+                  'bg-yellow-400': account.status === 'PENDING',
+                  'bg-red-400': account.status === 'SUSPENDED'
+                }" class="w-2 h-2 rounded-full mr-2"></div>
+                {{ account.status }}
+              </span>
+            </td>
+
+            <!-- Account Number -->
+            <td class="px-6 py-4 whitespace-nowrap">
+              <p class="text-sm text-white">{{ account.maskedAccountNumber }}</p>
+            </td>
+
+            <!-- Actions -->
+            <td class="px-6 py-4 whitespace-nowrap">
+              <div class="flex items-center space-x-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                <button
+                  (click)="viewAccount(account)"
+                  class="p-2 text-gray-400 hover:text-indigo-400 hover:bg-indigo-600/20 rounded-lg transition-all duration-200"
+                  title="View Details">
+                  <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
+                  </svg>
+                </button>
+                <button
+                  (click)="toggleAccountStatus(account)"
+                  class="p-2 text-gray-400 hover:text-yellow-400 hover:bg-yellow-600/20 rounded-lg transition-all duration-200"
+                  title="{{ account.status === 'ACTIVE' ? 'Suspend' : 'Activate' }} Account">
+                  <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"/>
+                  </svg>
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- Empty State -->
+      <div *ngIf="filteredAccounts.length === 0" class="p-12 text-center">
+        <div class="w-16 h-16 bg-gray-800/50 rounded-full flex items-center justify-center mx-auto mb-4">
+          <svg class="w-8 h-8 text-gray-400" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/>
+          </svg>
+        </div>
+        <h3 class="text-lg font-medium text-white mb-2">No accounts found</h3>
+        <p class="text-gray-400 mb-6">Try adjusting your filters or search criteria</p>
+        <button
+          (click)="clearFilters()"
+          class="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-medium transition-all duration-200">
+          Clear Filters
+        </button>
+      </div>
+    </div>
+
+    <!-- Pagination -->
+    <div *ngIf="filteredAccounts.length > 0 && !isLoading && !error" class="px-6 py-4 border-t border-gray-700/50">
+      <div class="flex items-center justify-between">
+        <div class="text-sm text-gray-400">
+          Showing {{ ((currentPage - 1) * pageSize) + 1 }} to {{ Math.min(currentPage * pageSize, filteredAccounts.length) }} of {{ filteredAccounts.length }} results
+        </div>
+        <div class="flex items-center space-x-2">
+          <button
+            [disabled]="currentPage === 1"
+            (click)="previousPage()"
+            class="px-3 py-2 text-gray-400 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-700/50 rounded-lg transition-all duration-200">
+            Previous
+          </button>
+
+          <div class="flex items-center space-x-1">
+            <button
+              *ngFor="let page of getPageNumbers()"
+              [class.bg-indigo-600]="page === currentPage"
+              [class.text-white]="page === currentPage"
+              [class.text-gray-400]="page !== currentPage"
+              (click)="goToPage(page)"
+              class="w-10 h-10 rounded-lg hover:bg-gray-700/50 transition-all duration-200 text-sm font-medium">
+              {{ page }}
+            </button>
+          </div>
+
+          <button
+            [disabled]="currentPage === totalPages"
+            (click)="nextPage()"
+            class="px-3 py-2 text-gray-400 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-700/50 rounded-lg transition-all duration-200">
+            Next
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Account Details Modal -->
+  <div
+    *ngIf="selectedAccount && showModal"
+    class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+    (click)="closeModal()">
+    <div
+      class="bg-gradient-to-br from-gray-900 to-gray-800 border border-gray-700/50 rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl"
+      (click)="$event.stopPropagation()">
+
+      <!-- Modal Header -->
+      <div class="px-6 py-4 border-b border-gray-700/50">
+        <div class="flex items-center justify-between">
+          <h3 class="text-xl font-semibold text-white">Account Details</h3>
+          <button
+            (click)="closeModal()"
+            class="p-2 text-gray-400 hover:text-white hover:bg-gray-700/50 rounded-lg transition-all duration-200">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Modal Content -->
+      <div class="p-6 space-y-6">
+        <!-- Account Overview -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="space-y-4">
+            <div>
+              <label class="text-xs font-medium text-gray-400 uppercase tracking-wider">Account ID</label>
+              <p class="text-lg font-semibold text-white mt-1">#{{ selectedAccount.id }}</p>
+            </div>
+            <div>
+              <label class="text-xs font-medium text-gray-400 uppercase tracking-wider">Alias</label>
+              <p class="text-lg text-white mt-1">{{ selectedAccount.alias }}</p>
+            </div>
+            <div>
+              <label class="text-xs font-medium text-gray-400 uppercase tracking-wider">Balance</label>
+              <p class="text-2xl font-bold text-white mt-1">{{ formatCurrency(selectedAccount.balance, selectedAccount.currency) }}</p>
+            </div>
+          </div>
+          <div class="space-y-4">
+            <div>
+              <label class="text-xs font-medium text-gray-400 uppercase tracking-wider">Status</label>
+              <div class="mt-2">
+                <span [ngClass]="{
+                  'bg-green-600/20 text-green-400 border-green-600/30': selectedAccount.status === 'ACTIVE',
+                  'bg-yellow-600/20 text-yellow-400 border-yellow-600/30': selectedAccount.status === 'PENDING',
+                  'bg-red-600/20 text-red-400 border-red-600/30': selectedAccount.status === 'SUSPENDED'
+                }" class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium border">
+                  {{ selectedAccount.status }}
+                </span>
+              </div>
+            </div>
+            <div>
+              <label class="text-xs font-medium text-gray-400 uppercase tracking-wider">Account Type</label>
+              <p class="text-lg text-white mt-1">{{ selectedAccount.accountType }}</p>
+            </div>
+            <div>
+              <label class="text-xs font-medium text-gray-400 uppercase tracking-wider">Account Number</label>
+              <p class="text-lg text-white mt-1">{{ selectedAccount.maskedAccountNumber }}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Additional Details -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="bg-gray-800/30 rounded-lg p-4">
+            <label class="text-xs font-medium text-gray-400 uppercase tracking-wider">Currency</label>
+            <p class="text-white mt-1">{{ selectedAccount.currency }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modal Actions -->
+      <div class="px-6 py-4 border-t border-gray-700/50 bg-gray-900/50">
+        <div class="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-3">
+          <button
+            (click)="toggleAccountStatus(selectedAccount)"
+            class="px-6 py-3 bg-yellow-600 hover:bg-yellow-700 text-white rounded-xl font-medium transition-all duration-200 flex items-center justify-center space-x-2">
+            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"/>
+            </svg>
+            <span>{{ selectedAccount.status === 'ACTIVE' ? 'Suspend' : 'Activate' }} Account</span>
+          </button>
+          <button
+            (click)="closeModal()"
+            class="px-6 py-3 bg-gray-600 hover:bg-gray-700 text-white rounded-xl font-medium transition-all duration-200">
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Create Account Modal -->
+  <div
+    *ngIf="showCreateModal"
+    class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+    (click)="closeCreateModal()">
+    <div
+      class="bg-gradient-to-br from-gray-900 to-gray-800 border border-gray-700/50 rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl"
+      (click)="$event.stopPropagation()">
+
+      <!-- Modal Header -->
+      <div class="px-6 py-4 border-b border-gray-700/50">
+        <div class="flex items-center justify-between">
+          <h3 class="text-xl font-semibold text-white">Create New Account</h3>
+          <button
+            (click)="closeCreateModal()"
+            class="p-2 text-gray-400 hover:text-white hover:bg-gray-700/50 rounded-lg transition-all duration-200">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Modal Content -->
+      <div class="p-6 space-y-6">
+        <form (ngSubmit)="createAccount()" #accountForm="ngForm">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label class="text-xs font-medium text-gray-400 uppercase tracking-wider">Alias</label>
+              <input
+                type="text"
+                [(ngModel)]="newAccount.alias"
+                name="alias"
+                required
+                class="w-full mt-2 px-4 py-3 bg-gray-800/50 border border-gray-700/50 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all duration-200"
+                placeholder="Enter account alias">
+            </div>
+            <div>
+              <label class="text-xs font-medium text-gray-400 uppercase tracking-wider">Account Type</label>
+              <select
+                [(ngModel)]="newAccount.accountType"
+                name="accountType"
+                required
+                class="w-full mt-2 px-4 py-3 bg-gray-800/50 border border-gray-700/50 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all duration-200">
+                <option value="Savings">Savings</option>
+                <option value="Checking">Checking</option>
+                <option value="Business">Business</option>
+              </select>
+            </div>
+            <div>
+              <label class="text-xs font-medium text-gray-400 uppercase tracking-wider">Currency</label>
+              <select
+                [(ngModel)]="newAccount.currency"
+                name="currency"
+                required
+                class="w-full mt-2 px-4 py-3 bg-gray-800/50 border border-gray-700/50 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all duration-200">
+                <option value="MAD">MAD</option>
+                <option value="USD">USD</option>
+                <option value="EUR">EUR</option>
+              </select>
+            </div>
+            <div>
+              <label class="text-xs font-medium text-gray-400 uppercase tracking-wider">Initial Balance</label>
+              <input
+                type="number"
+                [(ngModel)]="newAccount.balance"
+                name="balance"
+                required
+                min="0"
+                class="w-full mt-2 px-4 py-3 bg-gray-800/50 border border-gray-700/50 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all duration-200"
+                placeholder="Enter initial balance">
+            </div>
+          </div>
+        </form>
+      </div>
+
+      <!-- Modal Actions -->
+      <div class="px-6 py-4 border-t border-gray-700/50 bg-gray-900/50">
+        <div class="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-3">
+          <button
+            (click)="createAccount()"
+            [disabled]="!accountForm.valid"
+            class="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-medium transition-all duration-200 flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed">
+            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/>
+            </svg>
+            <span>Create Account</span>
+          </button>
+          <button
+            (click)="closeCreateModal()"
+            class="px-6 py-3 bg-gray-600 hover:bg-gray-700 text-white rounded-xl font-medium transition-all duration-200">
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
