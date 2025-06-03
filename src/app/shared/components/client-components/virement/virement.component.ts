@@ -2,22 +2,25 @@ import { Component, OnInit } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Recipient } from '../../../core/models/recipient.model';
-import { recipientExternal } from '../../../core/models/recipientExternal.model';
-import { Account } from '../../../core/models/account.model';
-import { AccountService } from '../../../core/services/account.service';
-import { RecipientService } from '../../../core/services/recipient.service';
-import { Transaction } from '../../../core/models/transaction.model';
-import { ExternalTransaction } from '../../../core/models/ExternalTransaction.model';
-import { TransactionService } from '../../../core/services/transaction.service';
+import { HttpClient } from '@angular/common/http';
+import { Recipient } from '../../../../core/models/recipient.model';
+import { recipientExternal } from '../../../../core/models/recipientExternal.model';
+import { Account } from '../../../../core/models/account.model';
+import { AccountService } from '../../../../core/services/account.service';
+import { RecipientService } from '../../../../core/services/recipient.service';
+import { Transaction } from '../../../../core/models/transaction.model';
+import { ExternalTransaction } from '../../../../core/models/ExternalTransaction.model';
+import { TransactionService } from '../../../../core/services/transaction.service';
+import { AuthService } from '../../../../core/services/auth.service';
 import { ConfirmationModalComponent, ConfirmationData } from './virement-confirmation-modal';
+import { environment } from '../../../../../environments/environment';
 
 @Component({
   selector: 'app-transfer',
   templateUrl: './virement.component.html',
   standalone: true,
   imports: [FormsModule, RouterModule, CommonModule, ConfirmationModalComponent],
-  styleUrls: [`virement.component.css`]
+  styleUrls: ['virement.component.css']
 })
 export class VirementComponent implements OnInit {
   transferModel: {
@@ -41,19 +44,35 @@ export class VirementComponent implements OnInit {
   isSubmitting = false;
   error: string | null = null;
   successMessage: string | null = null;
-
-  // Modal properties
   showConfirmationModal = false;
   confirmationData: ConfirmationData | null = null;
+  showVerificationModal = false;
+  verificationCode: string = '';
+  userPhone: string | null = null;
 
   constructor(
     private accountService: AccountService,
     private recipientService: RecipientService,
-    private transactionService: TransactionService
+    private transactionService: TransactionService,
+    private authService: AuthService,
+    private http: HttpClient
   ) {}
 
   ngOnInit(): void {
     this.loadData();
+    this.loadUserPhone();
+  }
+
+  private loadUserPhone(): void {
+    this.authService.getCurrentUser().subscribe({
+      next: (user) => {
+        this.userPhone = user.phone;
+      },
+      error: (err) => {
+        this.error = 'Échec du chargement du numéro de téléphone.';
+        console.error('Error loading user phone:', err);
+      }
+    });
   }
 
   loadData(): void {
@@ -61,7 +80,6 @@ export class VirementComponent implements OnInit {
     this.error = null;
     this.successMessage = null;
 
-    // Load accounts
     this.accountService.getAccounts().subscribe({
       next: (accounts) => {
         this.accounts = accounts;
@@ -74,7 +92,6 @@ export class VirementComponent implements OnInit {
       }
     });
 
-    // Load internal recipients
     this.recipientService.getRecipients().subscribe({
       next: (recipients) => {
         this.recipients = recipients;
@@ -87,7 +104,6 @@ export class VirementComponent implements OnInit {
       }
     });
 
-    // Load external recipients
     this.recipientService.getExternalRecipients().subscribe({
       next: (externalRecipients) => {
         this.externalRecipients = externalRecipients;
@@ -102,7 +118,6 @@ export class VirementComponent implements OnInit {
   }
 
   private checkLoadingComplete(): void {
-    // Check if all data has been loaded
     if (this.accounts.length >= 0 && this.recipients.length >= 0 && this.externalRecipients.length >= 0) {
       this.isLoading = false;
     }
@@ -110,7 +125,6 @@ export class VirementComponent implements OnInit {
 
   onSubmitTransfer(): void {
     if (this.isFormValid() && !this.isSubmitting) {
-      // Prepare confirmation data
       this.prepareConfirmationData();
       this.showConfirmationModal = true;
     } else {
@@ -131,7 +145,6 @@ export class VirementComponent implements OnInit {
       recipientInfo = recipient ? (recipient.alias || recipient.accountNumber) : 'Bénéficiaire sélectionné';
     }
 
-    // Calculate fees for external transfers (example: 0.5% with minimum 5 MAD)
     const fees = this.transferModel.recipientType === 'external' && this.transferModel.amount
       ? Math.max(this.transferModel.amount * 0.005, 5)
       : 0;
@@ -150,15 +163,65 @@ export class VirementComponent implements OnInit {
 
   onConfirmTransfer(): void {
     this.showConfirmationModal = false;
-    this.isSubmitting = true;
-    this.error = null;
-    this.successMessage = null;
-
-    if (this.transferModel.recipientType === 'internal') {
-      this.processInternalTransfer();
-    } else {
-      this.processExternalTransfer();
+    if (!this.userPhone) {
+      this.error = 'Numéro de téléphone non disponible.';
+      return;
     }
+
+    this.isSubmitting = true;
+    this.http.post(`${environment.apiUrl}/test/send-code`, { phone: `+${this.userPhone}` }).subscribe({
+      next: () => {
+        this.isSubmitting = false;
+        this.showVerificationModal = true;
+      },
+      error: (err) => {
+        this.isSubmitting = false;
+        this.error = 'Échec de l’envoi du code de vérification.';
+        console.error('Error sending SMS:', err);
+      }
+    });
+  }
+
+  onVerifyCode(): void {
+    if (!this.verificationCode || !this.userPhone) {
+      this.error = 'Veuillez entrer un code de vérification valide.';
+      return;
+    }
+
+    this.isSubmitting = true;
+    this.http
+      .post(`${environment.apiUrl}/test/verify-code`, {
+        phone: `+${this.userPhone}`,
+        code: this.verificationCode
+      })
+      .subscribe({
+        next: (response: any) => {
+          if (response === 'Code verified successfully') {
+            this.showVerificationModal = false;
+            this.verificationCode = '';
+            if (this.transferModel.recipientType === 'internal') {
+              this.processInternalTransfer();
+            } else {
+              this.processExternalTransfer();
+            }
+          } else {
+            this.error = 'Code de vérification invalide ou expiré.';
+            this.isSubmitting = false;
+          }
+        },
+        error: (err) => {
+          this.error = err.error?.message || 'Échec de la vérification du code.';
+          this.isSubmitting = false;
+          console.error('Error verifying code:', err);
+        }
+      });
+  }
+
+  onCancelVerification(): void {
+    this.showVerificationModal = false;
+    this.verificationCode = '';
+    this.isSubmitting = false;
+    this.confirmationData = null;
   }
 
   onCancelTransfer(): void {
@@ -200,7 +263,6 @@ export class VirementComponent implements OnInit {
     this.transactionService.createExternalTransfer(externalTransaction).subscribe({
       next: (result) => {
         this.isSubmitting = false;
-        // Fix: Handle potential undefined executedAt
         const executedDate = result.executedAt ? new Date(result.executedAt).toLocaleString('fr-FR') : 'maintenant';
         this.successMessage = `Virement externe de ${this.formatCurrency(result.amount)} effectué avec succès le ${executedDate}!`;
         this.resetForm();
@@ -239,7 +301,6 @@ export class VirementComponent implements OnInit {
 
   onRecipientTypeChange(): void {
     this.transferModel.recipient = '';
-    // Clear any previous errors when changing type
     this.error = null;
   }
 
@@ -262,8 +323,6 @@ export class VirementComponent implements OnInit {
             this.recipients = this.recipients.filter((r) => r.id !== id);
           }
           this.successMessage = `Bénéficiaire ${recipientType} supprimé avec succès.`;
-
-          // Clear recipient selection if the deleted recipient was selected
           if (Number(this.transferModel.recipient) === id) {
             this.transferModel.recipient = '';
           }
@@ -279,7 +338,6 @@ export class VirementComponent implements OnInit {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  // Helper method to get account balance for display
   getAccountBalance(accountId: string): string {
     const account = this.accounts.find(acc => acc.id === Number(accountId));
     if (account) {
@@ -288,7 +346,6 @@ export class VirementComponent implements OnInit {
     return '';
   }
 
-  // Helper method to format currency
   formatCurrency(amount: number, currency: string = 'MAD'): string {
     return new Intl.NumberFormat('fr-MA', {
       style: 'currency',

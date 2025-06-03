@@ -1,28 +1,27 @@
 import { Component } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
-import { AuthService } from '../../../core/services/auth.service';
+import { AuthService } from '../../../../core/services/auth.service';
 import {CommonModule} from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ToastrService } from 'ngx-toastr';
-import { AgentService } from '../../../core/services/agent.service';
-
 
 @Component({
-  selector: 'app-agent-login',
+  selector: 'app-login',
+  standalone: true,
   imports: [CommonModule, FormsModule, RouterLink],
-  templateUrl: './agent-login.component.html',
-  styleUrl: './agent-login.component.css'
+  templateUrl: './login.component.html',
+  styleUrls: ['./login.component.css']
 })
-export class AgentLoginComponent {
-  name: string = '';
+export class LoginComponent {
+  email: string = '';
   password: string = '';
-  error: string | undefined = undefined;
+  error: string | null = null;
   isLoading: boolean = false;
   rememberMe: boolean = false;
   hidePassword: boolean = true;
 
   constructor(
-    private agentService : AgentService,
+    private authService: AuthService,
     private router: Router,
     private toastr: ToastrService
   ) {}
@@ -32,42 +31,44 @@ export class AgentLoginComponent {
   }
 
   onSubmit(): void {
-    this.error = undefined;
+    this.error = null;
     this.isLoading = true;
 
-
-
-
-    // TODO: Add api part here
-    const names = {
-      name: this.name
+    // Optional: Add validation before submitting
+    if (!this.validateEmail(this.email)) {
+      this.error = 'Please enter a valid email address';
+      this.isLoading = false;
+      return;
     }
 
-
-    this.agentService.login({name: this.name, password: this.password}).subscribe({
+    this.authService.login(this.email, this.password).subscribe({
       next: () => {
         this.toastr.success('Login successful!', '', {
           positionClass: 'toast-bottom-right',
           progressBar: true,
           timeOut: 3000
         });
-        // sessionStora
-        this.router.navigate(['/agent/dashboard']);
-        
+        console.log("Login successful");
+        this.router.navigate(['/dashboard']);
       },
       error: (err) => {
         this.error = err.message || 'Authentication failed. Please try again.';
-        
-        console.log(this.error);
+        // @ts-ignore
         this.toastr.error(this.error, '', {
           positionClass: 'toast-bottom-right',
           progressBar: true,
           timeOut: 5000
         });
         this.isLoading = false;
+      },
+      complete: () => {
+        this.isLoading = false;
       }
     });
   }
 
-
+  private validateEmail(email: string): boolean {
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    return emailRegex.test(email);
+  }
 }

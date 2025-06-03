@@ -2,8 +2,8 @@ import { Component, OnInit, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { UserService } from '../../../core/services/user.service';
-import { Client } from '../../../core/models/client.model';
+import { UserService } from '../../../../core/services/user.service';
+import { Client } from '../../../../core/models/client.model';
 
 interface Transaction {
   id: string;

@@ -1,8 +1,8 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterOutlet, NavigationEnd } from '@angular/router';
-import { AgentSidebarComponent } from "../../components/agent-sidebar/agent-sidebar.component";
-import { AgentHeaderComponent } from "../../components/agent-header/agent-header.component";
+import { AgentSidebarComponent } from "../../components/agent-components/agent-sidebar/agent-sidebar.component";
+import { AgentHeaderComponent } from "../../components/agent-components/agent-header/agent-header.component";
 import { filter, takeUntil } from 'rxjs/operators';
 import { Subject } from 'rxjs';
 

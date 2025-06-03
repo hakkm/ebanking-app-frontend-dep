@@ -1,24 +1,25 @@
 import { Routes } from '@angular/router';
 import { MainLayoutComponent } from './shared/layouts/main-layout/main-layout.component';
 import { PublicLayoutComponent } from './shared/layouts/public-layout/public-layout.component';
-
-import {HomeComponent} from './shared/components/home/home.component';
-
-import {VirementComponent} from './shared/components/virement/virement.component';
-import {TransactionsComponent} from './shared/components/transaction/transaction.component';
-import {LoginComponent} from './shared/components/login/login.component';
-import {RegisterComponent} from './shared/components/register/register.component';
-import { authGuard } from './core/guards/auth.guard';
-import { AddRecipientComponent } from './shared/components/add-recipient/add-recipient.component';
-import { DashboardComponent } from './features/crypto/components/dashboard/dashboard.component';
 import {BudgetAlertComponent} from './Gestionbudget/gestionbudget/gestionbudget.component';
-import { RechargeComponent } from './shared/components/rechargetel/rechargetel.component';
-import { AgentLoginComponent } from './shared/components/agent-login/agent-login.component';
-import { AgentDashboardComponent } from './shared/components/agent-dashboard/agent-dashboard.component';
+import { AgentLoginComponent } from './shared/components/agent-components/agent-login/agent-login.component';
 import { AgentLayoutComponent } from './shared/layouts/agent-layout/agent-layout.component';
-import { AgentUsersComponent } from './shared/components/agent-users/agent-users.component';
-import { AgentTransactionComponent } from './shared/components/agent-transaction/agent-transaction.component';
-import { AgentUserProfileComponent } from './shared/components/agent-user-profile/agent-user-profile.component';
+import { AgentDashboardComponent } from './shared/components/agent-components/agent-dashboard/agent-dashboard.component';
+import { AgentUsersComponent } from './shared/components/agent-components/agent-users/agent-users.component';
+import {
+  AgentTransactionComponent
+} from './shared/components/agent-components/agent-transaction/agent-transaction.component';
+import { AgentUserProfileComponent } from './shared/components/agent-components/agent-user-profile/agent-user-profile.component';
+import {authGuard} from './core/guards/auth.guard';
+import {HomeComponent} from './shared/components/client-components/home/home.component';
+import {TransactionsComponent} from './shared/components/client-components/transaction/transaction.component';
+import {VirementComponent} from './shared/components/client-components/virement/virement.component';
+import {RechargeComponent} from './shared/components/client-components/rechargetel/rechargetel.component';
+import {AddRecipientComponent} from './shared/components/client-components/add-recipient/add-recipient.component';
+import {DashboardComponent} from './features/crypto/components/dashboard/dashboard.component';
+import {LoginComponent} from './shared/components/client-components/login/login.component';
+import {RegisterComponent} from './shared/components/client-components/register/register.component';
+import {ReferralComponent} from './shared/components/client-components/referral/referral.component';
 
 export const routes: Routes = [
 
@@ -30,7 +31,6 @@ export const routes: Routes = [
 
       {path: 'dashboard', component: AgentDashboardComponent},
       {path: 'manage-users', component: AgentUsersComponent},
-      {path: 'transactions', component: AgentTransactionComponent},
       {path: 'transactions', component: AgentTransactionComponent},
       {path: 'user-profile/:id', component: AgentUserProfileComponent},
     ]
@@ -48,6 +48,7 @@ export const routes: Routes = [
       { path: 'recharge', component: RechargeComponent },
       { path: 'crypto',  component: DashboardComponent},
       { path: 'BudgetAlert', component: BudgetAlertComponent },
+      { path: 'referral', component: ReferralComponent },
 
       { path: '', redirectTo: 'home', pathMatch: 'full' }
     ]
