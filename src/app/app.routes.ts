@@ -36,6 +36,7 @@ export const routes: Routes = [
 
       {path: 'dashboard', component: AgentDashboardComponent},
       {path: 'manage-users', component: AgentUsersComponent},
+      {path: 'transactions', component: AgentTransactionComponent},
       {path: 'accounts', component: AgentAccountsComponent},
       {path: 'user-profile/:id', component: AgentUserProfileComponent},
     ]
