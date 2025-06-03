@@ -1,6 +1,8 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { environment } from '../../../environments/environment';
+import { Observable } from 'rxjs';
+import { Account } from '../models/account.model';
 
 @Injectable({
   providedIn: 'root'
@@ -24,6 +26,10 @@ export class AgentService {
 
   getTransaction(id: number) {
     return this.http.get(environment.apiUrl + `/agent/transactions/${id}`);
+  }
+
+  getAccounts(): Observable<Account[]> {
+    return this.http.get<Account[]>(environment.apiUrl + '/agent/accounts');
   }
 
 }

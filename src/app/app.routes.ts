@@ -1,6 +1,9 @@
-import { Routes } from '@angular/router';
+
 import { MainLayoutComponent } from './shared/layouts/main-layout/main-layout.component';
 import { PublicLayoutComponent } from './shared/layouts/public-layout/public-layout.component';
+
+
+
 import {BudgetAlertComponent} from './Gestionbudget/gestionbudget/gestionbudget.component';
 import { AgentLoginComponent } from './shared/components/agent-components/agent-login/agent-login.component';
 import { AgentLayoutComponent } from './shared/layouts/agent-layout/agent-layout.component';
@@ -20,6 +23,8 @@ import {DashboardComponent} from './features/crypto/components/dashboard/dashboa
 import {LoginComponent} from './shared/components/client-components/login/login.component';
 import {RegisterComponent} from './shared/components/client-components/register/register.component';
 import {ReferralComponent} from './shared/components/client-components/referral/referral.component';
+import { AgentAccountsComponent } from './shared/components/agent-accounts/agent-accounts.component';
+import { Routes } from '@angular/router';
 
 export const routes: Routes = [
 
@@ -31,7 +36,7 @@ export const routes: Routes = [
 
       {path: 'dashboard', component: AgentDashboardComponent},
       {path: 'manage-users', component: AgentUsersComponent},
-      {path: 'transactions', component: AgentTransactionComponent},
+      {path: 'accounts', component: AgentAccountsComponent},
       {path: 'user-profile/:id', component: AgentUserProfileComponent},
     ]
   }
@@ -61,6 +66,8 @@ export const routes: Routes = [
       { path: 'register', component: RegisterComponent }
     ]
   },
+
+
 
 
   {path: 'crypto', loadChildren: () => import('./features/crypto/crypto.module').then(m => m.CryptoModule)},
