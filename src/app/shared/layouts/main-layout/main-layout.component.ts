@@ -8,6 +8,7 @@ import { User } from '../../../core/models/user.model';
 import { NotificationService } from '../../../core/services/Notification.service';
 import { AccountService } from '../../../core/services/account.service';
 import { Account } from '../../../core/models/account.model';
+import {ChatbotComponent} from '../../components/chatbot/chatbot.component';
 
 export interface NotificationWithAccount {
   id: number;
@@ -21,7 +22,7 @@ export interface NotificationWithAccount {
 @Component({
   selector: 'app-main-layout',
   standalone: true,
-  imports: [RouterOutlet, SidebarComponent, CommonModule],
+  imports: [RouterOutlet, SidebarComponent, CommonModule, ChatbotComponent],
   template: `
     <div class="flex h-screen bg-gray-950 overflow-hidden">
       <!-- Backdrop for mobile sidebar -->
@@ -140,6 +141,20 @@ export interface NotificationWithAccount {
           <router-outlet></router-outlet>
         </main>
       </div>
+
+      <!-- Chatbot component -->
+      <app-chatbot
+        [isOpen]="isChatbotOpen"
+        (closeRequest)="closeChatbot()"
+      ></app-chatbot>
+      <!-- FLOATING CHATBOT BUTTON -->
+      <button *ngIf="!isChatbotOpen"
+              (click)="toggleChatbot()"
+              class="fixed bottom-6 right-6 w-14 h-14 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 z-40 flex items-center justify-center">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+        </svg>
+      </button>
     </div>
   `,
   styles: [
@@ -178,6 +193,7 @@ export interface NotificationWithAccount {
 export class MainLayoutComponent implements OnInit, OnDestroy {
   isSidebarOpen = true;
   isMobileView = false;
+  isChatbotOpen = false;
 
   currentUser: User | null = null;
   notifications: NotificationWithAccount[] = [];
@@ -309,5 +325,20 @@ export class MainLayoutComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.userSubscription?.unsubscribe();
     this.notificationSubscription?.unsubscribe();
+  }
+
+
+  /**
+   * Toggle the chatbot visibility
+   */
+  toggleChatbot(): void {
+    this.isChatbotOpen = !this.isChatbotOpen;
+  }
+
+  /**
+   * Close the chatbot
+   */
+  closeChatbot(): void {
+    this.isChatbotOpen = false;
   }
 }
