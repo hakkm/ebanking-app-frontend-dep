@@ -8,7 +8,7 @@ import {VirementComponent} from './shared/components/virement/virement.component
 import {TransactionsComponent} from './shared/components/transaction/transaction.component';
 import {LoginComponent} from './shared/components/login/login.component';
 import {RegisterComponent} from './shared/components/register/register.component';
-import {RechargeComponent} from './Rechargetel/rechargetel/rechargetel.component';
+// import {RechargeComponent} from './Rechargetel/rechargetel/rechargetel.component';
 import { authGuard } from './core/guards/auth.guard';
 import { AddRecipientComponent } from './shared/components/add-recipient/add-recipient.component';
 import { DashboardComponent } from './features/crypto/components/dashboard/dashboard.component';
@@ -20,6 +20,7 @@ import { AgentLayoutComponent } from './shared/layouts/agent-layout/agent-layout
 import { AgentUsersComponent } from './shared/components/agent-users/agent-users.component';
 import { AgentTransactionComponent } from './shared/components/agent-transaction/agent-transaction.component';
 import { AgentUserProfileComponent } from './shared/components/agent-user-profile/agent-user-profile.component';
+import { AgentAccountsComponent } from './shared/components/agent-accounts/agent-accounts.component';
 
 export const routes: Routes = [
 
@@ -32,7 +33,7 @@ export const routes: Routes = [
       {path: 'dashboard', component: AgentDashboardComponent},
       {path: 'manage-users', component: AgentUsersComponent},
       {path: 'transactions', component: AgentTransactionComponent},
-      {path: 'transactions', component: AgentTransactionComponent},
+      {path: 'accounts', component: AgentAccountsComponent},
       {path: 'user-profile/:id', component: AgentUserProfileComponent},
     ]
   }
@@ -61,6 +62,8 @@ export const routes: Routes = [
       { path: 'register', component: RegisterComponent }
     ]
   },
+
+
 
 
   {path: 'crypto', loadChildren: () => import('./features/crypto/crypto.module').then(m => m.CryptoModule)},

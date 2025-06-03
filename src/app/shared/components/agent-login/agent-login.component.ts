@@ -51,7 +51,7 @@ export class AgentLoginComponent {
           progressBar: true,
           timeOut: 3000
         });
-        // sessionStora
+        
         this.router.navigate(['/agent/dashboard']);
         
       },
@@ -69,5 +69,8 @@ export class AgentLoginComponent {
     });
   }
 
+  goToDash() {
+    this.router.navigate(['/agent/dashboard']);
+  }
 
 }

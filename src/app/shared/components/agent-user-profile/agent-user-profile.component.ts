@@ -21,6 +21,7 @@ export class AgentUserProfileComponent implements OnInit {
   accounts: Account[] = [];
   newAccount: AccountExport = {} as AccountExport;
   updatedAccount: AccountExport = {} as AccountExport;
+  public Math = Math
 
   // Loading and error states
   isLoading: boolean = false;
@@ -53,6 +54,7 @@ export class AgentUserProfileComponent implements OnInit {
     this.userService.getUser(this.user_id).subscribe({
       next: (response: any) => {
         console.log('User data loaded:', response);
+        
         this.user = response;
         this.isLoading = false;
       },
@@ -88,6 +90,7 @@ export class AgentUserProfileComponent implements OnInit {
     }
 
     this.isLoading = true;
+    console.log('Updating user:', this.user);
 
     this.userService.updateUser(this.user).subscribe({
       next: (response: any) => {
