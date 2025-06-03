@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterOutlet, NavigationEnd } from '@angular/router';
 import { AgentSidebarComponent } from "../../components/agent-components/agent-sidebar/agent-sidebar.component";
@@ -24,6 +24,10 @@ interface Toast {
 export class AgentLayoutComponent implements OnInit, OnDestroy {
 
   private destroy$ = new Subject<void>();
+
+  // Sidebar state
+  isSidebarOpen: boolean = true;
+  isMobileView: boolean = false;
 
   // Loading state
   isLoading: boolean = false;
@@ -52,6 +56,7 @@ export class AgentLayoutComponent implements OnInit, OnDestroy {
   constructor(private router: Router) {}
 
   ngOnInit(): void {
+    this.checkScreenSize();
     this.initializeRouteTracking();
     this.setCurrentPageTitle();
 
@@ -64,6 +69,20 @@ export class AgentLayoutComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
+  }
+
+  @HostListener('window:resize', ['$event'])
+  onResize(): void {
+    this.checkScreenSize();
+  }
+
+  private checkScreenSize(): void {
+    this.isMobileView = window.innerWidth < 768;
+    this.isSidebarOpen = !this.isMobileView;
+  }
+
+  toggleSidebar(): void {
+    this.isSidebarOpen = !this.isSidebarOpen;
   }
 
   private initializeRouteTracking(): void {
