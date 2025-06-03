@@ -1,157 +1,88 @@
 import { Component, OnInit } from '@angular/core';
-import { Router, RouterLink, RouterLinkActive, NavigationEnd } from '@angular/router';
+import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { filter } from 'rxjs/operators';
-
-interface MenuItem {
-  path: string;
-  label: string;
-  description: string;
-  icon: string;
-  badge?: {
-    text: string;
-    color: string;
-  };
-}
 
 @Component({
   selector: 'app-agent-sidebar',
   imports: [RouterLink, RouterLinkActive, CommonModule],
   templateUrl: './agent-sidebar.component.html',
   standalone: true,
-  styleUrl: './agent-sidebar.component.css'
+  styles: [`
+    /* Optional: Add any component-specific styles here */
+    :host {
+      display: block;
+      height: 100%;
+    }
+
+    /* Active link highlight animation */
+    a.border-l-2 {
+      position: relative;
+      overflow: hidden;
+    }
+
+    a.border-l-2::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 2px;
+      height: 100%;
+      background: linear-gradient(to bottom, #6366f1, #9333ea);
+      box-shadow: 0 0 8px rgba(99, 102, 241, 0.6);
+    }
+  `]
 })
 export class AgentSidebarComponent implements OnInit {
 
-  currentRoute: string = '';
-
-  // Menu items configuration
-  menuItems: MenuItem[] = [
-    {
-      path: '/agent/dashboard',
-      label: 'Dashboard',
-      description: 'Overview & Analytics',
-      icon: 'dashboard'
-    },
-    {
-      path: '/agent/notifications',
-      label: 'Notifications',
-      description: 'Alerts & Updates',
-      icon: 'notifications',
-      badge: {
-        text: '3',
-        color: 'bg-red-600'
-      }
-    },
-    {
-      path: '/agent/manage-users',
-      label: 'Manage Users',
-      description: 'User Administration',
-      icon: 'group'
-    },
-    {
-      path: '/agent/transactions',
-      label: 'Transactions',
-      description: 'Payment History',
-      icon: 'receipt'
-    },
-    {
-      path: '/agent/accounts',
-      label: 'Accounts',
-      description: 'Account Management',
-      icon: 'account_balance'
-    },
-    {
-      path: '/agent/reports',
-      label: 'Reports',
-      description: 'Analytics & Insights',
-      icon: 'assessment'
-    }
-  ];
-
-  // User information
+  // Current user info
   currentUser = {
     name: 'Agent Smith',
     email: 'administrator@bank.com',
-    id: 'A001',
-    status: 'online'
+    role: 'Senior Banking Agent',
+    id: 'A001'
   };
 
   constructor(private router: Router) {}
 
   ngOnInit(): void {
-    // Track current route for active state management
-    this.router.events
-      .pipe(filter(event => event instanceof NavigationEnd))
-      .subscribe((event: NavigationEnd) => {
-        this.currentRoute = event.url;
-      });
+    // Component initialization logic if needed
+  }
 
-    // Set initial route
-    this.currentRoute = this.router.url;
+  getUserInitials(): string {
+    if (!this.currentUser.name) {
+      return 'A';
+    }
+
+    // Get first letter of first and last name if possible
+    const nameParts = this.currentUser.name.split(' ');
+    if (nameParts.length > 1) {
+      return (nameParts[0][0] + nameParts[nameParts.length - 1][0]).toUpperCase();
+    }
+
+    // Otherwise just use the first letter
+    return this.currentUser.name[0].toUpperCase();
   }
 
   logout(): void {
-    console.log('Logging out...');
+    console.log('Agent logging out...');
 
-    // Clear any stored authentication data
+    // Clear authentication data
     this.clearAuthData();
 
-    // Navigate to login page
+    // Navigate to agent login
     this.router.navigate(['/agent/login']);
-
-    // TODO: Implement proper logout logic
-    // - Clear JWT tokens
-    // - Clear session storage
-    // - Call logout API endpoint
-    // - Clear user state management
   }
 
   private clearAuthData(): void {
     // Clear localStorage
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('refreshToken');
-    localStorage.removeItem('userInfo');
+    localStorage.removeItem('agentAuthToken');
+    localStorage.removeItem('agentRefreshToken');
+    localStorage.removeItem('agentUserInfo');
 
     // Clear sessionStorage
-    sessionStorage.removeItem('authToken');
-    sessionStorage.removeItem('userSession');
+    sessionStorage.removeItem('agentAuthToken');
+    sessionStorage.removeItem('agentUserSession');
 
-    // TODO: Clear any other stored data
-    console.log('Authentication data cleared');
-  }
-
-  // Method to check if current route is active
-  isRouteActive(path: string): boolean {
-    return this.currentRoute === path || this.currentRoute.startsWith(path + '/');
-  }
-
-  // Method to get notification count (this would typically come from a service)
-  getNotificationCount(): number {
-    // TODO: Replace with actual service call
-    return 3;
-  }
-
-  // Method to handle profile click
-  onProfileClick(): void {
-    console.log('Profile clicked');
-    // TODO: Implement profile management
-    // this.router.navigate(['/agent/profile']);
-  }
-
-  // Method to handle settings (if needed)
-  openSettings(): void {
-    console.log('Settings clicked');
-    // TODO: Implement settings page
-    // this.router.navigate(['/agent/settings']);
-  }
-
-  // Method to get user initials for avatar fallback
-  getUserInitials(): string {
-    return this.currentUser.name
-      .split(' ')
-      .map(name => name.charAt(0))
-      .join('')
-      .toUpperCase();
+    console.log('Agent authentication data cleared');
   }
 }
