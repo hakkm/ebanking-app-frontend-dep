@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ReferralService } from '../../../../core/services/referral.service';
 import { User } from '../../../../core/models/user.model';
-import { CurrencyPipe, DatePipe, NgForOf, NgIf } from '@angular/common';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-referral',
@@ -9,10 +9,7 @@ import { CurrencyPipe, DatePipe, NgForOf, NgIf } from '@angular/common';
   styleUrls: ['./referral.component.css'],
   standalone: true,
   imports: [
-    DatePipe,
-    NgIf,
-    NgForOf,
-    CurrencyPipe
+    CommonModule
   ]
 })
 export class ReferralComponent implements OnInit {

@@ -1,7 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { NgIf, NgForOf,NgClass } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterLink, RouterOutlet } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import {AccountService} from '../../core/services/account.service';
 import {AuthService} from '../../core/services/auth.service';
@@ -16,9 +15,7 @@ import { environment } from '../../../environments/environment';
     NgIf,
     NgForOf,
     NgClass,
-    FormsModule,
-    RouterLink,
-    RouterOutlet
+    FormsModule
   ],
   templateUrl: './gestionbudget.component.html',
   styleUrls: ['./gestionbudget.component.css']
