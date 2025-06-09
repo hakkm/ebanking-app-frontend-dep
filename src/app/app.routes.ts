@@ -25,6 +25,7 @@ import {RegisterComponent} from './shared/components/client-components/register/
 import {ReferralComponent} from './shared/components/client-components/referral/referral.component';
 import { AgentAccountsComponent } from './shared/components/agent-accounts/agent-accounts.component';
 import { Routes } from '@angular/router';
+import { QrTransferComponent } from './shared/components/client-components/qr-transfer/qr-transfer.component';
 
 export const routes: Routes = [
 
@@ -55,6 +56,7 @@ export const routes: Routes = [
       { path: 'crypto',  component: DashboardComponent},
       { path: 'BudgetAlert', component: BudgetAlertComponent },
       { path: 'referral', component: ReferralComponent },
+      { path: 'qr-transfer', component: QrTransferComponent },
 
       { path: '', redirectTo: 'home', pathMatch: 'full' }
     ]

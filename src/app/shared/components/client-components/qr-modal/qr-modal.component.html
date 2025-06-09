@@ -1,0 +1,39 @@
+<ng-container *ngIf="isOpen">
+  <!-- Backdrop -->
+  <div class="fixed inset-0 bg-gray-900/70 backdrop-blur-sm z-50 transition-opacity duration-300"
+       (click)="closeModal()">
+  </div>
+
+  <!-- Modal -->
+  <div class="fixed inset-0 z-50 flex items-center justify-center px-4 sm:px-6 lg:px-8">
+    <div class="bg-gray-900/50 rounded-2xl shadow-2xl border border-gray-800/50 backdrop-blur-sm max-w-md w-full p-6 transform transition-all duration-300 scale-100">
+      <!-- Header -->
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="text-xl font-semibold text-white">{{title}}</h2>
+        <button class="text-gray-400 hover:text-white focus:outline-none transition-colors duration-200"
+                (click)="closeModal()">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Content -->
+      <div class="text-gray-300 mb-6 flex flex-col items-center">
+        
+        <qrcode [qrdata]="qrCode"  level="'M'" class="mt-4"></qrcode>
+      </div>
+
+      <!-- Footer -->
+      <div class="flex justify-end space-x-3">
+        <button class="px-4 py-2.5 bg-gray-800/50 text-white rounded-lg font-medium hover:bg-gray-700/50 focus:outline-none focus:ring-2 focus:ring-indigo-400 transition-all duration-200"
+                (click)="closeModal()">
+          Cancel
+        </button>
+        <button class="px-4 py-2.5 bg-indigo-500 text-white rounded-lg font-medium hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-400 transition-all duration-200">
+          Confirm
+        </button>
+      </div>
+    </div>
+  </div>
+</ng-container>
