@@ -1,7 +1,5 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CryptoService } from '../../../../core/services/crypto.service';
-import { interval, Subscription } from 'rxjs';
-import { startWith, switchMap } from 'rxjs/operators';
 import { CommonModule } from '@angular/common';
 import { MarketPricesComponent } from '../market-price/market-price.component';
 import { PortfolioOverviewComponent } from '../portfolio-overview/portfolio-overview.component';
@@ -20,14 +18,15 @@ import { TradeComponent } from '../trade/trade.component';
     TransactionHistoryComponent,
     TradeComponent
   ]
-
 })
 export class DashboardComponent implements OnInit, OnDestroy {
   constructor(private cryptoService: CryptoService) { }
 
   ngOnInit(): void {
+    this.cryptoService.startPricePolling();
   }
 
   ngOnDestroy(): void {
+    this.cryptoService.stopPricePolling();
   }
 }
