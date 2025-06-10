@@ -39,7 +39,6 @@ export class PortfolioOverviewComponent implements OnInit, OnDestroy {
     this.isLoading = true;
     this.portfolioSubscription = this.cryptoService.getPortfolio().subscribe({
       next: (portfolio) => {
-        console.log("refreshed, isLoading: ", this.isLoading);
         this.portfolioItems = portfolio;
         this.calculateTotalValue();
         this.calculateTradingBalance();

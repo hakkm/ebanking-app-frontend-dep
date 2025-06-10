@@ -90,11 +90,13 @@ export class TradeComponent implements OnInit, OnDestroy {
         this.tradeForm.get('amount')?.updateValueAndValidity();
       });
 
-    // Update max validation when available balance changes
     this.tradeForm.get('amount')?.valueChanges
       .pipe(takeUntil(this.destroy$))
       .subscribe(() => {
-        this.tradeForm.get('amount')?.updateValueAndValidity();
+        // Only update validation if the form is dirty or touched
+        if (this.tradeForm.get('amount')?.dirty || this.tradeForm.get('amount')?.touched) {
+          this.tradeForm.get('amount')?.updateValueAndValidity();
+        }
       });
   }
 
