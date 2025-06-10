@@ -19,12 +19,9 @@
       </div>
 
       <!-- Content -->
-      <div class="text-gray-300 mb-6 flex flex-col items-center">
-        
-        <qrcode [qrdata]="qrCode"  level="'M'" class="mt-4"></qrcode>
-      </div>
+      <ng-content></ng-content>
 
-      <!-- Footer -->
+      <!-- Footer
       <div class="flex justify-end space-x-3">
         <button class="px-4 py-2.5 bg-gray-800/50 text-white rounded-lg font-medium hover:bg-gray-700/50 focus:outline-none focus:ring-2 focus:ring-indigo-400 transition-all duration-200"
                 (click)="closeModal()">
@@ -33,7 +30,7 @@
         <button class="px-4 py-2.5 bg-indigo-500 text-white rounded-lg font-medium hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-400 transition-all duration-200">
           Confirm
         </button>
-      </div>
+      </div> -->
     </div>
   </div>
 </ng-container>
