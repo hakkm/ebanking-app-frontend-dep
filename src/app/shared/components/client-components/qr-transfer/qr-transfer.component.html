@@ -1,0 +1,264 @@
+<div class="max-w-5xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+  <!-- Page title with icon -->
+  <div class="mb-8 flex items-center">
+    <div class="w-12 h-12 rounded-full bg-indigo-500/10 flex items-center justify-center mr-4">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <rect x="4" y="4" width="6" height="6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <rect x="4" y="14" width="6" height="6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <rect x="14" y="4" width="6" height="6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <rect x="14" y="14" width="6" height="6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+    <h1 class="text-3xl font-bold text-white tracking-tight">QR Transfer</h1>
+  </div>
+
+  <div class="bg-gray-900/50 rounded-2xl shadow-2xl border border-gray-800/50 backdrop-blur-sm">
+    <!-- Card Header -->
+    <div class="px-6 py-4 border-b border-gray-700/50">
+      <ul class="flex text-sm font-medium text-gray-400 space-x-2">
+        <li class="cursor-pointer px-4 py-3 rounded-t-lg transition-all duration-200"
+            [ngClass]="activeTab === 'Create QR' ? 'text-white bg-indigo-500/10 border-b-2 border-indigo-400' : 'hover:text-white hover:bg-gray-800/50'"
+            (click)="activeTab = 'Create QR'">
+          Send
+        </li>
+        <li class="cursor-pointer px-4 py-3 rounded-t-lg transition-all duration-200"
+            [ngClass]="activeTab === 'Scan to pay' ? 'text-white bg-indigo-500/10 border-b-2 border-indigo-400' : 'hover:text-white hover:bg-gray-800/50'"
+            (click)="activeTab = 'Scan to pay'">
+          Receive
+        </li>
+        <li class="cursor-pointer px-4 py-3 rounded-t-lg transition-all duration-200"
+            [ngClass]="activeTab === 'history' ? 'text-white bg-indigo-500/10 border-b-2 border-indigo-400' : 'hover:text-white hover:bg-gray-800/50'"
+            (click)="onHistoryTabClick()">
+          History
+        </li>
+        
+      </ul>
+
+
+    </div>
+
+
+
+    <ng-container *ngIf="activeTab === 'Create QR'">
+      <div class="p-6">
+        <div class="flex items-center mb-6">
+          <h2 class="text-xl font-semibold text-white">Generate a QR Code</h2>
+        </div>
+        <form class="space-y-6">
+          <div class="flex flex-col">
+            <label for="amount" class="text-sm font-medium text-gray-300 mb-2">Amount</label>
+            <input type="number" id="amount" [(ngModel)]="amount" min="0" name="amount" placeholder="Enter amount"
+                   class="bg-gray-800/50 text-white rounded-lg px-4 py-2.5 border border-gray-700/50 focus:outline-none focus:ring-2 focus:ring-indigo-400 transition-all duration-200"
+                   required>
+          </div>
+          <div class="flex flex-col">
+            <label for="account" class="text-sm font-medium text-gray-300 mb-2">Account</label>
+            <select 
+                id="account" 
+                name="account" 
+                required
+                [(ngModel)]="selectedAccountId"
+
+                class="bg-gray-800/50 text-white rounded-lg px-4 py-2.5 border border-gray-700/50 focus:outline-none focus:ring-2 focus:ring-indigo-400 transition-all duration-200">
+              <option value="" selected>-- Choose an account --</option>
+              <ng-container *ngFor="let account of accounts">
+                <option [value]="account.id">{{ account.alias }}</option>
+              </ng-container>
+            </select>
+          </div>
+          <button 
+            type="submit" 
+            class="w-full bg-indigo-500 text-white rounded-lg px-4 py-2.5 font-medium hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-400 transition-all duration-200"
+            (click)="generateQRCode()">
+            >
+
+            Generate QR Code
+          </button>
+        </form>
+      </div>
+    </ng-container>
+
+    <!-- <ng-container *ngIf="activeTab === 'receive'">
+      <div class="p-6">
+        <div class="flex items-center mb-6">
+          <h2 class="text-xl font-semibold text-white">Scan to Receive Money</h2>
+        </div>
+        
+      </div>
+    </ng-container> 
+-->
+    <ng-container *ngIf="activeTab === 'Scan to pay'">
+  <div class="p-6">
+    <div class="flex items-center mb-6">
+      <h2 class="text-xl font-semibold text-white">Scan to Receive Money</h2>
+    </div>
+    <div class="flex flex-col items-center justify-center space-y-6">
+      <!-- Button to toggle camera -->
+      <button *ngIf="!isScanning" 
+              (click)="startScanning()"
+              class="bg-indigo-500 text-white rounded-lg px-6 py-2.5 font-medium hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-400 transition-all duration-200">
+        Scan QR Code
+      </button>
+
+      <!-- Camera view (shown when scanning) -->
+      <div *ngIf="isScanning" class="relative w-full max-w-md">
+        <zxing-scanner
+          [(device)]="currentDevice"
+          (scanSuccess)="onScanSuccess($event)"
+          (permissionResponse)="onPermissionResponse($event)"
+          (camerasFound)="onCamerasFound($event)"
+          class="w-full rounded-lg border border-gray-700/50"
+        ></zxing-scanner>
+        <!-- Overlay to highlight scanning area -->
+        <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <div class="w-48 h-48 border-2 border-indigo-400/50 rounded-lg bg-transparent"></div>
+        </div>
+        <!-- Close camera button -->
+        <button (click)="stopScanning()"
+                class="absolute top-2 right-2 bg-gray-800/50 text-white rounded-full p-2 hover:bg-gray-700/50 focus:outline-none focus:ring-2 focus:ring-indigo-400 transition-all duration-200">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Display scan result -->
+      <div *ngIf="scanResult" class="mt-4 text-center">
+        <p class="text-gray-300 text-sm">Scanned Result:</p>
+        <p class="text-white font-medium break-all">{{ scanResult }}</p>
+      </div>
+
+      <!-- Permission error message -->
+      <div *ngIf="!hasPermission && isScanning" class="mt-4 text-center">
+        <p class="text-red-400 text-sm">Camera access denied. Please allow camera permissions to scan QR codes.</p>
+      </div>
+    </div>
+  </div>
+</ng-container>
+
+    <ng-container *ngIf="activeTab === 'history'">
+      
+        <div class="flex items-center mb-6">
+          <h2 class="text-xl font-semibold text-white">Transaction History</h2>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full bg-gray-900/50 rounded-2xl shadow-2xl border border-gray-800/50 backdrop-blur-sm">
+            <thead>
+              <tr class="text-left text-sm font-medium text-gray-400 border-b border-gray-700/50">
+                
+                <th class="px-6 py-4">Account Alias</th>
+                <th class="px-6 py-4">Code</th>
+                <th class="px-6 py-4">Amount</th>
+                <th class="px-6 py-4">Status</th>
+                <th class="px-6 py-4">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let record of history" class="border-b border-gray-700/50 last:border-b-0 hover:bg-gray-800/50 transition-all duration-200">
+                
+                <td class="px-6 py-4 text-white">{{ record.accoutToAlias }}</td>
+                <td class="px-6 py-4 text-white">{{ record.code }}</td>
+                <td class="px-6 py-4 text-white">{{ record.amount | currency:'MAD':'symbol':'1.2-2' }}</td>
+                <td class="px-6 py-4">
+                  <span class="inline-block px-3 py-1 rounded-full text-sm font-medium"
+                        [ngClass]="{
+                          'bg-green-500/20 text-green-400': record.status === 'PENDING',
+                          'bg-red-500/20 text-red-400': record.status === 'CLOSED'
+                        }">
+                    {{ record.status }}
+                  </span>
+                </td>
+                <td class="px-6 py-4">
+                  <button (click)="showQrCode(record.code)"
+                          class="bg-indigo-500 text-white rounded-lg px-4 py-2 font-medium hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-400 transition-all duration-200">
+                    Show QR Code
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        
+        
+        
+        
+        
+    </ng-container>
+
+
+
+        <app-modal 
+    
+    
+        *ngIf="activeTab=='Create QR' && isQrCodeShown"
+        title="Send QR Code" 
+        (close)="isQrCodeShown = false"
+        
+        >
+
+            <div class="text-gray-300 mb-6 flex flex-col items-center">
+        
+                <qrcode [qrdata]="QRCode"  level="'M'" class="mt-4"></qrcode>
+            </div>
+        </app-modal>
+
+        <app-modal 
+
+            *ngIf="activeTab=='Scan to pay' && isPayModalShown"
+            
+
+
+        >
+
+            <form class="space-y-6 m-3">
+                
+                <div class="flex flex-col">
+                    <h1 class="text-white text-center">You will pay {{scannedQRCodeData.amount}} MAD</h1>
+                                        
+                </div>
+                <div class="flex flex-col">
+                    <label for="account" class="text-sm font-medium text-gray-300 mb-2">Account</label>
+                    <select 
+                        id="account" 
+                        name="account" 
+                        required
+                        [(ngModel)]="selectedFromAccountId"
+
+                        class="bg-gray-800/50 text-white rounded-lg px-4 py-2.5 border border-gray-700/50 focus:outline-none focus:ring-2 focus:ring-indigo-400 transition-all duration-200">
+                    <option value="" selected>-- Choose an account --</option>
+                    <ng-container *ngFor="let account of accounts">
+                        <option [value]="account.id">{{ account.alias }}</option>
+                    </ng-container>
+                    </select>
+                </div>
+                <button 
+                    type="submit" 
+                    class="w-full bg-indigo-500 text-white rounded-lg px-4 py-2.5 font-medium hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-400 transition-all duration-200"
+                    (click)="payViaQRCode()">
+                    >
+
+                    Pay
+                </button>
+            </form>
+
+        </app-modal>
+        
+
+        <app-modal 
+    
+    
+        *ngIf="activeTab=='history' && isHistoryQRCodeShown"
+        title="Show QR Code" 
+        (close)="hideQrCode()"
+        
+        >
+
+            <div class="text-gray-300 mb-6 flex flex-col items-center">
+        
+                <qrcode [qrdata]="historyClickedQRCode"  level="'M'" class="mt-4"></qrcode>
+            </div>
+        </app-modal>
+
+  </div>
+
+</div>
