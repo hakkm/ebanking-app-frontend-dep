@@ -56,6 +56,7 @@ export class AuthService {
   public getCurrentUser(): Observable<User> {
     return this.http.get<User>(`${this.apiUrl}/public/me`).pipe(
       tap(user => {
+        console.log('Current user loaded:', user);
         this.currentUserSubject.next(user);
       }),
       catchError(error => {
