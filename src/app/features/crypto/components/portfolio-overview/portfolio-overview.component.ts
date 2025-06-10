@@ -4,7 +4,7 @@ import {
   PortfolioItem,
 } from '../../../../core/services/crypto.service';
 import { CommonModule } from '@angular/common';
-import { Subscription } from 'rxjs';
+import { Subject, takeUntil } from 'rxjs';
 
 @Component({
   selector: 'app-portfolio-overview',
@@ -19,38 +19,38 @@ export class PortfolioOverviewComponent implements OnInit, OnDestroy {
   isFirstLoad = true;
   totalPortfolioValue = 0;
   tradingBalance = 0;
-  private portfolioSubscription: Subscription | null = null;
+  private destroy$ = new Subject<void>();
 
   constructor(private cryptoService: CryptoService) {}
 
   ngOnInit(): void {
-    console.log("inited");
-    this.loadPortfolio();
+    // Subscribe to loading state
+    this.cryptoService.getPortfolioLoadingState()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(isLoading => {
+        this.isLoading = isLoading;
+      });
+
+    // Subscribe to portfolio data
+    this.cryptoService.getPortfolio()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (portfolio) => {
+          this.portfolioItems = portfolio;
+          this.calculateTotalValue();
+          this.calculateTradingBalance();
+          this.isFirstLoad = false;
+        },
+        error: (err) => {
+          console.error('Error loading portfolio', err);
+          this.isFirstLoad = false;
+        },
+      });
   }
 
   ngOnDestroy(): void {
-    if (this.portfolioSubscription) {
-      this.portfolioSubscription.unsubscribe();
-    }
-  }
-
-  loadPortfolio(): void {
-    console.log("Loaded");
-    this.isLoading = true;
-    this.portfolioSubscription = this.cryptoService.getPortfolio().subscribe({
-      next: (portfolio) => {
-        this.portfolioItems = portfolio;
-        this.calculateTotalValue();
-        this.calculateTradingBalance();
-        this.isLoading = false;
-        this.isFirstLoad = false;
-      },
-      error: (err) => {
-        console.error('Error loading portfolio', err);
-        this.isLoading = false;
-        this.isFirstLoad = false;
-      },
-    });
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   private calculateTotalValue(): void {
@@ -71,16 +71,7 @@ export class PortfolioOverviewComponent implements OnInit, OnDestroy {
   }
 
   getIcon(symbol: string): string {
-    switch (symbol) {
-      case 'USD':
-        return '$';
-      case 'BTC':
-        return 'B';
-      case 'ETH':
-        return 'E';
-      default:
-        return symbol.charAt(0);
-    }
+    return symbol === 'USD' ? '$' : symbol.charAt(0);
   }
 
   getIconColor(symbol: string): string {

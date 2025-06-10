@@ -1,6 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { CryptoService, Transaction } from '../../../../core/services/crypto.service';
+import { Subject, takeUntil } from 'rxjs';
 
 @Component({
   selector: 'app-transaction-history',
@@ -9,28 +10,37 @@ import { CryptoService, Transaction } from '../../../../core/services/crypto.ser
   imports: [CommonModule],
   standalone: true
 })
-export class TransactionHistoryComponent implements OnInit {
+export class TransactionHistoryComponent implements OnInit, OnDestroy {
   transactions: Transaction[] = [];
   isLoading = true;
+  private destroy$ = new Subject<void>();
 
   constructor(private cryptoService: CryptoService) { }
 
   ngOnInit(): void {
-    this.loadTransactions();
+    // Subscribe to loading state
+    this.cryptoService.getTransactionsLoadingState()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(isLoading => {
+        this.isLoading = isLoading;
+      });
+
+    // Subscribe to transaction data
+    this.cryptoService.getTransactionHistory()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (transactions) => {
+          this.transactions = transactions;
+        },
+        error: (err) => {
+          console.error('Error loading transactions', err);
+        }
+      });
   }
 
-  loadTransactions(): void {
-    this.isLoading = true;
-    this.cryptoService.getTransactionHistory().subscribe({
-      next: (transactions) => {
-        this.transactions = transactions;
-        this.isLoading = false;
-      },
-      error: (err) => {
-        console.error('Error loading transactions', err);
-        this.isLoading = false;
-      }
-    });
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   formatDate(date: Date): string {

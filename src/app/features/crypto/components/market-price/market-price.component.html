@@ -11,11 +11,17 @@
     </button>
   </div>
 
-  <div *ngIf="isLoading" class="flex justify-center items-center py-8">
-    <div class="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+  <div *ngIf="isLoading" class="flex flex-col justify-center items-center py-12">
+    <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mb-4"></div>
+    <p class="text-gray-400">Loading market prices...</p>
   </div>
 
-  <div *ngIf="!isLoading" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+  <div *ngIf="!isLoading && marketPrices.length === 0" class="flex flex-col justify-center items-center py-12">
+    <div class="text-gray-400 mb-2">No market prices available</div>
+    <p class="text-sm text-gray-500">Market prices will appear here</p>
+  </div>
+
+  <div *ngIf="!isLoading && marketPrices.length > 0" class="grid grid-cols-1 md:grid-cols-2 gap-4">
     <div *ngFor="let price of marketPrices" class="price-card" [attr.data-symbol]="price.symbol">
       <div class="text-gray-400 text-sm">{{price.symbol}}</div>
       <div class="text-2xl font-mono">${{price.price.toFixed(2)}}</div>
