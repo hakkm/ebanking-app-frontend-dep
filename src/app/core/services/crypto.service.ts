@@ -89,6 +89,7 @@ export class CryptoService implements OnDestroy {
 
   // BehaviorSubject for market prices
   private marketPricesSubject = new BehaviorSubject<MarketPrice[]>([]);
+  private marketPricesLoadingSubject = new BehaviorSubject<boolean>(true);
   private isLoadingSubject = new BehaviorSubject<boolean>(false);
 
   // Cache for performance optimization
@@ -97,6 +98,8 @@ export class CryptoService implements OnDestroy {
   // Create BehaviorSubjects to hold the data
   private transactionsSubject = new BehaviorSubject<Transaction[]>([]);
   private portfolioSubject = new BehaviorSubject<PortfolioItem[]>([]);
+  private portfolioLoadingSubject = new BehaviorSubject<boolean>(true);
+  private transactionsLoadingSubject = new BehaviorSubject<boolean>(true);
 
   constructor(private http: HttpClient) {
     // Initialize the data when the service is created
@@ -114,12 +117,14 @@ export class CryptoService implements OnDestroy {
     }
 
     // Initial load
-    this.isLoadingSubject.next(true);
+    this.marketPricesLoadingSubject.next(true);
     this.fetchMarketPrices().subscribe();
 
-    // Start polling
+    // Start polling without showing loading state
     this.pricePollingSubscription = interval(this.POLLING_INTERVAL)
-      .pipe(switchMap(() => this.fetchMarketPrices()))
+      .pipe(
+        switchMap(() => this.fetchMarketPrices(false)) // Pass false to indicate it's a polling update
+      )
       .subscribe();
   }
 
@@ -130,12 +135,18 @@ export class CryptoService implements OnDestroy {
     }
   }
 
-  private fetchMarketPrices(): Observable<MarketPrice[]> {
+  private fetchMarketPrices(showLoading = true): Observable<MarketPrice[]> {
+    if (showLoading) {
+      this.marketPricesLoadingSubject.next(true);
+    }
+
     return this.http.get<MarketPrice[]>(`${this.apiUrl}/prices`).pipe(
       tap((prices) => {
         this.cachedMarketPrices = prices;
         this.marketPricesSubject.next(prices);
-        this.isLoadingSubject.next(false);
+        if (showLoading) {
+          this.marketPricesLoadingSubject.next(false);
+        }
 
         // Update portfolio values based on current prices
         const currentPortfolio = this.portfolioSubject.getValue();
@@ -160,7 +171,9 @@ export class CryptoService implements OnDestroy {
         if (this.cachedMarketPrices) {
           this.marketPricesSubject.next(this.cachedMarketPrices);
         }
-        this.isLoadingSubject.next(false);
+        if (showLoading) {
+          this.marketPricesLoadingSubject.next(false);
+        }
         return of(this.cachedMarketPrices || []);
       })
     );
@@ -179,24 +192,45 @@ export class CryptoService implements OnDestroy {
    * @returns Observable of boolean indicating loading state
    */
   getMarketPricesLoadingState(): Observable<boolean> {
-    return this.isLoadingSubject.asObservable();
+    return this.marketPricesLoadingSubject.asObservable();
+  }
+
+  refreshMarketPrices(): void {
+    this.fetchMarketPrices(true).subscribe(); // Pass true to show loading state
   }
 
   // Private method to load initial portfolio
   private loadInitialPortfolio(): void {
+    this.portfolioLoadingSubject.next(true);
     this.http
       .get<PortfolioItem[]>(`${this.apiUrl}/portfolio`)
-      .subscribe((portfolio) => {
-        console.log({portfolio});
-        this.portfolioSubject.next(portfolio);
+      .subscribe({
+        next: (portfolio) => {
+          this.portfolioSubject.next(portfolio);
+          this.portfolioLoadingSubject.next(false);
+        },
+        error: (error) => {
+          console.error('Error loading initial portfolio:', error);
+          this.portfolioLoadingSubject.next(false);
+        }
       });
   }
 
   // Private method to load initial transactions
   private loadInitialTransactions(): void {
+    this.transactionsLoadingSubject.next(true);
     this.http
       .get<Transaction[]>(`${this.apiUrl}/transactions`)
-      .subscribe((transactions) => this.transactionsSubject.next(transactions));
+      .subscribe({
+        next: (transactions) => {
+          this.transactionsSubject.next(transactions);
+          this.transactionsLoadingSubject.next(false);
+        },
+        error: (error) => {
+          console.error('Error loading initial transactions:', error);
+          this.transactionsLoadingSubject.next(false);
+        }
+      });
   }
 
   /**
@@ -208,11 +242,27 @@ export class CryptoService implements OnDestroy {
   }
 
   /**
+   * Gets the loading state of portfolio
+   * @returns Observable of boolean indicating loading state
+   */
+  getPortfolioLoadingState(): Observable<boolean> {
+    return this.portfolioLoadingSubject.asObservable();
+  }
+
+  /**
    * Retrieves the user's transaction history
    * @returns Observable of array of transactions
    */
   getTransactionHistory(): Observable<Transaction[]> {
     return this.transactionsSubject.asObservable();
+  }
+
+  /**
+   * Gets the loading state of transactions
+   * @returns Observable of boolean indicating loading state
+   */
+  getTransactionsLoadingState(): Observable<boolean> {
+    return this.transactionsLoadingSubject.asObservable();
   }
 
   /**

@@ -4,7 +4,7 @@ import {
   MarketPrice,
 } from '../../../../core/services/crypto.service';
 import { CommonModule } from '@angular/common';
-import { Subscription } from 'rxjs';
+import { Subject, takeUntil } from 'rxjs';
 
 @Component({
   selector: 'app-market-prices',
@@ -17,33 +17,38 @@ export class MarketPricesComponent implements OnInit, OnDestroy {
   marketPrices: MarketPrice[] = [];
   isLoading = true;
   lastUpdateTime = new Date();
-  private subscription: Subscription | null = null;
+  private destroy$ = new Subject<void>();
 
   constructor(private cryptoService: CryptoService) {}
 
   ngOnInit(): void {
-    this.subscription = this.cryptoService.getMarketPrices().subscribe({
-      next: (prices) => {
-        this.marketPrices = prices;
-        this.lastUpdateTime = new Date();
-        this.isLoading = false;
-      },
-      error: (err) => {
-        console.error('Error loading market prices', err);
-        this.isLoading = false;
-      },
-    });
+    // Subscribe to loading state
+    this.cryptoService.getMarketPricesLoadingState()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(isLoading => {
+        this.isLoading = isLoading;
+      });
+
+    // Subscribe to market prices
+    this.cryptoService.getMarketPrices()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (prices) => {
+          this.marketPrices = prices;
+          this.lastUpdateTime = new Date();
+        },
+        error: (err) => {
+          console.error('Error loading market prices', err);
+        },
+      });
   }
 
   ngOnDestroy(): void {
-    if (this.subscription) {
-      this.subscription.unsubscribe();
-    }
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   refreshPrices(): void {
-    this.isLoading = true;
-    // The service will handle the refresh and emit new values
-    this.cryptoService.getMarketPrices().subscribe();
+    this.cryptoService.refreshMarketPrices();
   }
 }

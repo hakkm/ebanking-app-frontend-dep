@@ -54,8 +54,7 @@ export const routes: Routes = [
       { path: 'recharge', component: RechargeComponent },
       {
         path: 'crypto',
-        component: DashboardComponent,
-        canActivate: [accountGuard]
+        component: DashboardComponent
       },
       { path: 'BudgetAlert', component: BudgetAlertComponent },
       { path: 'referral', component: ReferralComponent },
