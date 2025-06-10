@@ -5,10 +5,10 @@ import { MarketPricesComponent } from '../market-price/market-price.component';
 import { PortfolioOverviewComponent } from '../portfolio-overview/portfolio-overview.component';
 import { TransactionHistoryComponent } from '../transaction-history/transaction-history.component';
 import { TradeComponent } from '../trade/trade.component';
-import { AccountService } from '../../../../core/services/account.service';
 import { Router } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
 import { Subject, takeUntil } from 'rxjs';
+import { CryptoAccessService } from '../../../../core/services/crypto-access.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -30,9 +30,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   constructor(
     private cryptoService: CryptoService,
-    private accountService: AccountService,
     private router: Router,
-    private toastr: ToastrService
+    private toastr: ToastrService,
+    private cryptoAccessService: CryptoAccessService
   ) { }
 
   ngOnInit(): void {
@@ -46,15 +46,15 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   private verifyAccountAccess(): void {
-    this.accountService.getAccounts()
+    this.cryptoAccessService.hasAccess$
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (accounts) => {
-          if (accounts && accounts.length > 0) {
+        next: (hasAccess) => {
+          if (hasAccess) {
             this.hasAccess = true;
             this.cryptoService.startPricePolling();
           } else {
-            this.toastr.error('You need to have an account to access this section', 'Access Denied', {
+            this.toastr.error('You are not authorized to access crypto trading. Please create an account first.', 'Access Denied', {
               positionClass: 'toast-bottom-right',
               progressBar: true,
               timeOut: 5000

@@ -1,7 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
+import { CryptoAccessService } from '../../../core/services/crypto-access.service';
+import { Subject, takeUntil } from 'rxjs';
 
 @Component({
   selector: 'app-sidebar',
@@ -31,17 +33,42 @@ import { AuthService } from '../../../core/services/auth.service';
       background: linear-gradient(to bottom, #6366f1, #9333ea);
       box-shadow: 0 0 8px rgba(99, 102, 241, 0.6);
     }
+
+    /* Disabled link styles */
+    a.disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
   `]
 })
-export class SidebarComponent implements OnInit {
-  constructor(public authService: AuthService, private router: Router) {}
+export class SidebarComponent implements OnInit, OnDestroy {
+  hasCryptoAccess = false;
+  private destroy$ = new Subject<void>();
+
+  constructor(
+    public authService: AuthService,
+    private router: Router,
+    private cryptoAccessService: CryptoAccessService
+  ) {}
 
   ngOnInit(): void {
+    // Subscribe to crypto access state
+    this.cryptoAccessService.hasAccess$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(hasAccess => {
+        this.hasCryptoAccess = hasAccess;
+      });
+
     // If you need to do anything on component initialization
-    // For example, retrieve user profile details
     if (!this.authService.currentUserValue) {
       console.log(this.authService.getCurrentUser());
     }
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   getUserInitials(): string {
