@@ -1,11 +1,17 @@
 <div class="bg-gray-800 rounded-lg p-4 shadow-lg">
   <h2 class="text-lg font-semibold mb-4">Portfolio Overview</h2>
 
-  <div *ngIf="isLoading" class="flex justify-center items-center py-8">
-    <div class="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+  <div *ngIf="isLoading" class="flex flex-col justify-center items-center py-12">
+    <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mb-4"></div>
+    <p class="text-gray-400">Loading portfolio data...</p>
   </div>
 
-  <div *ngIf="!isLoading" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+  <div *ngIf="!isLoading && portfolioItems.length === 0" class="flex flex-col justify-center items-center py-12">
+    <div class="text-gray-400 mb-2">No portfolio items found</div>
+    <p class="text-sm text-gray-500">Your portfolio items will appear here</p>
+  </div>
+
+  <div *ngIf="!isLoading && portfolioItems.length > 0" class="grid grid-cols-1 md:grid-cols-3 gap-4">
     <!-- Cash Balance -->
     <div *ngFor="let item of portfolioItems"
          [class.animate-on-load]="isFirstLoad"

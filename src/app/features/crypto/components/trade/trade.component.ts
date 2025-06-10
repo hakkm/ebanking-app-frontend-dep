@@ -65,8 +65,7 @@ export class TradeComponent implements OnInit, OnDestroy {
     this.tradeForm = this.fb.group({
       amount: ['', [
         Validators.required,
-        Validators.min(0.00001),
-        this.validateAmount.bind(this)
+        Validators.min(0.00001)
       ]],
       asset: ['BTC', Validators.required]
     });
@@ -87,15 +86,14 @@ export class TradeComponent implements OnInit, OnDestroy {
       .subscribe(value => {
         this.selectedAsset = value;
         this.loadAvailableBalance();
-        this.tradeForm.get('amount')?.updateValueAndValidity();
       });
 
-    // Update max validation when available balance changes
-    this.tradeForm.get('amount')?.valueChanges
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(() => {
-        this.tradeForm.get('amount')?.updateValueAndValidity();
-      });
+    // Add custom validation after form initialization
+    this.tradeForm.get('amount')?.setValidators([
+      Validators.required,
+      Validators.min(0.00001),
+      this.validateAmount.bind(this)
+    ]);
   }
 
   /**
@@ -304,8 +302,10 @@ export class TradeComponent implements OnInit, OnDestroy {
   }
 
   private validateAmount(control: AbstractControl) {
-    const amount = control.value;
-    if (!amount) return null;
+    if (!control.value) return null;
+
+    const amount = parseFloat(control.value);
+    if (isNaN(amount)) return null;
 
     const price = this.getSelectedPrice();
     const totalValue = amount * price;

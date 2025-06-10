@@ -1,4 +1,3 @@
-
 import { MainLayoutComponent } from './shared/layouts/main-layout/main-layout.component';
 import { PublicLayoutComponent } from './shared/layouts/public-layout/public-layout.component';
 
@@ -14,6 +13,7 @@ import {
 } from './shared/components/agent-components/agent-transaction/agent-transaction.component';
 import { AgentUserProfileComponent } from './shared/components/agent-components/agent-user-profile/agent-user-profile.component';
 import {authGuard} from './core/guards/auth.guard';
+import {accountGuard} from './core/guards/account.guard';
 import {HomeComponent} from './shared/components/client-components/home/home.component';
 import {TransactionsComponent} from './shared/components/client-components/transaction/transaction.component';
 import {VirementComponent} from './shared/components/client-components/virement/virement.component';
@@ -52,7 +52,10 @@ export const routes: Routes = [
       { path: 'virement', component: VirementComponent },
       { path: 'add-recipient', component: AddRecipientComponent },
       { path: 'recharge', component: RechargeComponent },
-      { path: 'crypto',  component: DashboardComponent},
+      {
+        path: 'crypto',
+        component: DashboardComponent
+      },
       { path: 'BudgetAlert', component: BudgetAlertComponent },
       { path: 'referral', component: ReferralComponent },
 
