@@ -102,16 +102,17 @@ export class CryptoService implements OnDestroy {
     // Initialize the data when the service is created
     this.loadInitialTransactions();
     this.loadInitialPortfolio();
-    this.startPricePolling();
   }
 
   ngOnDestroy() {
-    if (this.pricePollingSubscription) {
-      this.pricePollingSubscription.unsubscribe();
-    }
+    this.stopPricePolling();
   }
 
-  private startPricePolling() {
+  startPricePolling() {
+    if (this.pricePollingSubscription) {
+      return; // Already polling
+    }
+
     // Initial load
     this.isLoadingSubject.next(true);
     this.fetchMarketPrices().subscribe();
@@ -120,6 +121,13 @@ export class CryptoService implements OnDestroy {
     this.pricePollingSubscription = interval(this.POLLING_INTERVAL)
       .pipe(switchMap(() => this.fetchMarketPrices()))
       .subscribe();
+  }
+
+  stopPricePolling() {
+    if (this.pricePollingSubscription) {
+      this.pricePollingSubscription.unsubscribe();
+      this.pricePollingSubscription = null;
+    }
   }
 
   private fetchMarketPrices(): Observable<MarketPrice[]> {
