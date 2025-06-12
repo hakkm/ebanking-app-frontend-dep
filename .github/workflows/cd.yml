@@ -1,0 +1,41 @@
+name: Docker CD Pipeline
+
+on:
+  workflow_run:
+    workflows: [Docker CI Pipeline]
+    types:
+      - completed
+
+jobs:
+  deploy:
+    runs-on: self-hosted
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_LOGIN }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Stop and Remove Existing Container
+        run: |
+          if [ "$(docker ps -aq -f name=e-banking-front-github)" ]; then
+            docker rm -f e-banking-front-github
+          fi
+
+      - name: Remove Old Docker Image (if exists)
+        run: |
+          docker image rm -f khabirhakim/e-banking-front-github:latest || true
+
+      - name: Pull Latest Docker Image
+        run: |
+          docker pull khabirhakim/e-banking-front-github:latest
+
+      - name: Run Docker Container
+        run: |
+          docker run -d --name e-banking-front-github -p 80:80 \
+            --restart unless-stopped \
+            --label "deployed-by=github-actions" \
+            khabirhakim/e-banking-front-github:latest
