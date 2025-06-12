@@ -1,10 +1,10 @@
-FROM node:22-alpine AS builder
+FROM node:22.15.0 AS build
 WORKDIR /app
 COPY package*.json ./
-RUN npm install -g @angular/cli
 RUN npm install -f
 COPY . .
-RUN npm run build
+RUN npm run build --prod
+
 
 FROM nginx:1.25-bullseye
 WORKDIR /usr/share/nginx/html
