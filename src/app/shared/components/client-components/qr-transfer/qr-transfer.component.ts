@@ -100,6 +100,7 @@ export class QrTransferComponent implements OnInit {
     this.qrCodeService.generateQRCode(body).subscribe((data)=>{
       console.log('QR Code data:', data);
       this.QRCode = data as string; 
+      this.QRCode = this.QRCode.toString();
       this.isQrCodeShown = true;
       console.log('QR Code généré avec succès:', this.QRCode);
     },
