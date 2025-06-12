@@ -5,25 +5,12 @@ on:
     branches:
       - main 
 
+
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
-      - name: Use Node.js v22.15
-        uses: actions/setup-node@v3
-        with:
-          node-version: 22.15
-
-      - name: install ng
-        run: npm install -g @angular/cli
-
-      - name: npm install
-        run: npm install -f
-
-      - name: Build Angular app
-        run: npm run build -- --output-path=dist/e-banking-front
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
