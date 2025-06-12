@@ -1,0 +1,15 @@
+# just for dev
+services:
+  front:
+    build:
+      context: .
+    ports:
+      - "4200:80"
+    networks:
+      - app-network
+    container_name: e-banking-front
+
+
+networks:
+  app-network:
+    driver: bridge
