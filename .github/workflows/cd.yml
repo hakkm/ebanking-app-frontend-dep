@@ -36,7 +36,7 @@ jobs:
 
       - name: Run Docker Container
         run: |
-          docker run -d --name e-banking-front-github -p 80:80 \
+          docker run -d --name e-banking-front-github -p 8080:80 \
             --restart unless-stopped \
             --label "deployed-by=github-actions" \
             khabirhakim/e-banking-front-github:latest
