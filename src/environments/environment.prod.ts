@@ -1,4 +1,4 @@
 export const environment = {
   production: true,
-  apiUrl: 'https://bankapi.tech/api'
+  apiUrl: 'https://bankapi.khabir-hakim.tech/api'
 };
