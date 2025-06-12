@@ -4,7 +4,7 @@ COPY package*.json ./
 RUN npm install -g @angular/cli
 RUN npm install -f
 COPY . .
-RUN npm run build
+RUN npm run build --prod
 
 FROM nginx:1.25-bullseye
 WORKDIR /usr/share/nginx/html
